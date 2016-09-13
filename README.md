@@ -1,6 +1,9 @@
 ## GoCD OpenStack Elastic agent plugin
 
 
+[![Join the chat at https://gitter.im/gocd/openstack-elastic-plugin](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/gocd/openstack-elastic-plugin?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+
 ## Building the code base
 
 To build the jar, run `./gradlew clean test assemble`
