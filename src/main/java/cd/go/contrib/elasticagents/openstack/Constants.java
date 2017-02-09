@@ -53,5 +53,6 @@ public interface Constants {
     String OPENSTACK_IMAGE_ID_ARGS = "openstack_image_id";
     String OPENSTACK_NETWORK_ID_ARGS = "openstack_network_id";
     String OPENSTACK_FLAVOR_ID_ARGS = "openstack_flavor_id";
+    String OPENSTACK_USERDATA_ARGS = "openstack_userdata";
 
 }

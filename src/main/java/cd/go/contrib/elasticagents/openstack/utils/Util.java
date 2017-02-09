@@ -18,9 +18,11 @@ package cd.go.contrib.elasticagents.openstack.utils;
 
 import cd.go.contrib.elasticagents.openstack.executors.GetViewRequestExecutor;
 import com.google.common.base.Charsets;
+import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.Properties;
@@ -30,6 +32,14 @@ public class Util {
     public static String readResource(String resourceFile) {
         try (InputStreamReader reader = new InputStreamReader(GetViewRequestExecutor.class.getResourceAsStream(resourceFile), Charsets.UTF_8)) {
             return CharStreams.toString(reader);
+        } catch (IOException e) {
+            throw new RuntimeException("Could not find resource " + resourceFile, e);
+        }
+    }
+
+    public static byte[] readResourceBytes(String resourceFile) {
+        try (InputStream in = GetViewRequestExecutor.class.getResourceAsStream(resourceFile)) {
+            return ByteStreams.toByteArray(in);
         } catch (IOException e) {
             throw new RuntimeException("Could not find resource " + resourceFile, e);
         }

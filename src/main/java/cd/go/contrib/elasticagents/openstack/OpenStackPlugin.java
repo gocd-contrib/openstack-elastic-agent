@@ -16,10 +16,9 @@
 
 package cd.go.contrib.elasticagents.openstack;
 
-import cd.go.contrib.elasticagents.openstack.executors.GetPluginConfigurationExecutor;
-import cd.go.contrib.elasticagents.openstack.executors.GetViewRequestExecutor;
-import cd.go.contrib.elasticagents.openstack.executors.ServerPingRequestExecutor;
+import cd.go.contrib.elasticagents.openstack.executors.*;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
+import cd.go.contrib.elasticagents.openstack.requests.ProfileValidateRequest;
 import cd.go.contrib.elasticagents.openstack.requests.ShouldAssignWorkRequest;
 import cd.go.contrib.elasticagents.openstack.requests.ValidatePluginSettings;
 import com.thoughtworks.go.plugin.api.GoApplicationAccessor;
@@ -61,10 +60,18 @@ public class OpenStackPlugin implements GoPlugin {
                 case REQUEST_SERVER_PING:
                     refreshInstances();
                     return new ServerPingRequestExecutor(agentInstances, pluginRequest).execute();
+                case REQUEST_GET_PROFILE_VIEW:
+                    return new GetProfileViewExecutor().execute();
+                case REQUEST_GET_PROFILE_METADATA:
+                    return new GetProfileMetadataExecutor().execute();
+                case REQUEST_VALIDATE_PROFILE:
+                    return ProfileValidateRequest.fromJSON(request.requestBody()).executor().execute();
                 case PLUGIN_SETTINGS_GET_VIEW:
                     return new GetViewRequestExecutor().execute();
                 case PLUGIN_SETTINGS_GET_CONFIGURATION:
                     return new GetPluginConfigurationExecutor().execute();
+                case PLUGIN_SETTINGS_GET_ICON:
+                    return new GetPluginSettingsIconExecutor().execute();
                 case PLUGIN_SETTINGS_VALIDATE_CONFIGURATION:
                     return ValidatePluginSettings.fromJSON(request.requestBody()).executor().execute();
                  default:

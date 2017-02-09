@@ -107,7 +107,8 @@ public class OpenStackInstance {
 
         String instance_name;
 
-        final byte[] authBytes = (!request.properties().get("openstack_userdata").isEmpty() ? request.properties().get("openstack_userdata") : settings.getOpenstackUserdata() ).getBytes(StandardCharsets.UTF_8);
+        final byte[] authBytes = (!request.properties().get(Constants.OPENSTACK_USERDATA_ARGS).isEmpty() ? request.properties().get
+                (Constants.OPENSTACK_USERDATA_ARGS) : settings.getOpenstackUserdata() ).getBytes(StandardCharsets.UTF_8);
         final String encoded = Base64.encodeBase64String(authBytes);
 
         HashMap<String, String> mdata = new HashMap<>();

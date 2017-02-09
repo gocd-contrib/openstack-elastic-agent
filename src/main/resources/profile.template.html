@@ -1,0 +1,45 @@
+<!--
+  ~ Copyright 2016 ThoughtWorks, Inc.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="form_item_block">
+    <label ng-class="{'is-invalid-label': GOINPUTNAME[openstack_image_id].$error.server}">Openstack Image ID
+        :<span class='asterix'>*</span></label>
+    <input ng-class="{'is-invalid-input': GOINPUTNAME[openstack_image_id].$error.server}" type="text" ng-model="openstack_image_id" ng-required="true" placeholder="alpine:latest"/>
+    <span class="form_error form-error" ng-class="{'is-visible': GOINPUTNAME[openstack_image_id].$error.server}" ng-show="GOINPUTNAME[openstack_image_id].$error.server">{{GOINPUTNAME[openstack_image_id].$error.server}}</span>
+</div>
+
+<div class="form_item_block">
+    <label ng-class="{'is-invalid-label': GOINPUTNAME[openstack_flavor_id].$error.server}">Openstack Flavor ID
+        :<span class='asterix'>*</span></label>
+    <input ng-class="{'is-invalid-input': GOINPUTNAME[openstack_flavor_id].$error.server}" type="text" ng-model="openstack_flavor_id" ng-required="true" placeholder="alpine:latest"/>
+    <span class="form_error form-error" ng-class="{'is-visible': GOINPUTNAME[openstack_flavor_id].$error.server}" ng-show="GOINPUTNAME[openstack_flavor_id].$error.server">{{GOINPUTNAME[openstack_flavor_id].$error.server}}</span>
+</div>
+
+<div class="form_item_block">
+    <label ng-class="{'is-invalid-label': GOINPUTNAME[openstack_network_id].$error.server}">Openstack Network ID
+        :<span class='asterix'>*</span></label>
+    <input ng-class="{'is-invalid-input': GOINPUTNAME[openstack_network_id].$error.server}" type="text" ng-model="openstack_network_id" ng-required="true" placeholder="alpine:latest"/>
+    <span class="form_error form-error" ng-class="{'is-visible': GOINPUTNAME[openstack_network_id].$error.server}" ng-show="GOINPUTNAME[openstack_network_id].$error.server">{{GOINPUTNAME[openstack_network_id].$error.server}}</span>
+</div>
+
+<div class="form_item_block">
+    <label ng-class="{'is-invalid-label': GOINPUTNAME[openstack_userdata].$error.server}">Openstack Userdata:
+        <small>(Enter code in one line)</small></label>
+    <textarea ng-class="{'is-invalid-input': GOINPUTNAME[openstack_userdata].$error.server}" type="text"
+              ng-model="openstack_userdata" ng-required="true" rows="15"
+              placeholder="&#x00023;&#x00023;!/bin/bash\necho &#x00022;Hello World!&#x00022;"></textarea>
+    <span class="form_error form-error" ng-class="{'is-visible': GOINPUTNAME[openstack_userdata].$error.server}" ng-show="GOINPUTNAME[openstack_userdata].$error.server">{{GOINPUTNAME[openstack_userdata].$error.server}}</span>
+</div>
