@@ -32,6 +32,8 @@ public class GetProfileMetadataExecutor implements RequestExecutor {
     public static final Metadata OPENSTACK_IMAGE_ID = new Metadata(Constants.OPENSTACK_IMAGE_ID_ARGS, true, false);
     public static final Metadata OPENSTACK_FLAVOR_ID = new Metadata(Constants.OPENSTACK_FLAVOR_ID_ARGS, true, false);
     public static final Metadata OPENSTACK_NETWORK_ID = new Metadata(Constants.OPENSTACK_NETWORK_ID_ARGS, true, false);
+    public static final Metadata OPENSTACK_SECURITY_GROUP = new Metadata(Constants.OPENSTACK_SECURITY_GROUP, false, false);
+    public static final Metadata OPENSTACK_KEYPAIR = new Metadata(Constants.OPENSTACK_KEYPAIR, false, false);
     public static final Metadata OPENSTACK_USERDATA = new Metadata(Constants.OPENSTACK_USERDATA_ARGS, false, false);
 
     public static final List<Metadata> FIELDS = new ArrayList<>();
@@ -40,6 +42,8 @@ public class GetProfileMetadataExecutor implements RequestExecutor {
         FIELDS.add(OPENSTACK_IMAGE_ID);
         FIELDS.add(OPENSTACK_FLAVOR_ID);
         FIELDS.add(OPENSTACK_NETWORK_ID);
+        FIELDS.add(OPENSTACK_SECURITY_GROUP);
+        FIELDS.add(OPENSTACK_KEYPAIR);
         FIELDS.add(OPENSTACK_USERDATA);
     }
 

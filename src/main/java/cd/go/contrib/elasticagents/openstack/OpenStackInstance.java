@@ -27,8 +27,10 @@ import org.joda.time.DateTime;
 import org.openstack4j.api.Builders;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.api.exceptions.OS4JException;
+import org.openstack4j.model.compute.Image;
 import org.openstack4j.model.compute.Server;
 import org.openstack4j.model.compute.ServerCreate;
+import org.openstack4j.model.compute.builder.ServerCreateBuilder;
 
 import java.io.IOException;
 import java.nio.channels.InterruptedByTimeoutException;
@@ -112,14 +114,13 @@ public class OpenStackInstance {
         final String encoded = Base64.encodeBase64String(authBytes);
 
         HashMap<String, String> mdata = new HashMap<>();
-
-//      metadata size is 256 characters, can't make json string.
-//        mdata.put(CONFIGURATION_LABEL_KEY, GSON.toJson(request.properties()));
-
+        
         Iterator entries = request.properties().entrySet().iterator();
         while(entries.hasNext()){
             Map.Entry entry = (Map.Entry) entries.next();
-            mdata.put((String)entry.getKey(),(String)entry.getValue());
+            if (!((String)entry.getKey()).equals(OPENSTACK_USERDATA_ARGS)){
+                mdata.put((String)entry.getKey(),(String)entry.getValue());
+            }
         }
 
         if (StringUtils.isNotBlank(request.autoRegisterKey())) {
@@ -151,20 +152,42 @@ public class OpenStackInstance {
         LOG.debug(mdata.toString());
         LOG.debug(request.properties().toString());
 
-        ServerCreate sc = Builders.server()
-                .image(StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_IMAGE_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_IMAGE_ID_ARGS) : settings.getOpenstackImage() )
+        ServerCreateBuilder scb = Builders.server()
+                .image(getImage(osclient, StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_IMAGE_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_IMAGE_ID_ARGS) : settings.getOpenstackImage() ))
                 .name(instance_name)
                 .flavor(StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_FLAVOR_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_FLAVOR_ID_ARGS) : settings.getOpenstackFlavor() )
                 .networks(Arrays.asList(StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_NETWORK_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_NETWORK_ID_ARGS) : settings.getOpenstackNetwork()))
                 .addMetadata(mdata)
-                .userData(encoded)
-                .build();
-        Server server = osclient.compute().servers().boot(sc);
+                .userData(encoded);
+
+        if (StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_SECURITY_GROUP))){
+            scb.addSecurityGroup(request.properties().get(Constants.OPENSTACK_SECURITY_GROUP));
+        }
+
+        if (StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_KEYPAIR))){
+            scb.keypairName(request.properties().get(Constants.OPENSTACK_KEYPAIR));
+        }
+
+        Server server = osclient.compute().servers().boot(scb.build());
 
         // create instance properties ( image id, network id, etc... ) and pass to OpenstackInstance()
 
         return new OpenStackInstance(server.getId(), server.getCreated(), request.environment(), populateInstanceProperties(osclient, server.getId()));
 
+    }
+
+    private static String getImage(OSClient os, String id) {
+        Image image = os.compute().images().get(id);
+        if (image == null) {
+            for (Image tmpImage : os.compute().images().list()){
+                if (tmpImage.getName().equals(id)) {
+                    return tmpImage.getId();
+                }
+            }
+        } else {
+            return id;
+        }
+        return "";
     }
 
 }

@@ -100,9 +100,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
     }
 
     public boolean matchInstance(String id, Map<String, String> properties){
-        OpenStackInstance instance = this.find(id);
-        return ((instance.properties().get(Constants.OPENSTACK_IMAGE_ID_ARGS).equals(properties.get(Constants.OPENSTACK_IMAGE_ID_ARGS))) &&
-                (instance.properties().get(Constants.OPENSTACK_FLAVOR_ID_ARGS).equals(properties.get(Constants.OPENSTACK_FLAVOR_ID_ARGS))));
+        return this.find(id) == null ? false : true;
     }
 
     private void register(OpenStackInstance op_instance) {

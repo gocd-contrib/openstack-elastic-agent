@@ -48,6 +48,9 @@ public class ShouldAssignWorkRequestExecutor implements RequestExecutor {
 
         boolean environmentMatches = stripToEmpty(request.environment()).equalsIgnoreCase(stripToEmpty(instance.environment()));
 
+        LOG.debug("ShouldAssignWorkRequestExecutor execute return false");
+        LOG.debug("Elastic Agent ID : " + request.agent().elasticAgentId());
+
         if ((agentInstances.matchInstance(request.agent().elasticAgentId(),request.properties())) && environmentMatches){
             return DefaultGoPluginApiResponse.success("true");
         }else{
