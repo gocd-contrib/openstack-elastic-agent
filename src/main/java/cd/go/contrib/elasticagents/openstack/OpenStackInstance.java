@@ -22,18 +22,15 @@ import com.thoughtworks.go.plugin.api.logging.Logger;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.joda.time.DateTime;
 import org.openstack4j.api.Builders;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.api.exceptions.OS4JException;
 import org.openstack4j.model.compute.Image;
 import org.openstack4j.model.compute.Server;
-import org.openstack4j.model.compute.ServerCreate;
 import org.openstack4j.model.compute.builder.ServerCreateBuilder;
 
 import java.io.IOException;
-import java.nio.channels.InterruptedByTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -103,15 +100,11 @@ public class OpenStackInstance {
     public void terminate(OSClient os_client) throws InterruptedException, OS4JException {
         os_client.compute().servers().delete(id);
     }
-
+//TODO replace req and settings by openstack boot config?
 
     public static OpenStackInstance create(CreateAgentRequest request, PluginSettings settings, OSClient osclient) throws InterruptedException, OS4JException, IOException {
 
         String instance_name;
-
-        final byte[] authBytes = (!request.properties().get(Constants.OPENSTACK_USERDATA_ARGS).isEmpty() ? request.properties().get
-                (Constants.OPENSTACK_USERDATA_ARGS) : settings.getOpenstackUserdata() ).getBytes(StandardCharsets.UTF_8);
-        final String encoded = Base64.encodeBase64String(authBytes);
 
         HashMap<String, String> mdata = new HashMap<>();
         
@@ -152,13 +145,18 @@ public class OpenStackInstance {
         LOG.debug(mdata.toString());
         LOG.debug(request.properties().toString());
 
+        final String encodedUserData = getEncodedUserData(request, settings);
+        String imageNameOrId = StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_IMAGE_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_IMAGE_ID_ARGS) : settings.getOpenstackImage();
+        String flavorId = StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_FLAVOR_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_FLAVOR_ID_ARGS) : settings.getOpenstackFlavor();
+        String networkId = StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_NETWORK_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_NETWORK_ID_ARGS) : settings.getOpenstackNetwork();
         ServerCreateBuilder scb = Builders.server()
-                .image(getImage(osclient, StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_IMAGE_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_IMAGE_ID_ARGS) : settings.getOpenstackImage() ))
+                .image(getImageId(osclient, imageNameOrId))
                 .name(instance_name)
-                .flavor(StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_FLAVOR_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_FLAVOR_ID_ARGS) : settings.getOpenstackFlavor() )
-                .networks(Arrays.asList(StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_NETWORK_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_NETWORK_ID_ARGS) : settings.getOpenstackNetwork()))
-                .addMetadata(mdata)
-                .userData(encoded);
+                .flavor(flavorId)
+                .networks(Arrays.asList(networkId))
+                .addMetadata(mdata);
+        if(encodedUserData != null)
+            scb = scb.userData(encodedUserData);
 
         if (StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_SECURITY_GROUP))){
             scb.addSecurityGroup(request.properties().get(Constants.OPENSTACK_SECURITY_GROUP));
@@ -176,18 +174,34 @@ public class OpenStackInstance {
 
     }
 
-    private static String getImage(OSClient os, String id) {
-        Image image = os.compute().images().get(id);
+    public static String getEncodedUserData(CreateAgentRequest request, PluginSettings settings) {
+        String userData = getUserData(request, settings);
+        if(userData == null)
+            return  null;
+        final byte[] userDataBytes = userData.getBytes(StandardCharsets.UTF_8);
+        return Base64.encodeBase64String(userDataBytes);
+    }
+
+    public static String getUserData(CreateAgentRequest request, PluginSettings settings) {
+        String requestUserData = request.properties().get(Constants.OPENSTACK_USERDATA_ARGS);
+        if(StringUtils.isNotBlank(requestUserData))
+            return requestUserData;
+
+        return settings.getOpenstackUserdata();
+    }
+
+    private static String getImageId(OSClient os, String nameOrId) {
+        Image image = os.compute().images().get(nameOrId);
         if (image == null) {
             for (Image tmpImage : os.compute().images().list()){
-                if (tmpImage.getName().equals(id)) {
+                if (tmpImage.getName().equals(nameOrId)) {
                     return tmpImage.getId();
                 }
             }
+            throw new RuntimeException("Failed to find image " + nameOrId);
         } else {
-            return id;
+            return nameOrId;
         }
-        return "";
     }
 
 }
