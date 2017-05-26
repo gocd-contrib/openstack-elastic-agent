@@ -37,14 +37,14 @@
 
 <div class="form_item_block">
     <label ng-class="{'is-invalid-label': GOINPUTNAME[openstack_security_group].$error.server}">Openstack Security Group
-        :<span class='asterix'>*</span></label>
+        :</label>
     <input ng-class="{'is-invalid-input': GOINPUTNAME[openstack_security_group].$error.server}" type="text" ng-model="openstack_security_group" ng-required="true" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"/>
     <span class="form_error form-error" ng-class="{'is-visible': GOINPUTNAME[openstack_security_group].$error.server}" ng-show="GOINPUTNAME[openstack_security_group].$error.server">{{GOINPUTNAME[openstack_security_group].$error.server}}</span>
 </div>
 
 <div class="form_item_block">
     <label ng-class="{'is-invalid-label': GOINPUTNAME[openstack_keypair].$error.server}">Openstack Keypair
-        :<span class='asterix'>*</span></label>
+        :</label>
     <input ng-class="{'is-invalid-input': GOINPUTNAME[openstack_keypair].$error.server}" type="text" ng-model="openstack_keypair" ng-required="true" placeholder="SSH Key Pair"/>
     <span class="form_error form-error" ng-class="{'is-visible': GOINPUTNAME[openstack_keypair].$error.server}" ng-show="GOINPUTNAME[openstack_keypair].$error.server">{{GOINPUTNAME[openstack_keypair].$error.server}}</span>
 </div>
