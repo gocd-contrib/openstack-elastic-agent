@@ -16,22 +16,22 @@
 
 <div class="form_item_block">
     <label ng-class="{'is-invalid-label': GOINPUTNAME[openstack_image_id].$error.server}">Openstack Image ID
-        :<span class='asterix'>*</span></label>
-    <input ng-class="{'is-invalid-input': GOINPUTNAME[openstack_image_id].$error.server}" type="text" ng-model="openstack_image_id" ng-required="true" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"/>
+        :</label>
+    <input ng-class="{'is-invalid-input': GOINPUTNAME[openstack_image_id].$error.server}" type="text" ng-model="openstack_image_id" ng-required="false" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"/>
     <span class="form_error form-error" ng-class="{'is-visible': GOINPUTNAME[openstack_image_id].$error.server}" ng-show="GOINPUTNAME[openstack_image_id].$error.server">{{GOINPUTNAME[openstack_image_id].$error.server}}</span>
 </div>
 
 <div class="form_item_block">
     <label ng-class="{'is-invalid-label': GOINPUTNAME[openstack_flavor_id].$error.server}">Openstack Flavor ID
-        :<span class='asterix'>*</span></label>
-    <input ng-class="{'is-invalid-input': GOINPUTNAME[openstack_flavor_id].$error.server}" type="text" ng-model="openstack_flavor_id" ng-required="true" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"/>
+        :</label>
+    <input ng-class="{'is-invalid-input': GOINPUTNAME[openstack_flavor_id].$error.server}" type="text" ng-model="openstack_flavor_id" ng-required="false" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"/>
     <span class="form_error form-error" ng-class="{'is-visible': GOINPUTNAME[openstack_flavor_id].$error.server}" ng-show="GOINPUTNAME[openstack_flavor_id].$error.server">{{GOINPUTNAME[openstack_flavor_id].$error.server}}</span>
 </div>
 
 <div class="form_item_block">
     <label ng-class="{'is-invalid-label': GOINPUTNAME[openstack_network_id].$error.server}">Openstack Network ID
-        :<span class='asterix'>*</span></label>
-    <input ng-class="{'is-invalid-input': GOINPUTNAME[openstack_network_id].$error.server}" type="text" ng-model="openstack_network_id" ng-required="true" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"/>
+        :</label>
+    <input ng-class="{'is-invalid-input': GOINPUTNAME[openstack_network_id].$error.server}" type="text" ng-model="openstack_network_id" ng-required="false" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"/>
     <span class="form_error form-error" ng-class="{'is-visible': GOINPUTNAME[openstack_network_id].$error.server}" ng-show="GOINPUTNAME[openstack_network_id].$error.server">{{GOINPUTNAME[openstack_network_id].$error.server}}</span>
 </div>
 
@@ -53,7 +53,7 @@
 <div class="form_item_block">
     <label ng-class="{'is-invalid-label': GOINPUTNAME[openstack_userdata].$error.server}">Openstack Userdata:</label>
     <textarea ng-class="{'is-invalid-input': GOINPUTNAME[openstack_userdata].$error.server}" type="text"
-              ng-model="openstack_userdata" ng-required="true" rows="15"
+              ng-model="openstack_userdata" ng-required="false" rows="15"
               placeholder="Direct Input Script"></textarea>
     <span class="form_error form-error" ng-class="{'is-visible': GOINPUTNAME[openstack_userdata].$error.server}" ng-show="GOINPUTNAME[openstack_userdata].$error.server">{{GOINPUTNAME[openstack_userdata].$error.server}}</span>
 </div>
