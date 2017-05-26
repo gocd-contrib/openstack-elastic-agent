@@ -73,7 +73,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
                     register(new OpenStackInstance(server.getId(),
                             server.getCreated(),
                             server.getMetadata().get(Constants.GOSERVER_PROPERTIES_PREFIX + Constants.ENVIRONMENT_KEY),
-                            OpenStackInstance.populateInstanceProperties(os_client(pluginSettings),server.getId())));
+                            os_client(pluginSettings)));
                 }else{
                     os_client(pluginSettings).compute().servers().delete(server.getId());
                 }
@@ -100,10 +100,28 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
     }
 
     public boolean matchInstance(String id, Map<String, String> properties){
-        return this.find(id) == null ? false : true;
+        OpenStackInstance instance = this.find(id);
+        if(instance == null)
+            return false;
+        String proposedImageId = properties.get(Constants.OPENSTACK_IMAGE_ID_ARGS);
+        String proposedFlavorId = properties.get(Constants.OPENSTACK_FLAVOR_ID_ARGS);
+        if(proposedImageId == null) {
+            LOG.warn("Instance properties do not have image id");
+            return false;
+        }
+        if(proposedFlavorId == null) {
+            LOG.warn("Instance properties do not have flavor id");
+            return false;
+        }
+        if(!proposedImageId.equals(instance.getImageId()))
+            return false;
+        if(!proposedFlavorId.equals(instance.getFlavorId()))
+            return false;
+
+        return true;
     }
 
-    private void register(OpenStackInstance op_instance) {
+    void register(OpenStackInstance op_instance) {
         instances.put(op_instance.id(), op_instance);
     }
 
@@ -129,7 +147,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
                 unregisteredInstances.register(new OpenStackInstance(server.getId(),
                         server.getCreated(),
                         server.getMetadata().get(Constants.GOSERVER_PROPERTIES_PREFIX + Constants.ENVIRONMENT_KEY),
-                        OpenStackInstance.populateInstanceProperties(os_client(settings),server.getId())));
+                        os_client(settings)));
             }
         }
         return unregisteredInstances;

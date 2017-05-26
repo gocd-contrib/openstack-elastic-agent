@@ -43,18 +43,29 @@ public class OpenStackInstance {
     private String id;
     private final DateTime createdAt;
     private final String environment;
-    private final HashMap<String, String> properties;
+    private final String imageId;
+    private final String flavorId;
 
     public static final Logger LOG = Logger.getLoggerFor(OpenStackInstance.class);
 
 
     public String environment() { return environment; }
 
-    public OpenStackInstance(String id, Date createdAt, String environment, HashMap<String, String> properties ) {
+    public OpenStackInstance(String id, Date createdAt, String environment, String imageId, String flavorId ) {
         this.id = id;
         this.createdAt = new DateTime(createdAt);
         this.environment = environment;
-        this.properties = properties;
+        this.imageId = imageId;
+        this.flavorId = flavorId;
+    }
+
+    public OpenStackInstance(String id, Date createdAt, String environment, OSClient os_client) {
+        this.id = id;
+        this.createdAt = new DateTime(createdAt);
+        this.environment = environment;
+        Server server = os_client.compute().servers().get(id);
+        this.imageId = server.getImageId();
+        this.flavorId = server.getFlavorId();
     }
 
     public String id() {
@@ -62,8 +73,6 @@ public class OpenStackInstance {
     }
 
     public DateTime createAt() { return createdAt; }
-
-    public HashMap<String, String> properties() { return properties; }
 
     @Override
     public boolean equals(Object o) {
@@ -75,15 +84,6 @@ public class OpenStackInstance {
         return id != null ? id.equals(that.id) : that.id == null;
     }
 
-
-    public static HashMap<String, String> populateInstanceProperties(OSClient os_client, String instanceId) throws InterruptedException, OS4JException {
-        Server server = os_client.compute().servers().get(instanceId);
-        HashMap<String, String> properties = new HashMap<String, String>();
-        properties.put(Constants.OPENSTACK_IMAGE_ID_ARGS, server.getImageId());
-        properties.put(Constants.OPENSTACK_FLAVOR_ID_ARGS, server.getFlavorId());
-        return properties;
-    }
-
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : 0;
@@ -92,10 +92,12 @@ public class OpenStackInstance {
 
     public static OpenStackInstance find(OSClient os_client, String instanceId) throws InterruptedException, OS4JException {
         Server server = os_client.compute().servers().get(instanceId);
-        return server.getId() != null ? new OpenStackInstance(server.getId(),
+        if(server.getId() == null)
+            return null;
+        return new OpenStackInstance(server.getId(),
                 server.getCreated(),
                 server.getMetadata().get(Constants.GOSERVER_PROPERTIES_PREFIX + Constants.ENVIRONMENT_KEY),
-                populateInstanceProperties(os_client, server.getId())) : null;
+                os_client);
     }
 
     public void terminate(OSClient os_client) throws InterruptedException, OS4JException {
@@ -170,7 +172,7 @@ public class OpenStackInstance {
 
         // create instance properties ( image id, network id, etc... ) and pass to OpenstackInstance()
 
-        return new OpenStackInstance(server.getId(), server.getCreated(), request.environment(), populateInstanceProperties(osclient, server.getId()));
+        return new OpenStackInstance(server.getId(), server.getCreated(), request.environment(), osclient);
 
     }
 
@@ -220,4 +222,11 @@ public class OpenStackInstance {
         }
     }
 
+    public String getImageId() {
+        return imageId;
+    }
+
+    public String getFlavorId() {
+        return flavorId;
+    }
 }
