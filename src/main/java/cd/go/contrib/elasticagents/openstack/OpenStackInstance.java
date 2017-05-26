@@ -26,6 +26,7 @@ import org.joda.time.DateTime;
 import org.openstack4j.api.Builders;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.api.exceptions.OS4JException;
+import org.openstack4j.model.compute.Flavor;
 import org.openstack4j.model.compute.Image;
 import org.openstack4j.model.compute.Server;
 import org.openstack4j.model.compute.builder.ServerCreateBuilder;
@@ -100,7 +101,6 @@ public class OpenStackInstance {
     public void terminate(OSClient os_client) throws InterruptedException, OS4JException {
         os_client.compute().servers().delete(id);
     }
-//TODO replace req and settings by openstack boot config?
 
     public static OpenStackInstance create(CreateAgentRequest request, PluginSettings settings, OSClient osclient) throws InterruptedException, OS4JException, IOException {
 
@@ -147,12 +147,12 @@ public class OpenStackInstance {
 
         final String encodedUserData = getEncodedUserData(request, settings);
         String imageNameOrId = StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_IMAGE_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_IMAGE_ID_ARGS) : settings.getOpenstackImage();
-        String flavorId = StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_FLAVOR_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_FLAVOR_ID_ARGS) : settings.getOpenstackFlavor();
+        String flavorNameOrId = StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_FLAVOR_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_FLAVOR_ID_ARGS) : settings.getOpenstackFlavor();
         String networkId = StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_NETWORK_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_NETWORK_ID_ARGS) : settings.getOpenstackNetwork();
         ServerCreateBuilder scb = Builders.server()
                 .image(getImageId(osclient, imageNameOrId))
                 .name(instance_name)
-                .flavor(flavorId)
+                .flavor(getFlavorId(osclient, flavorNameOrId))
                 .networks(Arrays.asList(networkId))
                 .addMetadata(mdata);
         if(encodedUserData != null)
@@ -200,7 +200,23 @@ public class OpenStackInstance {
             }
             throw new RuntimeException("Failed to find image " + nameOrId);
         } else {
+            LOG.warn("Failed to find image by ID " + nameOrId);
             return nameOrId;
+        }
+    }
+
+    private static String getFlavorId(OSClient os, String flavorNameOrId) {
+        Flavor flavor = os.compute().flavors().get(flavorNameOrId);
+        if(flavor == null) {
+            for(Flavor someFlavor : os.compute().flavors().list()) {
+                if(someFlavor.getName().equals(flavorNameOrId))
+                    return someFlavor.getId();
+            }
+            throw new RuntimeException("Failed to find flavor by name " + flavorNameOrId);
+        }
+        else {
+            LOG.warn("Failed to find flavor by ID " + flavorNameOrId);
+            return flavorNameOrId;
         }
     }
 
