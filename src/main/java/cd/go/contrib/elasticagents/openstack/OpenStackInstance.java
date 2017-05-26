@@ -17,6 +17,7 @@
 package cd.go.contrib.elasticagents.openstack;
 
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
+import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
 import com.google.gson.Gson;
 import com.thoughtworks.go.plugin.api.logging.Logger;
 import org.apache.commons.codec.binary.Base64;
@@ -26,8 +27,6 @@ import org.joda.time.DateTime;
 import org.openstack4j.api.Builders;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.api.exceptions.OS4JException;
-import org.openstack4j.model.compute.Flavor;
-import org.openstack4j.model.compute.Image;
 import org.openstack4j.model.compute.Server;
 import org.openstack4j.model.compute.builder.ServerCreateBuilder;
 
@@ -151,10 +150,11 @@ public class OpenStackInstance {
         String imageNameOrId = StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_IMAGE_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_IMAGE_ID_ARGS) : settings.getOpenstackImage();
         String flavorNameOrId = StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_FLAVOR_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_FLAVOR_ID_ARGS) : settings.getOpenstackFlavor();
         String networkId = StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_NETWORK_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_NETWORK_ID_ARGS) : settings.getOpenstackNetwork();
+        OpenstackClientWrapper client = new OpenstackClientWrapper(osclient);
         ServerCreateBuilder scb = Builders.server()
-                .image(getImageId(osclient, imageNameOrId))
+                .image(client.getImageId(imageNameOrId))
                 .name(instance_name)
-                .flavor(getFlavorId(osclient, flavorNameOrId))
+                .flavor(client.getFlavorId(flavorNameOrId))
                 .networks(Arrays.asList(networkId))
                 .addMetadata(mdata);
         if(encodedUserData != null)
@@ -190,36 +190,6 @@ public class OpenStackInstance {
             return requestUserData;
 
         return settings.getOpenstackUserdata();
-    }
-
-    private static String getImageId(OSClient os, String nameOrId) {
-        Image image = os.compute().images().get(nameOrId);
-        if (image == null) {
-            for (Image tmpImage : os.compute().images().list()){
-                if (tmpImage.getName().equals(nameOrId)) {
-                    return tmpImage.getId();
-                }
-            }
-            throw new RuntimeException("Failed to find image " + nameOrId);
-        } else {
-            LOG.warn("Failed to find image by ID " + nameOrId);
-            return nameOrId;
-        }
-    }
-
-    private static String getFlavorId(OSClient os, String flavorNameOrId) {
-        Flavor flavor = os.compute().flavors().get(flavorNameOrId);
-        if(flavor == null) {
-            for(Flavor someFlavor : os.compute().flavors().list()) {
-                if(someFlavor.getName().equals(flavorNameOrId))
-                    return someFlavor.getId();
-            }
-            throw new RuntimeException("Failed to find flavor by name " + flavorNameOrId);
-        }
-        else {
-            LOG.warn("Failed to find flavor by ID " + flavorNameOrId);
-            return flavorNameOrId;
-        }
     }
 
     public String getImageId() {

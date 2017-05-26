@@ -62,7 +62,7 @@ public class CreateAgentRequest {
         return GSON.fromJson(json, CreateAgentRequest.class);
     }
 
-    public RequestExecutor executor(AgentInstances agentInstances, PluginRequest pluginRequest) {
+    public RequestExecutor executor(AgentInstances agentInstances, PluginRequest pluginRequest) throws Exception {
         return new CreateAgentRequestExecutor(this, agentInstances, pluginRequest);
     }
 }
