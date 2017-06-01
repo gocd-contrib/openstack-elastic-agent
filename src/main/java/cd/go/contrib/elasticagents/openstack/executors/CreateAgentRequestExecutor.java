@@ -18,20 +18,21 @@ package cd.go.contrib.elasticagents.openstack.executors;
 
 import cd.go.contrib.elasticagents.openstack.*;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
+import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
-
-import static cd.go.contrib.elasticagents.openstack.OpenStackPlugin.LOG;
 
 public class CreateAgentRequestExecutor implements RequestExecutor{
     private final AgentInstances agentInstances;
     private final PluginRequest pluginRequest;
     private final CreateAgentRequest request;
+    private final OpenstackClientWrapper clientWrapper;
 
-    public CreateAgentRequestExecutor(CreateAgentRequest request, AgentInstances agentInstances, PluginRequest pluginRequest) {
+    public CreateAgentRequestExecutor(CreateAgentRequest request, AgentInstances agentInstances, PluginRequest pluginRequest) throws Exception {
         this.request = request;
         this.agentInstances = agentInstances;
         this.pluginRequest = pluginRequest;
+        clientWrapper = new OpenstackClientWrapper(pluginRequest.getPluginSettings());
     }
 
     @Override
@@ -39,7 +40,7 @@ public class CreateAgentRequestExecutor implements RequestExecutor{
         Agents agents = pluginRequest.listAgents();
         for (Agent agent : agents.agents()) {
             if ((agent.agentState() == Agent.AgentState.Idle) || (agent.agentState() == Agent.AgentState.Building)){
-                if (agentInstances.matchInstance(agent.elasticAgentId(),request.properties())) {
+                if (agentInstances.matchInstance(agent.elasticAgentId(),request.properties(), pluginRequest.getPluginSettings(), clientWrapper)) {
                     return new DefaultGoPluginApiResponse(200);
                 }
             }

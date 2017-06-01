@@ -18,8 +18,8 @@ package cd.go.contrib.elasticagents.openstack;
 
 import cd.go.contrib.elasticagents.openstack.executors.AgentNotFoundException;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
+import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -72,7 +72,7 @@ public interface AgentInstances<T> {
 
     boolean isInstanceAlive(PluginSettings settings, String id) throws Exception;
 
-    boolean matchInstance(String id, Map<String, String> properties);
+    boolean matchInstance(String id, Map<String, String> properties, PluginSettings pluginSettings, OpenstackClientWrapper client);
 
     /**
      * This message is sent from the {@link cd.go.contrib.elasticagents.openstack.executors.ServerPingRequestExecutor}

@@ -53,6 +53,15 @@ public class ShouldAssignWorkRequest {
     public RequestExecutor executor(AgentInstances agentInstances, PluginRequest pluginRequest) {
         return new ShouldAssignWorkRequestExecutor(this, agentInstances, pluginRequest);
     }
+
+    @Override
+    public String toString() {
+        Gson gson = new GsonBuilder()
+                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .setPrettyPrinting()
+                .create();
+        return gson.toJson(this);
+    }
 }
 
 

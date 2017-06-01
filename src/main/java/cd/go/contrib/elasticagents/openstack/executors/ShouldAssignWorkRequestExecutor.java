@@ -18,11 +18,9 @@ package cd.go.contrib.elasticagents.openstack.executors;
 
 import cd.go.contrib.elasticagents.openstack.*;
 import cd.go.contrib.elasticagents.openstack.requests.ShouldAssignWorkRequest;
+import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
-import org.openstack4j.model.compute.Server;
-
-import java.util.HashMap;
 
 import static cd.go.contrib.elasticagents.openstack.OpenStackPlugin.LOG;
 import static org.apache.commons.lang.StringUtils.stripToEmpty;
@@ -39,7 +37,7 @@ public class ShouldAssignWorkRequestExecutor implements RequestExecutor {
     }
 
     @Override
-    public GoPluginApiResponse execute() {
+    public GoPluginApiResponse execute() throws Exception {
         OpenStackInstance instance =  (OpenStackInstance) agentInstances.find(request.agent().elasticAgentId());
 
         if (instance == null){
@@ -48,10 +46,10 @@ public class ShouldAssignWorkRequestExecutor implements RequestExecutor {
 
         boolean environmentMatches = stripToEmpty(request.environment()).equalsIgnoreCase(stripToEmpty(instance.environment()));
 
-        LOG.debug("ShouldAssignWorkRequestExecutor execute return false");
-        LOG.debug("Elastic Agent ID : " + request.agent().elasticAgentId());
+        LOG.debug("Elastic Agent should assign work request : " + request);
 
-        if ((agentInstances.matchInstance(request.agent().elasticAgentId(),request.properties())) && environmentMatches){
+        OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(pluginRequest.getPluginSettings());
+        if ((agentInstances.matchInstance(request.agent().elasticAgentId(),request.properties(), pluginRequest.getPluginSettings(), clientWrapper)) && environmentMatches){
             return DefaultGoPluginApiResponse.success("true");
         }else{
             return DefaultGoPluginApiResponse.success("false");

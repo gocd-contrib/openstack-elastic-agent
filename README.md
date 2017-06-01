@@ -24,7 +24,7 @@ To build the jar, run `./gradlew clean test assemble`
 ** This Openstack Elastic Agent plugin require custom image
 
 1. Login to Go Server, choose "Plugins" under "Admin" tab.  Click the "wheel" icon next to "Openstack Elastic Agent Plugin", a "Plugin Settings" menu will pop up.
-2. Example "Plugin Settings"  ( This is the global settings and some properites can be overrided on the job level )
+2. Example "Plugin Settings"  ( This is the global settings and some properties can be overriden on in the elastic profile )
   * Go Server URL
      * eg. https://your-go-server:8154/go
   * Agent auto-register (in minutes)*
@@ -39,40 +39,38 @@ To build the jar, run `./gradlew clean test assemble`
      * eg. gocdstack
   * Openstack VM Prefix ( this is the prefix added to the VM's hostname to distinguish elastic agent VM to others
      * eg. gocdea
-  * Openstack Image ( this is the VM image ID from Openstack )
-     * eg. d921abbb-772b-4c96-a150-798506f2a37b
-  * Openstack Flavor ( this is the Flavor ID from Openstack )
-     * eg fa8c735b-d477-4649-bb6a-8d58f2052971
+  * Openstack Image ( this is the VM image ID or image name from Openstack )
+     * eg. `d921abbb-772b-4c96-a150-798506f2a37b`, `ubuntu-16.04`
+  * Openstack Flavor ( this is the Flavor ID or flavor name from Openstack )
+     * eg `fa8c735b-d477-4649-bb6a-8d58f2052971`, `12234`, `m1.small`
   * Openstack Network ( this is the Network ID from Openstack )
     * eg 6d6ceece-6de5-4be5-8a5a-180151f91820
   * Openstack UserData
-3. (Optional) Job level configuration.  Image ID,  Flavor ID,  Network ID and UserData can be overrided per job ).  Here is an example
-```
-          <job name="linux-job">
-            <tasks>
-              <exec command="echo">
-                <arg>"Hello World"</arg>
-              </exec>
-            </tasks>
-            <agentConfig pluginId="cd.go.contrib.elastic-agent.openstack">
-              <property>
-                <key>openstack_image_id</key>
-                <value>d921abbb-772b-4c96-a150-798506f2a37b</value>
-              </property>
-              <property>
-                <key>openstack_flavor_id</key>
-                <value>3</value>
-              </property>
-              <property>
-                <key>openstack_network_id</key>
-                <value>5f3134bb-aced-4969-abc6-f16b7914a5f6</value>
-              </property>
-              <property>
-                <key>openstack_userdata</key>
-                <value>##!/bin/bash\necho "$(/sbin/ifconfig | /bin/grep -A 1 'eth0' | /usr/bin/tail -1 | /bin/cut -d ':' -f 2 | /bin/cut -d ' ' -f 1) $HOSTNAME.go.cd" $HOSTNAME &gt;&gt; /etc/hosts\nhostname "$HOSTNAME.go.cd"</value>
-              </property>
-            </agentConfig>
-          </job>
+3. Elastic profile configuration.  Image ID,  Flavor ID,  Network ID and UserData can be overriden ).  Here is an example which sets a different flavor
+```xml
+<profile id="2" pluginId="cd.go.contrib.elastic-agent.openstack">
+  <property>
+    <key>openstack_image_id</key>
+  </property>
+  <property>
+    <key>openstack_flavor_id</key>
+    <value>v.c1.m3076.d5.e10</value>
+  </property>
+  <property>
+    <key>openstack_network_id</key>
+  </property>
+  <property>
+    <key>openstack_security_group</key>
+    <value>default</value>
+  </property>
+  <property>
+    <key>openstack_keypair</key>
+    <value>go</value>
+  </property>
+  <property>
+    <key>openstack_userdata</key>
+  </property>
+</profile>
 ```
 
 
@@ -82,7 +80,7 @@ To build the jar, run `./gradlew clean test assemble`
 2. Multi tenant/project support
 3. Multi authentication support ( eg. each pipeline can have their own openstack credential )
 4. More examples on how to create custom VM.
-
+5. More unit tests
 
 ## License
 

@@ -17,6 +17,8 @@
 package cd.go.contrib.elasticagents.openstack;
 
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
+import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.joda.time.Period;
 import org.openstack4j.api.OSClient;
@@ -46,6 +48,11 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         }
     }
 
+    @Deprecated
+    private OSClient os_client(PluginSettings settings) throws Exception {
+        return new OpenstackClientWrapper(settings).getClient();
+    }
+
 
     @Override
     public void terminate(String instanceId, PluginSettings settings) throws Exception {
@@ -73,7 +80,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
                     register(new OpenStackInstance(server.getId(),
                             server.getCreated(),
                             server.getMetadata().get(Constants.GOSERVER_PROPERTIES_PREFIX + Constants.ENVIRONMENT_KEY),
-                            OpenStackInstance.populateInstanceProperties(os_client(pluginSettings),server.getId())));
+                            os_client(pluginSettings)));
                 }else{
                     os_client(pluginSettings).compute().servers().delete(server.getId());
                 }
@@ -99,16 +106,38 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         return os_client(settings).compute().servers().get(id) == null ? false : true;
     }
 
-    public boolean matchInstance(String id, Map<String, String> properties){
-        return this.find(id) == null ? false : true;
+    public boolean matchInstance(String id, Map<String, String> properties, PluginSettings pluginSettings, OpenstackClientWrapper client){
+        OpenStackInstance instance = this.find(id);
+        if(instance == null)
+            return false;
+        String proposedImageIdOrName = properties.get(Constants.OPENSTACK_IMAGE_ID_ARGS);
+        String proposedFlavorIdOrName = properties.get(Constants.OPENSTACK_FLAVOR_ID_ARGS);
+        if(StringUtils.isBlank(proposedImageIdOrName)) {
+            // properties do not have image id - maybe because elastic profile has blank image and expects image from global settings
+            proposedImageIdOrName = pluginSettings.getOpenstackImage();
+        }
+        if(StringUtils.isBlank(proposedFlavorIdOrName)) {
+            // properties do not have flavor id - maybe because elastic profile has blank flavor and expects flavor from global settings
+            proposedFlavorIdOrName = pluginSettings.getOpenstackFlavor();
+        }
+        if(!proposedImageIdOrName.equals(instance.getImageId())) {
+            // before giving up try to resolve image name into id
+            proposedImageIdOrName = client.getImageId(proposedImageIdOrName);
+            if(!proposedImageIdOrName.equals(instance.getImageId()))
+                return false;
+        }
+        if(!proposedFlavorIdOrName.equals(instance.getFlavorId())) {
+            // before giving up try to resolve flavor name into id
+            proposedFlavorIdOrName = client.getFlavorId(proposedFlavorIdOrName);
+            if(!proposedFlavorIdOrName.equals(instance.getFlavorId()))
+                return false;
+        }
+
+        return true;
     }
 
-    private void register(OpenStackInstance op_instance) {
+    void register(OpenStackInstance op_instance) {
         instances.put(op_instance.id(), op_instance);
-    }
-
-    private OSClient os_client(PluginSettings settings) throws Exception {
-        return OpenStackClientFactory.os_client(settings);
     }
 
     private OpenStackInstances unregisteredAfterTimeout(PluginSettings settings, Agents knownAgents) throws Exception {
@@ -119,7 +148,8 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
 
         Period period = settings.getAutoRegisterPeriod();
         OpenStackInstances unregisteredInstances = new OpenStackInstances();
-        List<Server> allInstances = (List<Server>) os_client(settings).compute().servers().list(op_instance_prefix);
+        OpenstackClientWrapper client = new OpenstackClientWrapper(settings);
+        List<Server> allInstances = (List<Server>) client.getClient().compute().servers().list(op_instance_prefix);
 
         for (Server server : allInstances) {
             if (knownAgents.containsAgentWithId(server.getId())) {
@@ -129,7 +159,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
                 unregisteredInstances.register(new OpenStackInstance(server.getId(),
                         server.getCreated(),
                         server.getMetadata().get(Constants.GOSERVER_PROPERTIES_PREFIX + Constants.ENVIRONMENT_KEY),
-                        OpenStackInstance.populateInstanceProperties(os_client(settings),server.getId())));
+                        client.getClient()));
             }
         }
         return unregisteredInstances;
