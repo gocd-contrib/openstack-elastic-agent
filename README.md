@@ -45,6 +45,8 @@ To build the jar, run `./gradlew clean test assemble`
      * eg `fa8c735b-d477-4649-bb6a-8d58f2052971`, `12234`, `m1.small`
   * Openstack Network ( this is the Network ID from Openstack )
     * eg 6d6ceece-6de5-4be5-8a5a-180151f91820
+  * Default Max Instance Limit (for each profile)
+    * eg 5
   * Openstack UserData
 3. Elastic profile configuration.  Image ID,  Flavor ID,  Network ID and UserData can be overriden ).  Here is an example which sets a different flavor
 ```xml
@@ -66,6 +68,10 @@ To build the jar, run `./gradlew clean test assemble`
   <property>
     <key>openstack_keypair</key>
     <value>go</value>
+  </property>
+  <property>
+    <key>openstack_max_instance_limit</key>
+    <value>5</value>
   </property>
   <property>
     <key>openstack_userdata</key>
