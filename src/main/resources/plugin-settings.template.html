@@ -75,6 +75,12 @@
 </div>
 
 <div class="form_item_block">
+  <label>Default Max Instance Limit (for each profile)<span class='asterix'>*</span></label>
+  <input type="text" ng-model="default_max_instance_limit" ng-required="true"/>
+  <span class="form_error" ng-show="GOINPUTNAME[default_max_instance_limit].$error.server">{{ GOINPUTNAME[default_max_instance_limit].$error.server}}</span>
+</div>
+
+<div class="form_item_block">
   <label>Openstack UserData:</label>
   <textarea type="text" ng-model="openstack_userdata" rows="7"></textarea>
   <span class="form_error" ng-show="GOINPUTNAME[openstack_network].$error.server">{{ GOINPUTNAME[openstack_network].$error.server}}</span>

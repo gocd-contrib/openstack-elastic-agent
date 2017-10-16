@@ -43,6 +43,10 @@ public class PluginSettings {
     private String autoRegisterTimeout;
 
     @Expose
+    @SerializedName("default_max_instance_limit")
+    private String defaultMaxInstanceLimit;
+
+    @Expose
     @SerializedName("openstack_tenant")
     private String openstackTenant;
 
@@ -91,6 +95,7 @@ public class PluginSettings {
         if (openstackEndpoint!= null ? !openstackEndpoint.equals(that.openstackEndpoint) : that.openstackEndpoint!= null) return false;
         if (autoRegisterTimeout != null ? !autoRegisterTimeout.equals(that.autoRegisterTimeout) : that.autoRegisterTimeout != null)
             return false;
+        if (defaultMaxInstanceLimit != null ? !defaultMaxInstanceLimit.equals(that.defaultMaxInstanceLimit) : that.defaultMaxInstanceLimit != null) return false;
         if (openstackTenant!= null ? !openstackTenant.equals(that.openstackTenant) : that.openstackTenant!= null) return false;
         if (openstackUser!= null ? !openstackUser.equals(that.openstackUser) : that.openstackUser!= null) return false;
         if (openstackPassword!= null ? !openstackPassword.equals(that.openstackPassword) : that.openstackPassword!= null) return false;
@@ -107,6 +112,7 @@ public class PluginSettings {
         int result = goServerUrl != null ? goServerUrl.hashCode() : 0;
         result = 31 * result + (openstackEndpoint!= null ? openstackEndpoint.hashCode() : 0);
         result = 31 * result + (autoRegisterTimeout != null ? autoRegisterTimeout.hashCode() : 0);
+        result = 31 * result + (defaultMaxInstanceLimit != null ? defaultMaxInstanceLimit.hashCode() : 0);
         result = 31 * result + (openstackTenant!= null ? openstackTenant.hashCode() : 0);
         result = 31 * result + (openstackUser!= null ? openstackUser.hashCode() : 0);
         result = 31 * result + (openstackPassword!= null ? openstackPassword.hashCode() : 0);
@@ -130,6 +136,13 @@ public class PluginSettings {
             autoRegisterTimeout = "10";
         }
         return autoRegisterTimeout;
+    }
+
+    public String getDefaultMaxInstanceLimit() {
+        if (defaultMaxInstanceLimit == null) {
+            defaultMaxInstanceLimit = "10";
+        }
+        return defaultMaxInstanceLimit;
     }
 
     public String getGoServerUrl() {
