@@ -56,5 +56,6 @@ public interface Constants {
     String OPENSTACK_USERDATA_ARGS = "openstack_userdata";
     String OPENSTACK_SECURITY_GROUP = "openstack_security_group";
     String OPENSTACK_KEYPAIR = "openstack_keypair";
+    String OPENSTACK_MAX_INSTANCE_LIMIT = "openstack_max_instance_limit";
 
 }

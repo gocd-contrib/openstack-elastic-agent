@@ -21,25 +21,27 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class GetPluginConfigurationExecutor implements RequestExecutor{
+public class GetPluginConfigurationExecutor implements RequestExecutor {
     public static final Gson GSON = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
     public static final Field GO_SERVER_URL = new NonBlankField("go_server_url", "Go Server URL", null, true, false, "0");
-    public static final Field AUTOREGISTER_TIMEOUT = new PositiveNumberField("auto_register_timeout", "Agent auto-register Timeout (in minutes)", "10", true, false, "1");
+    public static final Field AUTOREGISTER_TIMEOUT = new PositiveNumberField("auto_register_timeout", "Agent auto-register Timeout (in minutes)", "10", true,
+            false, "1");
     public static final Field OPENSTACK_ENDPOINT = new NonBlankField("openstack_endpoint", "OpenStack Endpoint", null, true, false, "2");
     public static final Field OPENSTACK_TENANT = new NonBlankField("openstack_tenant", "OpenStack Tenant", null, true, false, "3");
     public static final Field OPENSTACK_USER = new NonBlankField("openstack_user", "OpenStack User", null, true, false, "4");
     public static final Field OPENSTACK_PASSWORD = new NonBlankField("openstack_password", "OpenStack Password", null, true, true, "5");
-    public static final Field OPENSTACK_VM_PREFIX= new NonBlankField("openstack_vm_prefix", "OpenStack VM Prefix", null, true, false, "6");
-    public static final Field OPENSTACK_IMAGE= new NonBlankField("openstack_image", "OpenStack Image", null, true, false, "7");
+    public static final Field OPENSTACK_VM_PREFIX = new NonBlankField("openstack_vm_prefix", "OpenStack VM Prefix", null, true, false, "6");
+    public static final Field OPENSTACK_IMAGE = new NonBlankField("openstack_image", "OpenStack Image", null, true, false, "7");
     public static final Field OPENSTACK_FLAVOR = new NonBlankField("openstack_flavor", "OpenStack Flavor", null, true, false, "8");
     public static final Field OPENSTACK_NETWORK = new NonBlankField("openstack_network", "OpenStack Network", null, true, false, "9");
-    public static final Field OPENSTACK_USERDATA = new Field("openstack_userdata", "OpenStack Userdata", null, false, false, "10");
+    public static final Field DEFAULT_MAX_INSTANCE_LIMIT = new PositiveNumberField("default_max_instance_limit", "Default Max Instance Limit", "10", true,
+            false, "10");
+    public static final Field OPENSTACK_USERDATA = new Field("openstack_userdata", "OpenStack Userdata", null, false, false, "11");
 
     //public static final Field AGENT_RESOURCES = new Field("resources", "Agent Resources", null, false, false, "11");
     //public static final Field AGENT_ENVIRONMENTS = new Field("environments", "Environments", null, false, false, "12");
@@ -49,6 +51,7 @@ public class GetPluginConfigurationExecutor implements RequestExecutor{
     static {
         FIELDS.put(GO_SERVER_URL.key(), GO_SERVER_URL);
         FIELDS.put(AUTOREGISTER_TIMEOUT.key(), AUTOREGISTER_TIMEOUT);
+        FIELDS.put(DEFAULT_MAX_INSTANCE_LIMIT.key(), DEFAULT_MAX_INSTANCE_LIMIT);
         FIELDS.put(OPENSTACK_ENDPOINT.key(), OPENSTACK_ENDPOINT);
         FIELDS.put(OPENSTACK_TENANT.key(), OPENSTACK_TENANT);
         FIELDS.put(OPENSTACK_USER.key(), OPENSTACK_USER);
