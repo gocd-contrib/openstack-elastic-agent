@@ -33,7 +33,7 @@ import java.util.Map;
 public class CreateAgentRequest {
     public static final Gson GSON = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
     private String autoRegisterKey;
-    private Map<String,String> properties;
+    private Map<String, String> properties;
     private String environment;
 
 
@@ -41,7 +41,7 @@ public class CreateAgentRequest {
 
     }
 
-    public CreateAgentRequest(String autoRegisterKey, Map<String,String> properties, String environment) {
+    public CreateAgentRequest(String autoRegisterKey, Map<String, String> properties, String environment) {
         this.autoRegisterKey = autoRegisterKey;
         this.properties = properties;
         this.environment = environment;
@@ -51,7 +51,7 @@ public class CreateAgentRequest {
         return autoRegisterKey;
     }
 
-    public Map<String,String> properties() {
+    public Map<String, String> properties() {
         return properties;
     }
 

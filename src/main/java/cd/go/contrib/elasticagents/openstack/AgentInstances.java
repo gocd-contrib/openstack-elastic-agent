@@ -72,7 +72,7 @@ public interface AgentInstances<T> {
 
     boolean isInstanceAlive(PluginSettings settings, String id) throws Exception;
 
-    boolean matchInstance(String id, Map<String, String> properties, PluginSettings pluginSettings, OpenstackClientWrapper client);
+    boolean matchInstance(String id, Map<String, String> properties, String environment, PluginSettings pluginSettings, OpenstackClientWrapper client);
 
     /**
      * This message is sent from the {@link cd.go.contrib.elasticagents.openstack.executors.ServerPingRequestExecutor}

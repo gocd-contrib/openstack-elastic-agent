@@ -38,20 +38,21 @@ public class ShouldAssignWorkRequestExecutor implements RequestExecutor {
 
     @Override
     public GoPluginApiResponse execute() throws Exception {
-        OpenStackInstance instance =  (OpenStackInstance) agentInstances.find(request.agent().elasticAgentId());
+        OpenStackInstance instance = (OpenStackInstance) agentInstances.find(request.agent().elasticAgentId());
 
-        if (instance == null){
+        LOG.info("Trying to match Elastic Agent with work request : " + request);
+
+        if (instance == null) {
+            LOG.info("Work can NOT be assigned to missing Elastic Agent: " + request.agent().elasticAgentId());
             return DefaultGoPluginApiResponse.success("false");
         }
 
-        boolean environmentMatches = stripToEmpty(request.environment()).equalsIgnoreCase(stripToEmpty(instance.environment()));
-
-        LOG.debug("Elastic Agent should assign work request : " + request);
-
         OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(pluginRequest.getPluginSettings());
-        if ((agentInstances.matchInstance(request.agent().elasticAgentId(),request.properties(), pluginRequest.getPluginSettings(), clientWrapper)) && environmentMatches){
+        if ((agentInstances.matchInstance(request.agent().elasticAgentId(), request.properties(), request.environment(), pluginRequest.getPluginSettings(), clientWrapper)) ) {
+            LOG.info("Work can be assigned to Elastic Agent : " + request.agent().elasticAgentId());
             return DefaultGoPluginApiResponse.success("true");
-        }else{
+        } else {
+            LOG.info("Work can NOT be assigned to Elastic Agent : " + request.agent().elasticAgentId());
             return DefaultGoPluginApiResponse.success("false");
         }
     }
