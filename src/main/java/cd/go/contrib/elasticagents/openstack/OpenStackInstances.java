@@ -23,10 +23,11 @@ import org.apache.commons.lang.time.DateUtils;
 import org.joda.time.Period;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.model.compute.Server;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static cd.go.contrib.elasticagents.openstack.OpenStackPlugin.LOG;
+import static org.apache.commons.lang.StringUtils.stripToEmpty;
 
 public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
 
@@ -106,10 +107,15 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         return os_client(settings).compute().servers().get(id) == null ? false : true;
     }
 
-    public boolean matchInstance(String id, Map<String, String> properties, PluginSettings pluginSettings, OpenstackClientWrapper client){
+    public boolean matchInstance(String id, Map<String, String> properties, String environment, PluginSettings pluginSettings, OpenstackClientWrapper client){
         OpenStackInstance instance = this.find(id);
         if(instance == null)
             return false;
+
+        if (!stripToEmpty(environment).equalsIgnoreCase(stripToEmpty(instance.environment()))) {
+            return false;
+        }
+
         String proposedImageIdOrName = properties.get(Constants.OPENSTACK_IMAGE_ID_ARGS);
         String proposedFlavorIdOrName = properties.get(Constants.OPENSTACK_FLAVOR_ID_ARGS);
         if(StringUtils.isBlank(proposedImageIdOrName)) {

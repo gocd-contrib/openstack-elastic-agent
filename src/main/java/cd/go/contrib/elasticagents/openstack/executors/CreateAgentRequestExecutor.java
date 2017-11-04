@@ -59,7 +59,7 @@ public class CreateAgentRequestExecutor implements RequestExecutor {
 
         for (Agent agent : agents.agents()) {
             LOG.debug("Check if agent: " + agent + " match job profile.");
-            if (agentInstances.matchInstance(agent.elasticAgentId(), request.properties(), pluginRequest.getPluginSettings(), clientWrapper)) {
+            if (agentInstances.matchInstance(agent.elasticAgentId(), request.properties(), request.environment(), pluginRequest.getPluginSettings(), clientWrapper)) {
                 matchingAgentCount++;
                 LOG.debug("Check agent: " + agent.elasticAgentId() + " is " + agent.agentState());
                 if (matchingAgentCount >= maxInstanceLimit) {
