@@ -17,6 +17,7 @@
 package cd.go.contrib.elasticagents.openstack;
 
 import org.openstack4j.api.OSClient;
+import org.openstack4j.model.common.Identifier;
 import org.openstack4j.openstack.OSFactory;
 
 import java.util.Date;
@@ -47,11 +48,29 @@ public class OpenStackClientFactory {
             LOG.debug("OpenStackClientFactory - token expired or will expire (" +
                     OpenStackClientFactory.client.getToken().getExpires().toString() + "), get a new token from OpenStack");
         }
-        return OSFactory.builder()
+        if (pluginSettings.getOpenstackKeystoneVersion().equals("3")) {
+            LOG.debug("Openstack Authentication V3");
+            LOG.debug("Endpoint : " + pluginSettings.getOpenstackEndpoint());
+            LOG.debug("User : " + pluginSettings.getOpenstackUser());
+            LOG.debug("Domain : " + pluginSettings.getOpenstackDomain());
+            LOG.debug("Tenant : " + pluginSettings.getOpenstackTenant());
+            return OSFactory.builderV3()
                     .endpoint(pluginSettings.getOpenstackEndpoint())
-                    .credentials(pluginSettings.getOpenstackUser(),pluginSettings.getOpenstackPassword())
+                    .credentials(pluginSettings.getOpenstackUser(), pluginSettings.getOpenstackPassword(), Identifier.byName(pluginSettings.getOpenstackDomain()))
+                    .scopeToProject(Identifier.byName(pluginSettings.getOpenstackTenant()),Identifier.byName(pluginSettings.getOpenstackDomain()))
+                    .authenticate();
+
+        } else {
+            LOG.debug("Openstack Authentication V2");
+            LOG.debug("Endpoint : " + pluginSettings.getOpenstackEndpoint());
+            LOG.debug("User : " + pluginSettings.getOpenstackUser());
+            LOG.debug("Tenant : " + pluginSettings.getOpenstackTenant());
+            return OSFactory.builder()
+                    .endpoint(pluginSettings.getOpenstackEndpoint())
+                    .credentials(pluginSettings.getOpenstackUser(), pluginSettings.getOpenstackPassword())
                     .tenantName(pluginSettings.getOpenstackTenant())
                     .authenticate();
+        }
     }
     
 }
