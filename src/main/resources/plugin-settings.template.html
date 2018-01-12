@@ -33,6 +33,18 @@
 </div>
 
 <div class="form_item_block">
+  <label>Openstack Keystone Version:<span class='asterix'>*</span></label>
+  <input type="text" ng-model="openstack_keystone_version" ng-required="true"/>
+  <span class="form_error" ng-show="GOINPUTNAME[openstack_keystone_version].$error.server">{{ GOINPUTNAME[openstack_keystone_version].$error.server}}</span>
+</div>
+
+<div class="form_item_block">
+  <label>Openstack Domain:<span class='asterix'>*</span></label>
+  <input type="text" ng-model="openstack_domain" ng-required="false"/>
+  <span class="form_error" ng-show="GOINPUTNAME[openstack_domain].$error.server">{{ GOINPUTNAME[openstack_domain].$error.server}}</span>
+</div>
+
+<div class="form_item_block">
   <label>Openstack Tenant:<span class='asterix'>*</span></label>
   <input type="text" ng-model="openstack_tenant" ng-required="true"/>
   <span class="form_error" ng-show="GOINPUTNAME[openstack_tenant].$error.server">{{ GOINPUTNAME[openstack_tenant].$error.server}}</span>

@@ -29,6 +29,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.commons.lang.StringUtils.stripToEmpty;
 
+import static cd.go.contrib.elasticagents.openstack.OpenStackPlugin.LOG;
+
 public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
 
 
@@ -108,11 +110,15 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
     }
 
     public boolean matchInstance(String id, Map<String, String> properties, String environment, PluginSettings pluginSettings, OpenstackClientWrapper client){
+        LOG.debug("-------------  Find matching instance -------------");
         OpenStackInstance instance = this.find(id);
-        if(instance == null)
+        if(instance == null) {
+            LOG.debug("No instance found in Openstack.");
             return false;
+        }
 
         if (!stripToEmpty(environment).equalsIgnoreCase(stripToEmpty(instance.environment()))) {
+            LOG.debug("Instance '" + id + "' found but did not match environment.");
             return false;
         }
 
@@ -129,16 +135,21 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         if(!proposedImageIdOrName.equals(instance.getImageId())) {
             // before giving up try to resolve image name into id
             proposedImageIdOrName = client.getImageId(proposedImageIdOrName);
-            if(!proposedImageIdOrName.equals(instance.getImageId()))
+            if(!proposedImageIdOrName.equals(instance.getImageId())){
+                LOG.debug("Image ID or Name did not match.");
                 return false;
+            }
         }
         if(!proposedFlavorIdOrName.equals(instance.getFlavorId())) {
             // before giving up try to resolve flavor name into id
             proposedFlavorIdOrName = client.getFlavorId(proposedFlavorIdOrName);
-            if(!proposedFlavorIdOrName.equals(instance.getFlavorId()))
+            if(!proposedFlavorIdOrName.equals(instance.getFlavorId())) {
+                LOG.debug("Flavor ID or Name did not match.");
                 return false;
+            }
         }
 
+        LOG.debug("Instance with ID : '" + id + "' found.");
         return true;
     }
 
