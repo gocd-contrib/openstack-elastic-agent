@@ -39,6 +39,14 @@ public class PluginSettings {
     private String openstackEndpoint;
 
     @Expose
+    @SerializedName("openstack_keystone_version")
+    private String openstackKeystoneVersion;
+
+    @Expose
+    @SerializedName("openstack_domain")
+    private String openstackDomain;
+
+    @Expose
     @SerializedName("auto_register_timeout")
     private String autoRegisterTimeout;
 
@@ -93,8 +101,10 @@ public class PluginSettings {
 
         if (goServerUrl != null ? !goServerUrl.equals(that.goServerUrl) : that.goServerUrl != null) return false;
         if (openstackEndpoint!= null ? !openstackEndpoint.equals(that.openstackEndpoint) : that.openstackEndpoint!= null) return false;
+        if (openstackKeystoneVersion!= null ? !openstackKeystoneVersion.equals(that.openstackKeystoneVersion) : that.openstackKeystoneVersion!= null) return false;
         if (autoRegisterTimeout != null ? !autoRegisterTimeout.equals(that.autoRegisterTimeout) : that.autoRegisterTimeout != null)
             return false;
+        if (openstackDomain!= null ? !openstackDomain.equals(that.openstackDomain) : that.openstackDomain!= null) return false;
         if (defaultMaxInstanceLimit != null ? !defaultMaxInstanceLimit.equals(that.defaultMaxInstanceLimit) : that.defaultMaxInstanceLimit != null) return false;
         if (openstackTenant!= null ? !openstackTenant.equals(that.openstackTenant) : that.openstackTenant!= null) return false;
         if (openstackUser!= null ? !openstackUser.equals(that.openstackUser) : that.openstackUser!= null) return false;
@@ -111,7 +121,9 @@ public class PluginSettings {
     public int hashCode() {
         int result = goServerUrl != null ? goServerUrl.hashCode() : 0;
         result = 31 * result + (openstackEndpoint!= null ? openstackEndpoint.hashCode() : 0);
+        result = 31 * result + (openstackKeystoneVersion!= null ? openstackKeystoneVersion.hashCode() : 0);
         result = 31 * result + (autoRegisterTimeout != null ? autoRegisterTimeout.hashCode() : 0);
+        result = 31 * result + (openstackDomain!= null ? openstackDomain.hashCode() : 0);
         result = 31 * result + (defaultMaxInstanceLimit != null ? defaultMaxInstanceLimit.hashCode() : 0);
         result = 31 * result + (openstackTenant!= null ? openstackTenant.hashCode() : 0);
         result = 31 * result + (openstackUser!= null ? openstackUser.hashCode() : 0);
@@ -153,8 +165,18 @@ public class PluginSettings {
         return openstackEndpoint;
     }
 
+    public String getOpenstackKeystoneVersion() {
+        openstackKeystoneVersion =  (openstackKeystoneVersion == null) ? "2" : openstackKeystoneVersion;
+        return openstackKeystoneVersion;
+    }
+
     public String getOpenstackTenant() {
         return openstackTenant;
+    }
+
+    public String getOpenstackDomain() {
+        openstackDomain = (openstackDomain == null) ? "Default" : openstackDomain;
+        return openstackDomain;
     }
 
     public String getOpenstackUser() {
@@ -187,6 +209,14 @@ public class PluginSettings {
 
     public void setOpenstackEndpoint(String openstackEndpoint) {
         this.openstackEndpoint = openstackEndpoint;
+    }
+
+    public void setOpenstackKeystoneVersion(String openstackKeystoneVersion) {
+        this.openstackKeystoneVersion = openstackKeystoneVersion;
+    }
+
+    public void setOpenstackDomain(String openstackDomain) {
+        this.openstackDomain = openstackDomain;
     }
 
     public void setOpenstackTenant(String openstackTenant) {
