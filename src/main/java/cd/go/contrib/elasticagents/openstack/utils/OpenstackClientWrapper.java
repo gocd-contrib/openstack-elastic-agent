@@ -33,7 +33,7 @@ public class OpenstackClientWrapper {
         Image image = client.compute().images().get(nameOrId);
         if (image == null) {
             for (Image tmpImage : client.compute().images().list()){
-                if (tmpImage.getName().equals(nameOrId)) {
+                if (tmpImage.getName() != null && tmpImage.getName().equals(nameOrId)) {
                     return tmpImage.getId();
                 }
             }
