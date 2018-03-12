@@ -108,7 +108,7 @@ public class OpenStackInstance {
         String instance_name;
 
         HashMap<String, String> mdata = new HashMap<>();
-        
+
         Iterator entries = request.properties().entrySet().iterator();
         while(entries.hasNext()){
             Map.Entry entry = (Map.Entry) entries.next();
@@ -198,5 +198,17 @@ public class OpenStackInstance {
 
     public String getFlavorId() {
         return flavorId;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("OpenStackInstance{");
+        sb.append("id='").append(id).append('\'');
+        sb.append(", createdAt=").append(createdAt);
+        sb.append(", environment='").append(environment).append('\'');
+        sb.append(", imageId='").append(imageId).append('\'');
+        sb.append(", flavorId='").append(flavorId).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

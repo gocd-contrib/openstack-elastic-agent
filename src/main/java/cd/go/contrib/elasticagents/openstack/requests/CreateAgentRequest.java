@@ -36,7 +36,6 @@ public class CreateAgentRequest {
     private Map<String, String> properties;
     private String environment;
 
-
     public CreateAgentRequest() {
 
     }
@@ -45,6 +44,10 @@ public class CreateAgentRequest {
         this.autoRegisterKey = autoRegisterKey;
         this.properties = properties;
         this.environment = environment;
+    }
+
+    public static CreateAgentRequest fromJSON(String json) {
+        return GSON.fromJson(json, CreateAgentRequest.class);
     }
 
     public String autoRegisterKey() {
@@ -59,11 +62,17 @@ public class CreateAgentRequest {
         return environment;
     }
 
-    public static CreateAgentRequest fromJSON(String json) {
-        return GSON.fromJson(json, CreateAgentRequest.class);
-    }
-
     public RequestExecutor executor(AgentInstances agentInstances, PluginRequest pluginRequest) throws Exception {
         return new CreateAgentRequestExecutor(this, agentInstances, pluginRequest, new OpenstackClientWrapper(pluginRequest.getPluginSettings()));
+    }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("CreateAgentRequest{");
+        sb.append("autoRegisterKey='").append(autoRegisterKey).append('\'');
+        sb.append(", properties=").append(properties);
+        sb.append(", environment='").append(environment).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

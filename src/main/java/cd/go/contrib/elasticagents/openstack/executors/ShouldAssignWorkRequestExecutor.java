@@ -22,8 +22,10 @@ import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
+import java.util.UUID;
+
 import static cd.go.contrib.elasticagents.openstack.OpenStackPlugin.LOG;
-import static org.apache.commons.lang.StringUtils.stripToEmpty;
+import static java.text.MessageFormat.format;
 
 public class ShouldAssignWorkRequestExecutor implements RequestExecutor {
     private final AgentInstances agentInstances;
@@ -38,21 +40,21 @@ public class ShouldAssignWorkRequestExecutor implements RequestExecutor {
 
     @Override
     public GoPluginApiResponse execute() throws Exception {
+        String transactionId = UUID.randomUUID().toString();
+        LOG.info(format("[{0}] [should-assign-work] {1}", transactionId, request));
+
         OpenStackInstance instance = (OpenStackInstance) agentInstances.find(request.agent().elasticAgentId());
-
-        LOG.info("Trying to match Elastic Agent with work request : " + request);
-
         if (instance == null) {
-            LOG.info("Work can NOT be assigned to missing Elastic Agent: " + request.agent().elasticAgentId());
+            LOG.info(format("[{0}] [should-assign-work] Work can NOT be assigned to missing Agent {1}", transactionId, request.agent().elasticAgentId()));
             return DefaultGoPluginApiResponse.success("false");
         }
 
         OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(pluginRequest.getPluginSettings());
-        if ((agentInstances.matchInstance(request.agent().elasticAgentId(), request.properties(), request.environment(), pluginRequest.getPluginSettings(), clientWrapper)) ) {
-            LOG.info("Work can be assigned to Elastic Agent : " + request.agent().elasticAgentId());
+        if ((agentInstances.matchInstance(request.agent().elasticAgentId(), request.properties(), request.environment(), pluginRequest.getPluginSettings(), clientWrapper, transactionId)) ) {
+            LOG.info(format("[{0}] [should-assign-work] Work can be assigned to Agent {1}", transactionId, request.agent().elasticAgentId()));
             return DefaultGoPluginApiResponse.success("true");
         } else {
-            LOG.info("Work can NOT be assigned to Elastic Agent : " + request.agent().elasticAgentId());
+            LOG.info(format("[{0}] [should-assign-work] Work can NOT be assigned to Agent {1}", transactionId, request.agent().elasticAgentId()));
             return DefaultGoPluginApiResponse.success("false");
         }
     }

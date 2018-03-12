@@ -27,9 +27,9 @@ import org.openstack4j.model.compute.Server;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.commons.lang.StringUtils.stripToEmpty;
-
 import static cd.go.contrib.elasticagents.openstack.OpenStackPlugin.LOG;
+import static java.text.MessageFormat.format;
+import static org.apache.commons.lang.StringUtils.stripToEmpty;
 
 public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
 
@@ -60,7 +60,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
     @Override
     public void terminate(String instanceId, PluginSettings settings) throws Exception {
         OpenStackInstance opInstance = instances.get(instanceId);
-        if (opInstance!= null) {
+        if (opInstance != null) {
             opInstance.terminate(os_client(settings));
         } else {
             OpenStackPlugin.LOG.warn("Requested to terminate an instance that does not exist " + instanceId);
@@ -70,13 +70,13 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
     }
 
     @Override
-    public void refreshAll(PluginRequest pluginRequest) throws Exception{
+    public void refreshAll(PluginRequest pluginRequest) throws Exception {
         if (!refreshed) {
             String agentID;
             PluginSettings pluginSettings = pluginRequest.getPluginSettings();
             Agents agents = pluginRequest.listAgents();
             Map<String, String> op_instance_prefix = new HashMap<String, String>();
-            op_instance_prefix.put("name",pluginSettings.getOpenstackVmPrefix());
+            op_instance_prefix.put("name", pluginSettings.getOpenstackVmPrefix());
             List<Server> allInstances = (List<Server>) os_client(pluginSettings).compute().servers().list(op_instance_prefix);
             for (Server server : allInstances) {
                 if (agents.containsAgentWithId(server.getId())) {
@@ -84,7 +84,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
                             server.getCreated(),
                             server.getMetadata().get(Constants.GOSERVER_PROPERTIES_PREFIX + Constants.ENVIRONMENT_KEY),
                             os_client(pluginSettings)));
-                }else{
+                } else {
                     os_client(pluginSettings).compute().servers().delete(server.getId());
                 }
             }
@@ -109,47 +109,67 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         return os_client(settings).compute().servers().get(id) == null ? false : true;
     }
 
-    public boolean matchInstance(String id, Map<String, String> properties, String environment, PluginSettings pluginSettings, OpenstackClientWrapper client){
-        LOG.debug("-------------  Find matching instance -------------");
+    public boolean matchInstance(String id, Map<String, String> properties, String requestEnvironment, PluginSettings pluginSettings, OpenstackClientWrapper
+            client, String transactionId) {
+        LOG.debug(format("[{0}] [matchInstance] Instance: {1}", transactionId, id));
         OpenStackInstance instance = this.find(id);
-        if(instance == null) {
-            LOG.debug("No instance found in Openstack.");
+        if (instance == null) {
+            LOG.warn(format("[{0}] [matchInstance] Instance NOT found in Openstack: {1}", transactionId, id));
             return false;
         }
+        LOG.info(format("[{0}] [matchInstance] Found instance: {1}", transactionId, instance));
 
-        if (!stripToEmpty(environment).equalsIgnoreCase(stripToEmpty(instance.environment()))) {
-            LOG.debug("Instance '" + id + "' found but did not match environment.");
+        requestEnvironment = stripToEmpty(requestEnvironment);
+        final String agentEnvironment = stripToEmpty(instance.environment());
+        if (!requestEnvironment.equalsIgnoreCase(agentEnvironment)) {
+            LOG.debug(format("[{0}] [matchInstance] Request environment [{1}] did NOT match agent's environment: [{2}]", transactionId, requestEnvironment,
+                    agentEnvironment));
             return false;
         }
+        LOG.debug(format("[{0}] [matchInstance] Request environment [{1}] did match agent's environment: [{2}]", transactionId, requestEnvironment,
+                agentEnvironment));
 
         String proposedImageIdOrName = properties.get(Constants.OPENSTACK_IMAGE_ID_ARGS);
-        String proposedFlavorIdOrName = properties.get(Constants.OPENSTACK_FLAVOR_ID_ARGS);
-        if(StringUtils.isBlank(proposedImageIdOrName)) {
-            // properties do not have image id - maybe because elastic profile has blank image and expects image from global settings
+        if (StringUtils.isBlank(proposedImageIdOrName)) {
+            LOG.debug("properties do not have image - maybe because elastic profile has blank image and expects image from global settings.");
             proposedImageIdOrName = pluginSettings.getOpenstackImage();
         }
-        if(StringUtils.isBlank(proposedFlavorIdOrName)) {
-            // properties do not have flavor id - maybe because elastic profile has blank flavor and expects flavor from global settings
-            proposedFlavorIdOrName = pluginSettings.getOpenstackFlavor();
-        }
-        if(!proposedImageIdOrName.equals(instance.getImageId())) {
-            // before giving up try to resolve image name into id
+        LOG.debug(format("[{0}] [matchInstance] Trying to match image name: [{1}] with instance image: [{2}]", transactionId,
+                proposedImageIdOrName, instance.getImageId()));
+        if (!proposedImageIdOrName.equals(instance.getImageId())) {
+            LOG.debug(format("[{0}] [matchInstance] image name: [{1}] did NOT match with instance image: [{2}]", transactionId,
+                    proposedImageIdOrName, instance.getImageId()));
             proposedImageIdOrName = client.getImageId(proposedImageIdOrName);
-            if(!proposedImageIdOrName.equals(instance.getImageId())){
-                LOG.debug("Image ID or Name did not match.");
-                return false;
-            }
-        }
-        if(!proposedFlavorIdOrName.equals(instance.getFlavorId())) {
-            // before giving up try to resolve flavor name into id
-            proposedFlavorIdOrName = client.getFlavorId(proposedFlavorIdOrName);
-            if(!proposedFlavorIdOrName.equals(instance.getFlavorId())) {
-                LOG.debug("Flavor ID or Name did not match.");
+            LOG.debug(format("[{0}] [matchInstance] Trying to match image name: [{1}] with instance image: [{2}]", transactionId,
+                    proposedImageIdOrName, instance.getImageId()));
+            if (!proposedImageIdOrName.equals(instance.getImageId())) {
+                LOG.debug(format("[{0}] [matchInstance] image name: [{1}] did NOT match with instance image: [{2}]", transactionId,
+                        proposedImageIdOrName, instance.getImageId()));
                 return false;
             }
         }
 
-        LOG.debug("Instance with ID : '" + id + "' found.");
+        String proposedFlavorIdOrName = properties.get(Constants.OPENSTACK_FLAVOR_ID_ARGS);
+        if (StringUtils.isBlank(proposedFlavorIdOrName)) {
+            LOG.debug("properties do not have flavor - maybe because elastic profile has blank flavor and expects flavor from global settings.");
+            proposedFlavorIdOrName = pluginSettings.getOpenstackFlavor();
+        }
+        LOG.debug(format("[{0}] [matchInstance] Trying to match flavor name: [{1}] with instance flavor: [{2}]", transactionId,
+                proposedFlavorIdOrName, instance.getFlavorId()));
+        if (!proposedFlavorIdOrName.equals(instance.getFlavorId())) {
+            LOG.debug(format("[{0}] [matchInstance] flavor name: [{1}] did NOT match with instance flavor: [{2}]", transactionId,
+                    proposedFlavorIdOrName, instance.getFlavorId()));
+            proposedFlavorIdOrName = client.getFlavorId(proposedFlavorIdOrName);
+            LOG.debug(format("[{0}] [matchInstance] Trying to match flavor name: [{1}] with instance flavor: [{2}]", transactionId,
+                    proposedFlavorIdOrName, instance.getFlavorId()));
+            if (!proposedFlavorIdOrName.equals(instance.getFlavorId())) {
+                LOG.debug(format("[{0}] [matchInstance] flavor name: [{1}] did NOT match with instance flavor: [{2}]", transactionId,
+                        proposedFlavorIdOrName, instance.getFlavorId()));
+                return false;
+            }
+        }
+
+        LOG.info(format("[{0}] [matchInstance] Found matching instance: {1}", transactionId, instance));
         return true;
     }
 
@@ -161,7 +181,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
 
         String agentID;
         Map<String, String> op_instance_prefix = new HashMap<String, String>();
-        op_instance_prefix.put("name",settings.getOpenstackVmPrefix());
+        op_instance_prefix.put("name", settings.getOpenstackVmPrefix());
 
         Period period = settings.getAutoRegisterPeriod();
         OpenStackInstances unregisteredInstances = new OpenStackInstances();

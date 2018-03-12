@@ -24,6 +24,10 @@ import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.UUID;
+
+import static java.text.MessageFormat.format;
+
 public class CreateAgentRequestExecutor implements RequestExecutor {
 
     private static final Logger LOG = Logger.getLoggerFor(CreateAgentRequestExecutor.class);
@@ -42,8 +46,9 @@ public class CreateAgentRequestExecutor implements RequestExecutor {
 
     @Override
     public GoPluginApiResponse execute() throws Exception {
+        String transactionId = UUID.randomUUID().toString();
         Agents agents = pluginRequest.listAgents();
-        LOG.debug("Check if any existing Idle agent match or a new needs to be created: " + agents.agents().size());
+        LOG.debug(format("[{0}] [create-agent] {1}", transactionId, request));
 
         int matchingAgentCount = 0;
         int maxInstanceLimit;
@@ -51,27 +56,28 @@ public class CreateAgentRequestExecutor implements RequestExecutor {
         final String profileMaxLimitStr = request.properties().get(Constants.OPENSTACK_MAX_INSTANCE_LIMIT);
         if (StringUtils.isNotBlank(profileMaxLimitStr) && StringUtils.isNumeric(profileMaxLimitStr)) {
             maxInstanceLimit = Integer.parseInt(profileMaxLimitStr);
-            LOG.debug("Using maxInstanceLimit from profile value: " + maxInstanceLimit);
+            LOG.debug(format("[{0}] [create-agent] Using maxInstanceLimit from profile value: {1}", transactionId, request));
         } else {
             maxInstanceLimit = Integer.parseInt(pluginRequest.getPluginSettings().getDefaultMaxInstanceLimit());
-            LOG.debug("Using maxInstanceLimit from default plugin value: " + maxInstanceLimit);
+            LOG.debug(format("[{0}] [create-agent] Using maxInstanceLimit from default plugin value: {1}", transactionId, request));
         }
 
         for (Agent agent : agents.agents()) {
-            LOG.debug("Check if agent: " + agent + " match job profile.");
-            if (agentInstances.matchInstance(agent.elasticAgentId(), request.properties(), request.environment(), pluginRequest.getPluginSettings(), clientWrapper)) {
+            LOG.debug(format("[{0}] [create-agent] Check if agent {1} match job profile", transactionId, agent));
+            if (agentInstances.matchInstance(agent.elasticAgentId(), request.properties(), request.environment(), pluginRequest.getPluginSettings(),
+                    clientWrapper, transactionId)) {
                 matchingAgentCount++;
-                LOG.debug("Check agent: " + agent.elasticAgentId() + " is " + agent.agentState());
+                LOG.debug(format("[{0}] [create-agent] found matching agent {1} ", transactionId, agent.elasticAgentId()));
                 if (matchingAgentCount >= maxInstanceLimit) {
-                    LOG.info("Will NOT create new instance, has reached max instance limit of " + maxInstanceLimit);
+                    LOG.info(format("[{0}] [create-agent] Will NOT create new instance, has reached max instance limit of {1} ", transactionId, maxInstanceLimit));
                     return new DefaultGoPluginApiResponse(200);
                 } else if ((agent.agentState() == Agent.AgentState.Idle)) {
-                    LOG.info("Will NOT create new instance, found matching idle agent: " + agent.elasticAgentId());
+                    LOG.info(format("[{0}] [create-agent] Will NOT create new instance, found matching idle agent {1} ", transactionId, agent.elasticAgentId()));
                     return new DefaultGoPluginApiResponse(200);
                 }
             }
         }
-        LOG.info("Will create new agent since no matching agents found.");
+        LOG.info(format("[{0}] [create-agent] Will create new agent since no matching agents found", transactionId));
         agentInstances.create(request, pluginRequest.getPluginSettings());
         return new DefaultGoPluginApiResponse(200);
     }

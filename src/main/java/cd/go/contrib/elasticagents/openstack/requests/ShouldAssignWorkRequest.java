@@ -33,6 +33,9 @@ public class ShouldAssignWorkRequest {
     private Agent agent;
     private Map<String, String> properties;
 
+    public static ShouldAssignWorkRequest fromJSON(String json) {
+        return GSON.fromJson(json, ShouldAssignWorkRequest.class);
+    }
 
     public Agent agent() {
         return agent;
@@ -46,21 +49,26 @@ public class ShouldAssignWorkRequest {
         return properties;
     }
 
-    public static ShouldAssignWorkRequest fromJSON(String json) {
-        return GSON.fromJson(json, ShouldAssignWorkRequest.class);
-    }
-
     public RequestExecutor executor(AgentInstances agentInstances, PluginRequest pluginRequest) {
         return new ShouldAssignWorkRequestExecutor(this, agentInstances, pluginRequest);
     }
 
-    @Override
-    public String toString() {
+    public String toJson() {
         Gson gson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .setPrettyPrinting()
                 .create();
         return gson.toJson(this);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("ShouldAssignWorkRequest{");
+        sb.append("environment='").append(environment).append('\'');
+        sb.append(", agent=").append(agent);
+        sb.append(", properties=").append(properties);
+        sb.append('}');
+        return sb.toString();
     }
 }
 
