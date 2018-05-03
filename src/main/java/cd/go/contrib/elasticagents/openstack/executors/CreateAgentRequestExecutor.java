@@ -65,7 +65,7 @@ public class CreateAgentRequestExecutor implements RequestExecutor {
         for (Agent agent : agents.agents()) {
             LOG.debug(format("[{0}] [create-agent] Check if agent {1} match job profile", transactionId, agent));
             if (agentInstances.matchInstance(agent.elasticAgentId(), request.properties(), request.environment(), pluginRequest.getPluginSettings(),
-                    clientWrapper, transactionId)) {
+                    clientWrapper, transactionId, false)) {
                 matchingAgentCount++;
                 LOG.debug(format("[{0}] [create-agent] found matching agent {1} ", transactionId, agent.elasticAgentId()));
                 if (matchingAgentCount >= maxInstanceLimit) {
@@ -78,7 +78,7 @@ public class CreateAgentRequestExecutor implements RequestExecutor {
             }
         }
         LOG.info(format("[{0}] [create-agent] Will create new agent since no matching agents found", transactionId));
-        agentInstances.create(request, pluginRequest.getPluginSettings());
+        agentInstances.create(request, pluginRequest.getPluginSettings(), transactionId);
         return new DefaultGoPluginApiResponse(200);
     }
 }

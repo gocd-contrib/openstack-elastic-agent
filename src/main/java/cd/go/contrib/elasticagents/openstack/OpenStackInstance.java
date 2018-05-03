@@ -103,7 +103,7 @@ public class OpenStackInstance {
         os_client.compute().servers().delete(id);
     }
 
-    public static OpenStackInstance create(CreateAgentRequest request, PluginSettings settings, OSClient osclient) throws InterruptedException, OS4JException, IOException {
+    public static OpenStackInstance create(CreateAgentRequest request, PluginSettings settings, OSClient osclient, String transactionId) throws InterruptedException, OS4JException, IOException {
 
         String instance_name;
 
@@ -152,7 +152,7 @@ public class OpenStackInstance {
         String networkId = StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_NETWORK_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_NETWORK_ID_ARGS) : settings.getOpenstackNetwork();
         OpenstackClientWrapper client = new OpenstackClientWrapper(osclient);
         ServerCreateBuilder scb = Builders.server()
-                .image(client.getImageId(imageNameOrId))
+                .image(client.getImageId(imageNameOrId, transactionId))
                 .name(instance_name)
                 .flavor(client.getFlavorId(flavorNameOrId))
                 .networks(Arrays.asList(networkId))

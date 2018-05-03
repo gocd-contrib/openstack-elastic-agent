@@ -3,13 +3,20 @@ package cd.go.contrib.elasticagents.openstack;
 import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
 import org.junit.Before;
 import org.junit.Test;
+import org.openstack4j.api.OSClient;
+import org.openstack4j.api.compute.ComputeImageService;
+import org.openstack4j.api.compute.ComputeService;
+import org.openstack4j.api.compute.FlavorService;
+import org.openstack4j.model.compute.Flavor;
+import org.openstack4j.model.compute.Image;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.UUID;
+import java.util.*;
 
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -48,22 +55,22 @@ public class OpenStackInstancesTest {
          */
         when(client.getFlavorId("c1980bb5-ed59-4573-83c9-8391b53b3a55")).thenReturn("c1980bb5-ed59-4573-83c9-8391b53b3a55");
         when(client.getFlavorId("m1.small")).thenReturn("c1980bb5-ed59-4573-83c9-8391b53b3a55");
-        when(client.getImageId("7637f039-027d-471f-8d6c-4177635f84f8")).thenReturn("7637f039-027d-471f-8d6c-4177635f84f8");
-        when(client.getImageId("ubuntu-14")).thenReturn("7637f039-027d-471f-8d6c-4177635f84f8");
+        when(client.getImageId("7637f039-027d-471f-8d6c-4177635f84f8", transactionId)).thenReturn("7637f039-027d-471f-8d6c-4177635f84f8");
+        when(client.getImageId("ubuntu-14", transactionId)).thenReturn("7637f039-027d-471f-8d6c-4177635f84f8");
     }
 
     @Test
     public void matchInstanceShouldReturnTrueWhenRequestHasNoPropertiesButSettingsMatchAfterResolvingNames() throws Exception {
         pluginSettings.setOpenstackFlavor("m1.small");
         pluginSettings.setOpenstackImage("ubuntu-14");
-        assertThat(instances.matchInstance(instanceId, new HashMap<String, String>(), null, pluginSettings, client, transactionId), is(true));
+        assertThat(instances.matchInstance(instanceId, new HashMap<String, String>(), null, pluginSettings, client, transactionId, false), is(true));
     }
 
     @Test
     public void matchInstanceShouldReturnTrueWhenRequestHasNoPropertiesButSettingsMatchById() throws Exception {
         pluginSettings.setOpenstackFlavor(instance.getFlavorId());
         pluginSettings.setOpenstackImage(instance.getImageId());
-        assertThat(instances.matchInstance(instanceId, new HashMap<String, String>(), null, pluginSettings, client, transactionId), is(true));
+        assertThat(instances.matchInstance(instanceId, new HashMap<String, String>(), null, pluginSettings, client, transactionId, false), is(true));
     }
 
     @Test
@@ -71,7 +78,7 @@ public class OpenStackInstancesTest {
         HashMap<String, String> properties = new HashMap<>();
         properties.put(Constants.OPENSTACK_IMAGE_ID_ARGS, "7637f039-027d-471f-8d6c-4177635f84f8");
         properties.put(Constants.OPENSTACK_FLAVOR_ID_ARGS, "c1980bb5-ed59-4573-83c9-8391b53b3a55");
-        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, client, transactionId), is(true));
+        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, client, transactionId, false), is(true));
     }
 
     @Test
@@ -79,12 +86,12 @@ public class OpenStackInstancesTest {
         HashMap<String, String> properties = new HashMap<>();
         properties.put(Constants.OPENSTACK_IMAGE_ID_ARGS, "ubuntu-14");
         properties.put(Constants.OPENSTACK_FLAVOR_ID_ARGS, "m1.small");
-        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, client, transactionId), is(true));
+        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, client, transactionId, false), is(true));
     }
 
     @Test
     public void matchInstanceShouldReturnFalseWhenRequestHasNoPropertiesAndSettingsDontMatch() throws Exception {
-        assertThat(instances.matchInstance(instanceId, new HashMap<String, String>(), null, pluginSettings, client, transactionId), is(false));
+        assertThat(instances.matchInstance(instanceId, new HashMap<String, String>(), null, pluginSettings, client, transactionId, false), is(false));
     }
 
     @Test
@@ -92,8 +99,8 @@ public class OpenStackInstancesTest {
         HashMap<String, String> properties = new HashMap<>();
         properties.put(Constants.OPENSTACK_IMAGE_ID_ARGS, "5db97077-b9f0-46f9-a992-15708ad3b83d");
         properties.put(Constants.OPENSTACK_FLAVOR_ID_ARGS, "c1980bb5-ed59-4573-83c9-8391b53b3a55");
-        when(client.getImageId("5db97077-b9f0-46f9-a992-15708ad3b83d")).thenReturn("5db97077-b9f0-46f9-a992-15708ad3b83d");
-        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, client, transactionId), is(false));
+        when(client.getImageId("5db97077-b9f0-46f9-a992-15708ad3b83d", transactionId)).thenReturn("5db97077-b9f0-46f9-a992-15708ad3b83d");
+        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, client, transactionId, false), is(false));
     }
 
     @Test
@@ -102,7 +109,7 @@ public class OpenStackInstancesTest {
         properties.put(Constants.OPENSTACK_IMAGE_ID_ARGS, "7637f039-027d-471f-8d6c-4177635f84f8");
         properties.put(Constants.OPENSTACK_FLAVOR_ID_ARGS, "5db97077-b9f0-46f9-a992-15708ad3b83d");
         when(client.getFlavorId("5db97077-b9f0-46f9-a992-15708ad3b83d")).thenReturn("5db97077-b9f0-46f9-a992-15708ad3b83d");
-        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, client, transactionId), is(false));
+        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, client, transactionId, false), is(false));
     }
 
     @Test
@@ -116,7 +123,7 @@ public class OpenStackInstancesTest {
         properties.put(Constants.OPENSTACK_IMAGE_ID_ARGS, "7637f039-027d-471f-8d6c-4177635f84f8");
         properties.put(Constants.OPENSTACK_FLAVOR_ID_ARGS, "c1980bb5-ed59-4573-83c9-8391b53b3a55");
         when(client.getFlavorId("5db97077-b9f0-46f9-a992-15708ad3b83d")).thenReturn("5db97077-b9f0-46f9-a992-15708ad3b83d");
-        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, client, transactionId), is(false));
+        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, client, transactionId, false), is(false));
     }
 
 
@@ -125,7 +132,7 @@ public class OpenStackInstancesTest {
         HashMap<String, String> properties = new HashMap<>();
         properties.put(Constants.OPENSTACK_IMAGE_ID_ARGS, "7637f039-027d-471f-8d6c-4177635f84f8");
         properties.put(Constants.OPENSTACK_FLAVOR_ID_ARGS, "c1980bb5-ed59-4573-83c9-8391b53b3a55");
-        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, client, transactionId), is(true));
+        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, client, transactionId, false), is(true));
     }
 
     @Test
@@ -139,7 +146,7 @@ public class OpenStackInstancesTest {
         properties.put(Constants.OPENSTACK_IMAGE_ID_ARGS, "7637f039-027d-471f-8d6c-4177635f84f8");
         properties.put(Constants.OPENSTACK_FLAVOR_ID_ARGS, "c1980bb5-ed59-4573-83c9-8391b53b3a55");
         when(client.getFlavorId("5db97077-b9f0-46f9-a992-15708ad3b83d")).thenReturn("5db97077-b9f0-46f9-a992-15708ad3b83d");
-        assertThat(instances.matchInstance(instanceId, properties, "testing", pluginSettings, client, transactionId), is(true));
+        assertThat(instances.matchInstance(instanceId, properties, "testing", pluginSettings, client, transactionId, false), is(true));
     }
 
     @Test
@@ -153,7 +160,119 @@ public class OpenStackInstancesTest {
         properties.put(Constants.OPENSTACK_IMAGE_ID_ARGS, "7637f039-027d-471f-8d6c-4177635f84f8");
         properties.put(Constants.OPENSTACK_FLAVOR_ID_ARGS, "c1980bb5-ed59-4573-83c9-8391b53b3a55");
         when(client.getFlavorId("5db97077-b9f0-46f9-a992-15708ad3b83d")).thenReturn("5db97077-b9f0-46f9-a992-15708ad3b83d");
-        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, client, transactionId), is(true));
+        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, client, transactionId, false), is(true));
+    }
+
+    @Test
+    public void matchInstanceShouldReturnTrueWhenFallbackImageIsUsedFromRequest() throws Exception {
+        instanceId = "b45b5658-b093-4a58-bf22-17d898171c95";
+        instance = new OpenStackInstance(instanceId, new Date(), null,
+                "7637f039-027d-471f-8d6c-4177635f84f8", "c1980bb5-ed59-4573-83c9-8391b53b3a55");
+        instances = new OpenStackInstances();
+        instances.register(instance);
+        HashMap<String, String> properties = new HashMap<>();
+        properties.put(Constants.OPENSTACK_IMAGE_ID_ARGS, "ubuntu-14");
+        properties.put(Constants.OPENSTACK_FLAVOR_ID_ARGS, "m1.small");
+        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, client, transactionId, true), is(true));
+        when(client.getImageId("ubuntu-14", transactionId)).thenReturn("1a248c96-672b-4983-96ed-c3418a4be602");
+        when(client.getPreviousImageId("ubuntu-14", transactionId)).thenReturn("7637f039-027d-471f-8d6c-4177635f84f8");
+        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, client, transactionId, true), is(true));
+    }
+
+    @Test
+    public void matchInstanceShouldReturnTrueWhenPreviousImageIsUsedFromRequestNoClientWrapperMock() throws Exception {
+        instanceId = "b45b5658-b093-4a58-bf22-17d898171c95";
+        instance = new OpenStackInstance(instanceId, new Date(), null,
+                "7637f039-027d-471f-8d6c-4177635f84f8", "c1980bb5-ed59-4573-83c9-8391b53b3a55");
+        instances = new OpenStackInstances();
+        instances.register(instance);
+        HashMap<String, String> properties = new HashMap<>();
+        properties.put(Constants.OPENSTACK_IMAGE_ID_ARGS, "ubuntu-14");
+        properties.put(Constants.OPENSTACK_FLAVOR_ID_ARGS, "m1.small");
+        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, client, transactionId, true), is(true));
+        when(client.getImageId("ubuntu-14", transactionId)).thenReturn("1a248c96-672b-4983-96ed-c3418a4be602");
+        when(client.getPreviousImageId("ubuntu-14", transactionId)).thenReturn("7637f039-027d-471f-8d6c-4177635f84f8");
+        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, client, transactionId, true), is(true));
+    }
+
+    @Test
+    public void matchInstanceShouldReturnTrueWhenFallbackImageIsUsedFromPluginSettings() throws Exception {
+        // Arrange
+
+        final String imageName = "ubuntu-14";
+        String firstImageId = "firstImageId";
+        String secondImageId = "secondImageId";
+        String thirdImageId = "thirdImageId";
+        OSClient client = mock(OSClient.class);
+        final ComputeService compute = mock(ComputeService.class);
+        when(client.compute()).thenReturn(compute);
+        final ComputeImageService imageService = mock(ComputeImageService.class);
+        when(compute.images()).thenReturn(imageService);
+
+        when(imageService.get(anyString())).thenReturn(null);
+
+        List<Image> images = new ArrayList<>();
+        Image imageWithNullName = mock(Image.class);
+        when(imageWithNullName.getName()).thenReturn(null);
+        when(imageWithNullName.getId()).thenReturn("imageWithNullNameId");
+        images.add(imageWithNullName);
+
+        Image imageWithName = mock(Image.class);
+        when(imageWithName.getName()).thenReturn(imageName);
+        when(imageWithName.getId()).thenReturn(firstImageId);
+        images.add(imageWithName);
+
+        doReturn(images).when(imageService).list();
+
+        final String flavorId = "a883873b-d568-4c1a-bee5-9806996e3a02";
+        final Flavor flavor = mock(Flavor.class);
+        when(flavor.getId()).thenReturn(flavorId);
+        final FlavorService flavorService = mock(FlavorService.class);
+        when(compute.flavors()).thenReturn(flavorService);
+        when(flavorService.get(anyString())).thenReturn(flavor);
+
+        instanceId = "b45b5658-b093-4a58-bf22-17d898171c95";
+        instance = new OpenStackInstance(instanceId, new Date(), null,
+                firstImageId, flavorId);
+        instances = new OpenStackInstances();
+        instances.register(instance);
+
+        HashMap<String, String> properties = new HashMap<>();
+        properties.put(Constants.OPENSTACK_IMAGE_ID_ARGS, imageName);
+        properties.put(Constants.OPENSTACK_FLAVOR_ID_ARGS, flavorId);
+
+        // Act
+        final OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(client);
+
+//        assertEquals(firstImageId, clientWrapper.getImageId(imageName, transactionId));
+//        assertEquals("", clientWrapper.getPreviousImageId(imageName, transactionId));
+        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, clientWrapper, transactionId, true), is(true));
+
+        when(imageWithName.getId()).thenReturn(secondImageId);
+//        assertEquals(secondImageId, clientWrapper.getImageId(imageName, transactionId));
+//        assertEquals(firstImageId, clientWrapper.getPreviousImageId(imageName, transactionId));
+
+        // Assert
+//        when(client.getImageId("ubuntu-14", transactionId)).thenReturn("1a248c96-672b-4983-96ed-c3418a4be602");
+//        when(client.getPreviousImageId("ubuntu-14", transactionId)).thenReturn("7637f039-027d-471f-8d6c-4177635f84f8");
+        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, clientWrapper, transactionId, true), is(true));
+        when(imageWithName.getId()).thenReturn(thirdImageId);
+
+        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, clientWrapper, transactionId, true), is(false));
+
+    }
+
+    @Test
+    public void matchInstanceShouldReturnFalseWhenFallbackImageIsNotUsed() throws Exception {
+        instanceId = "b45b5658-b093-4a58-bf22-17d898171c95";
+        instance = new OpenStackInstance(instanceId, new Date(), null,
+                "1a248c96-672b-4983-96ed-c3418a4be602", "c1980bb5-ed59-4573-83c9-8391b53b3a55");
+        instances = new OpenStackInstances();
+        instances.register(instance);
+        HashMap<String, String> properties = new HashMap<>();
+        properties.put(Constants.OPENSTACK_IMAGE_ID_ARGS, "ubuntu-14");
+        properties.put(Constants.OPENSTACK_FLAVOR_ID_ARGS, "m1.small");
+        assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, client, transactionId, false), is(false));
     }
 
 }

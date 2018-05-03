@@ -35,11 +35,12 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
 
 
     private final ConcurrentHashMap<String, OpenStackInstance> instances = new ConcurrentHashMap<>();
+    private final Map<String, OpenStackInstance> previousImageId = new ConcurrentHashMap<>();
     private boolean refreshed;
 
     @Override
-    public OpenStackInstance create(CreateAgentRequest request, PluginSettings settings) throws Exception {
-        OpenStackInstance op_instance = OpenStackInstance.create(request, settings, os_client(settings));
+    public OpenStackInstance create(CreateAgentRequest request, PluginSettings settings, String transactionId) throws Exception {
+        OpenStackInstance op_instance = OpenStackInstance.create(request, settings, os_client(settings), transactionId);
         register(op_instance);
         return op_instance;
     }
@@ -110,7 +111,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
     }
 
     public boolean matchInstance(String id, Map<String, String> properties, String requestEnvironment, PluginSettings pluginSettings, OpenstackClientWrapper
-            client, String transactionId) {
+            client, String transactionId, boolean usePreviousImageId) {
         LOG.debug(format("[{0}] [matchInstance] Instance: {1}", transactionId, id));
         OpenStackInstance instance = this.find(id);
         if (instance == null) {
@@ -134,18 +135,31 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
             LOG.debug("properties do not have image - maybe because elastic profile has blank image and expects image from global settings.");
             proposedImageIdOrName = pluginSettings.getOpenstackImage();
         }
-        LOG.debug(format("[{0}] [matchInstance] Trying to match image name: [{1}] with instance image: [{2}]", transactionId,
+
+
+        LOG.debug(format("[{0}] [matchInstance] Trying to match image name/id: [{1}] with instance image: [{2}]", transactionId,
                 proposedImageIdOrName, instance.getImageId()));
         if (!proposedImageIdOrName.equals(instance.getImageId())) {
-            LOG.debug(format("[{0}] [matchInstance] image name: [{1}] did NOT match with instance image: [{2}]", transactionId,
+            LOG.debug(format("[{0}] [matchInstance] image name/id: [{1}] did NOT match with instance image: [{2}]", transactionId,
                     proposedImageIdOrName, instance.getImageId()));
-            proposedImageIdOrName = client.getImageId(proposedImageIdOrName);
-            LOG.debug(format("[{0}] [matchInstance] Trying to match image name: [{1}] with instance image: [{2}]", transactionId,
-                    proposedImageIdOrName, instance.getImageId()));
-            if (!proposedImageIdOrName.equals(instance.getImageId())) {
-                LOG.debug(format("[{0}] [matchInstance] image name: [{1}] did NOT match with instance image: [{2}]", transactionId,
-                        proposedImageIdOrName, instance.getImageId()));
-                return false;
+            String proposedImageId = client.getImageId(proposedImageIdOrName, transactionId);
+            LOG.debug(format("[{0}] [matchInstance] Trying to match image id: [{1}] with instance image: [{2}]", transactionId,
+                    proposedImageId, instance.getImageId()));
+            if (!proposedImageId.equals(instance.getImageId())) {
+                LOG.debug(format("[{0}] [matchInstance] image id: [{1}] did NOT match with instance image: [{2}]", transactionId,
+                        proposedImageId, instance.getImageId()));
+                if (usePreviousImageId) {
+                    proposedImageId = stripToEmpty(client.getPreviousImageId(proposedImageIdOrName, transactionId));
+                    LOG.debug(format("[{0}] [matchInstance] Trying to match previous image id: [{1}] with instance image: [{2}]", transactionId,
+                            proposedImageId, instance.getImageId()));
+                    if (!proposedImageId.equals(instance.getImageId())) {
+                        LOG.debug(format("[{0}] [matchInstance] previous image id: [{1}] did NOT match with instance image: [{2}]", transactionId,
+                                proposedImageId, instance.getImageId()));
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
             }
         }
 

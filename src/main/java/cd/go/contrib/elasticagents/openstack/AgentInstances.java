@@ -34,10 +34,11 @@ public interface AgentInstances<T> {
      * So that instances created are auto-registered with the server, the agent instance should have an
      * <code>autoregister.properties</code>.
      *
-     * @param request   the request object
-     * @param settings  the plugin settings object
+     * @param request       the request object
+     * @param settings        the plugin settings object
+     * @param transactionId
      */
-    T create(CreateAgentRequest request, PluginSettings settings) throws Exception;
+    T create(CreateAgentRequest request, PluginSettings settings, String transactionId) throws Exception;
 
     /**
      * This message is sent to assist the plugin to refresh any metadata about the agent.
@@ -73,7 +74,7 @@ public interface AgentInstances<T> {
     boolean isInstanceAlive(PluginSettings settings, String id) throws Exception;
 
     boolean matchInstance(String id, Map<String, String> properties, String environment, PluginSettings pluginSettings, OpenstackClientWrapper client,
-                          String transactionId);
+                          String transactionId, boolean usePreviousImageId);
 
     /**
      * This message is sent from the {@link cd.go.contrib.elasticagents.openstack.executors.ServerPingRequestExecutor}
