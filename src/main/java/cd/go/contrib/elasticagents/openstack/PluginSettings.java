@@ -75,6 +75,10 @@ public class PluginSettings {
     private String openstackImage;
 
     @Expose
+    @SerializedName("use_previous_openstack_image")
+    private Boolean usePreviousOpenstackImage;
+
+    @Expose
     @SerializedName("openstack_flavor")
     private String openstackFlavor;
 
@@ -195,6 +199,10 @@ public class PluginSettings {
         return openstackImage;
     }
 
+    public Boolean getUsePreviousOpenstackImage() {
+        return usePreviousOpenstackImage;
+    }
+
     public String getOpenstackFlavor() {
         return openstackFlavor;
     }
@@ -237,6 +245,10 @@ public class PluginSettings {
 
     public void setOpenstackImage(String openstackImage) {
         this.openstackImage = openstackImage;
+    }
+
+    public void setUsePreviousOpenstackImage(Boolean usePreviousOpenstackImage) {
+        this.usePreviousOpenstackImage = usePreviousOpenstackImage;
     }
 
     public void setOpenstackFlavor(String openstackFlavor) {

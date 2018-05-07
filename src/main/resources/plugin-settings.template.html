@@ -75,6 +75,13 @@
 </div>
 
 <div class="form_item_block">
+  <label>Allow Use of Previous Openstack Image</label>
+  <input type="radio" ng-model="use_previous_openstack_image" value="true"/> True
+  <input type="radio" ng-model="use_previous_openstack_image" value="false"/> False
+  <span class="form_error" ng-show="GOINPUTNAME[use_previous_openstack_image].$error.server">{{ GOINPUTNAME[use_previous_openstack_image].$error.server}}</span>
+</div>
+
+<div class="form_item_block">
   <label>Openstack Flavor<span class='asterix'>*</span></label>
   <input type="text" ng-model="openstack_flavor" ng-required="true"/>
   <span class="form_error" ng-show="GOINPUTNAME[openstack_flavor].$error.server">{{ GOINPUTNAME[openstack_flavor].$error.server}}</span>

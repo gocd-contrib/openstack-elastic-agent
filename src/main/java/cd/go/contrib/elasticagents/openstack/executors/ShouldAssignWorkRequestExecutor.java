@@ -50,7 +50,7 @@ public class ShouldAssignWorkRequestExecutor implements RequestExecutor {
         }
 
         OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(pluginRequest.getPluginSettings());
-        if ((agentInstances.matchInstance(request.agent().elasticAgentId(), request.properties(), request.environment(), pluginRequest.getPluginSettings(), clientWrapper, transactionId, true)) ) {
+        if ((agentInstances.matchInstance(request.agent().elasticAgentId(), request.properties(), request.environment(), pluginRequest.getPluginSettings(), clientWrapper, transactionId, pluginRequest.getPluginSettings().getUsePreviousOpenstackImage())) ) {
             LOG.info(format("[{0}] [should-assign-work] Work can be assigned to Agent {1}", transactionId, request.agent().elasticAgentId()));
             return DefaultGoPluginApiResponse.success("true");
         } else {
