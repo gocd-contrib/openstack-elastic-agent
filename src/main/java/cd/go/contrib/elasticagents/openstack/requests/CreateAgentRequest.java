@@ -34,6 +34,7 @@ public class CreateAgentRequest {
     public static final Gson GSON = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
     private String autoRegisterKey;
     private Map<String, String> properties;
+    private Map<String, String> jobIdentifier;
     private String environment;
 
     public CreateAgentRequest() {
@@ -70,6 +71,7 @@ public class CreateAgentRequest {
     public String toString() {
         final StringBuffer sb = new StringBuffer("CreateAgentRequest{");
         sb.append("autoRegisterKey='").append(autoRegisterKey).append('\'');
+        sb.append(", jobIdentifier=").append(jobIdentifier);
         sb.append(", properties=").append(properties);
         sb.append(", environment='").append(environment).append('\'');
         sb.append('}');

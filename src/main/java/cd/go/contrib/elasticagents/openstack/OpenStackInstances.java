@@ -75,6 +75,10 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         if (!refreshed) {
             String agentID;
             PluginSettings pluginSettings = pluginRequest.getPluginSettings();
+            if(pluginSettings == null) {
+                LOG.warn("Openstack elastic agents plugin settings are empty");
+                return;
+            }
             Agents agents = pluginRequest.listAgents();
             Map<String, String> op_instance_prefix = new HashMap<String, String>();
             op_instance_prefix.put("name", pluginSettings.getOpenstackVmPrefix());
