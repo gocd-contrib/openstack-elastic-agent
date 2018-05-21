@@ -1,3 +1,8 @@
+### 0.10.0
+
+ - Move to version 3.0 of the elastic agent endpoint, requires Go Server >= v18.2
+ - Added tracking of agent's instance before registration in server to prevent too many instances being created
+
 ### 0.9.0
 
 - Allow image fallback to previous ID when assigning work

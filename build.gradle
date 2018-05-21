@@ -25,7 +25,7 @@ description = 'GoCD OpenStack Elastic Agents'
 project.ext.pluginDesc = [
         id         : 'cd.go.contrib.elastic-agent.openstack',
         version    : project.version,
-        goCdVersion: '18.3.0',
+        goCdVersion: '18.2.0',
         name       : 'Openstack Elastic Agent Plugin',
         description: 'Openstack Elastic Agent Plugin for GoCD',
         vendorName : 'ThoughtWorks Inc',
