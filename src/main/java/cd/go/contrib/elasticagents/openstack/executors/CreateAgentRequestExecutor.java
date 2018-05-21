@@ -32,16 +32,18 @@ public class CreateAgentRequestExecutor implements RequestExecutor {
 
     private static final Logger LOG = Logger.getLoggerFor(CreateAgentRequestExecutor.class);
     private final CreateAgentRequest request;
-    private final AgentInstances agentInstances;
+    private final AgentInstances<OpenStackInstance> agentInstances;
     private final PluginRequest pluginRequest;
     private final OpenstackClientWrapper clientWrapper;
+    private PendingAgentsService pendingAgentsService;
 
-    public CreateAgentRequestExecutor(CreateAgentRequest request, AgentInstances agentInstances, PluginRequest pluginRequest,
-                                      OpenstackClientWrapper clientWrapper) throws Exception {
+    public CreateAgentRequestExecutor(CreateAgentRequest request, AgentInstances<OpenStackInstance> agentInstances, PluginRequest pluginRequest,
+                                      OpenstackClientWrapper clientWrapper, PendingAgentsService pendingAgentsService) throws Exception {
         this.request = request;
         this.agentInstances = agentInstances;
         this.pluginRequest = pluginRequest;
         this.clientWrapper = clientWrapper;
+        this.pendingAgentsService = pendingAgentsService;
     }
 
     @Override
@@ -62,23 +64,46 @@ public class CreateAgentRequestExecutor implements RequestExecutor {
             LOG.debug(format("[{0}] [create-agent] Using maxInstanceLimit from default plugin value: {1}", transactionId, request));
         }
 
+        PluginSettings pluginSettings = pluginRequest.getPluginSettings();
+        String requestImageId = OpenStackInstance.getImageIdOrName(request, pluginSettings);
+        requestImageId = clientWrapper.getImageId(requestImageId, transactionId);
+        String flavorId = OpenStackInstance.getFlavorIdOrName(request, pluginSettings);
+        flavorId = clientWrapper.getFlavorId(flavorId);
+
+        for(PendingAgent agent : pendingAgentsService.getAgents()) {
+            LOG.debug(format("[{0}] [create-agent] Check if pending agent {1} match job profile", transactionId, agent));
+            AgentMatchResult matchResult = agent.match(transactionId, requestImageId, flavorId, request.environment(), request.job());
+            if(matchResult.isJobMatch()) {
+                LOG.info(format("[{0}] [create-agent] Will NOT create new instance, agent for job {1} is still being created {2} ", transactionId, request.job(), agent.elasticAgentId()));
+                return new DefaultGoPluginApiResponse(200);
+            }
+            if(matchResult.isProfileMatch()) {
+                LOG.debug(format("[{0}] [create-agent] found matching pending agent {1} ", transactionId, agent.elasticAgentId()));
+                matchingAgentCount++;
+            }
+        }
+
         for (Agent agent : agents.agents()) {
             LOG.debug(format("[{0}] [create-agent] Check if agent {1} match job profile", transactionId, agent));
             if (agentInstances.matchInstance(agent.elasticAgentId(), request.properties(), request.environment(), pluginRequest.getPluginSettings(),
                     clientWrapper, transactionId, false)) {
                 matchingAgentCount++;
                 LOG.debug(format("[{0}] [create-agent] found matching agent {1} ", transactionId, agent.elasticAgentId()));
-                if (matchingAgentCount >= maxInstanceLimit) {
-                    LOG.info(format("[{0}] [create-agent] Will NOT create new instance, has reached max instance limit of {1} ", transactionId, maxInstanceLimit));
-                    return new DefaultGoPluginApiResponse(200);
-                } else if ((agent.agentState() == Agent.AgentState.Idle)) {
+                if ((agent.agentState() == Agent.AgentState.Idle)) {
                     LOG.info(format("[{0}] [create-agent] Will NOT create new instance, found matching idle agent {1} ", transactionId, agent.elasticAgentId()));
                     return new DefaultGoPluginApiResponse(200);
                 }
             }
         }
+
+        if (matchingAgentCount >= maxInstanceLimit) {
+            LOG.info(format("[{0}] [create-agent] Will NOT create new instance, has reached max instance limit of {1} ", transactionId, maxInstanceLimit));
+            return new DefaultGoPluginApiResponse(200);
+        }
+
         LOG.info(format("[{0}] [create-agent] Will create new agent since no matching agents found", transactionId));
-        agentInstances.create(request, pluginRequest.getPluginSettings(), transactionId);
+        OpenStackInstance pendingInstance = agentInstances.create(request, pluginRequest.getPluginSettings(), transactionId);
+        this.pendingAgentsService.addPending(pendingInstance, request);
         return new DefaultGoPluginApiResponse(200);
     }
 }

@@ -5,7 +5,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openstack4j.api.OSClient;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,13 +18,15 @@ public class OpenStackInstanceTest {
     private PluginSettings settings;
     private OSClient client;
     HashMap<String, String> properties;
+    private Map<String, Object> job1;
 
     @Before
     public void SetUpMocks() {
         client = mock(OSClient.class);
         properties = new HashMap<>();
+        job1 = new HashMap<>();
         settings = new PluginSettings();
-        request = new CreateAgentRequest("abc-key", properties,"testing");
+        request = new CreateAgentRequest("abc-key", properties, job1,"testing");
     }
 
     @Test

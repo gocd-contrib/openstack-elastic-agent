@@ -39,12 +39,14 @@ public class OpenStackPlugin implements GoPlugin {
 
     private AgentInstances agentInstances;
     private PluginRequest pluginRequest;
+    private PendingAgentsService pendingAgents;
 
 
     @Override
     public void initializeGoApplicationAccessor(GoApplicationAccessor accessor) {
         pluginRequest = new PluginRequest(accessor);
         agentInstances = new OpenStackInstances();
+        pendingAgents = new PendingAgentsService(agentInstances);
     }
 
     @Override
@@ -58,7 +60,7 @@ public class OpenStackPlugin implements GoPlugin {
                     return ShouldAssignWorkRequest.fromJSON(request.requestBody()).executor(agentInstances, pluginRequest).execute();
                 case REQUEST_CREATE_AGENT:
                     refreshInstances();
-                    return CreateAgentRequest.fromJSON(request.requestBody()).executor(agentInstances, pluginRequest).execute();
+                    return CreateAgentRequest.fromJSON(request.requestBody()).executor(pendingAgents, agentInstances, pluginRequest).execute();
                 case REQUEST_SERVER_PING:
                     refreshInstances();
                     return new ServerPingRequestExecutor(agentInstances, pluginRequest).execute();
@@ -87,6 +89,7 @@ public class OpenStackPlugin implements GoPlugin {
     private void refreshInstances() {
         try {
             agentInstances.refreshAll(pluginRequest);
+            pendingAgents.refreshAll(pluginRequest);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

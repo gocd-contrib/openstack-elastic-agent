@@ -68,8 +68,8 @@ public class OpenStackInstancesTest {
 
     @Test
     public void matchInstanceShouldReturnTrueWhenRequestHasNoPropertiesButSettingsMatchById() throws Exception {
-        pluginSettings.setOpenstackFlavor(instance.getFlavorId());
-        pluginSettings.setOpenstackImage(instance.getImageId());
+        pluginSettings.setOpenstackFlavor(instance.getFlavorIdOrName());
+        pluginSettings.setOpenstackImage(instance.getImageIdOrName());
         assertThat(instances.matchInstance(instanceId, new HashMap<String, String>(), null, pluginSettings, client, transactionId, false), is(true));
     }
 
@@ -244,16 +244,16 @@ public class OpenStackInstancesTest {
         // Act
         final OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(client);
 
-//        assertEquals(firstImageId, clientWrapper.getImageId(imageName, transactionId));
+//        assertEquals(firstImageId, clientWrapper.getImageIdOrName(imageName, transactionId));
 //        assertEquals("", clientWrapper.getPreviousImageId(imageName, transactionId));
         assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, clientWrapper, transactionId, true), is(true));
 
         when(imageWithName.getId()).thenReturn(secondImageId);
-//        assertEquals(secondImageId, clientWrapper.getImageId(imageName, transactionId));
+//        assertEquals(secondImageId, clientWrapper.getImageIdOrName(imageName, transactionId));
 //        assertEquals(firstImageId, clientWrapper.getPreviousImageId(imageName, transactionId));
 
         // Assert
-//        when(client.getImageId("ubuntu-14", transactionId)).thenReturn("1a248c96-672b-4983-96ed-c3418a4be602");
+//        when(client.getImageIdOrName("ubuntu-14", transactionId)).thenReturn("1a248c96-672b-4983-96ed-c3418a4be602");
 //        when(client.getPreviousImageId("ubuntu-14", transactionId)).thenReturn("7637f039-027d-471f-8d6c-4177635f84f8");
         assertThat(instances.matchInstance(instanceId, properties, null, pluginSettings, clientWrapper, transactionId, true), is(true));
         when(imageWithName.getId()).thenReturn(thirdImageId);
