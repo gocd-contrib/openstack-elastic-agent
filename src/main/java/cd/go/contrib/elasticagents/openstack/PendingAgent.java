@@ -59,4 +59,11 @@ public class PendingAgent {
     public String elasticAgentId() {
         return pendingInstance.id();
     }
+
+    @Override
+    public String toString() {
+        return "PendingAgent{" +
+                "agentId='" + elasticAgentId() + '\'' +
+                '}';
+    }
 }
