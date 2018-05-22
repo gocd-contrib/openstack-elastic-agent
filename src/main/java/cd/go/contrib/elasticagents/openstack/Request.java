@@ -24,6 +24,7 @@ public enum Request {
     REQUEST_GET_PROFILE_METADATA(Constants.ELASTIC_AGENT_REQUEST_PREFIX + ".get-profile-metadata"),
     REQUEST_GET_PROFILE_VIEW(Constants.ELASTIC_AGENT_REQUEST_PREFIX + ".get-profile-view"),
     REQUEST_VALIDATE_PROFILE(Constants.ELASTIC_AGENT_REQUEST_PREFIX + ".validate-profile"),
+    REQUEST_GET_CAPABILITIES(Constants.ELASTIC_AGENT_REQUEST_PREFIX + ".get-capabilities"),
 
     // settings related requests that the server makes to the plugin
     PLUGIN_SETTINGS_GET_ICON(Constants.ELASTIC_AGENT_REQUEST_PREFIX + ".get-icon"),
@@ -51,7 +52,7 @@ public enum Request {
     }
 
     private static class Constants {
-        public static final String ELASTIC_AGENT_REQUEST_PREFIX = "go.cd.elastic-agent";
+        public static final String ELASTIC_AGENT_REQUEST_PREFIX = "cd.go.elastic-agent";
         public static final String GO_PLUGIN_SETTINGS_PREFIX = "go.plugin-settings";
     }
 }

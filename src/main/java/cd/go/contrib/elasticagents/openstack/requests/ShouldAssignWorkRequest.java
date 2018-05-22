@@ -31,6 +31,7 @@ public class ShouldAssignWorkRequest {
     public static final Gson GSON = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
     private String environment;
     private Agent agent;
+    private Map<String, String> jobIdentifier;
     private Map<String, String> properties;
 
     public static ShouldAssignWorkRequest fromJSON(String json) {
@@ -65,6 +66,7 @@ public class ShouldAssignWorkRequest {
     public String toString() {
         final StringBuffer sb = new StringBuffer("ShouldAssignWorkRequest{");
         sb.append("environment='").append(environment).append('\'');
+        sb.append(", jobIdentifier=").append(jobIdentifier);
         sb.append(", agent=").append(agent);
         sb.append(", properties=").append(properties);
         sb.append('}');

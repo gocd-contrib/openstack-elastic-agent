@@ -147,8 +147,8 @@ public class OpenStackInstance {
         LOG.debug(request.properties().toString());
 
         final String encodedUserData = getEncodedUserData(request, settings);
-        String imageNameOrId = StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_IMAGE_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_IMAGE_ID_ARGS) : settings.getOpenstackImage();
-        String flavorNameOrId = StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_FLAVOR_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_FLAVOR_ID_ARGS) : settings.getOpenstackFlavor();
+        String imageNameOrId = getImageIdOrName(request, settings);
+        String flavorNameOrId = getFlavorIdOrName(request, settings);
         String networkId = StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_NETWORK_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_NETWORK_ID_ARGS) : settings.getOpenstackNetwork();
         OpenstackClientWrapper client = new OpenstackClientWrapper(osclient);
         ServerCreateBuilder scb = Builders.server()
@@ -176,6 +176,14 @@ public class OpenStackInstance {
 
     }
 
+    public static String getFlavorIdOrName(CreateAgentRequest request, PluginSettings settings) {
+        return StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_FLAVOR_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_FLAVOR_ID_ARGS) : settings.getOpenstackFlavor();
+    }
+
+    public static String getImageIdOrName(CreateAgentRequest request, PluginSettings settings) {
+        return StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_IMAGE_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_IMAGE_ID_ARGS) : settings.getOpenstackImage();
+    }
+
     public static String getEncodedUserData(CreateAgentRequest request, PluginSettings settings) {
         String userData = getUserData(request, settings);
         if(userData == null)
@@ -192,11 +200,11 @@ public class OpenStackInstance {
         return settings.getOpenstackUserdata();
     }
 
-    public String getImageId() {
+    public String getImageIdOrName() {
         return imageId;
     }
 
-    public String getFlavorId() {
+    public String getFlavorIdOrName() {
         return flavorId;
     }
 

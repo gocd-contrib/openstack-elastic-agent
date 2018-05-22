@@ -18,14 +18,14 @@ apply plugin: 'java'
 apply plugin: 'maven'
 
 group = 'cd.go.contrib'
-version = '0.9.0'
+version = '0.10.0'
 description = 'GoCD OpenStack Elastic Agents'
 
 // these values that go into plugin.xml
 project.ext.pluginDesc = [
         id         : 'cd.go.contrib.elastic-agent.openstack',
         version    : project.version,
-        goCdVersion: '16.7.0',
+        goCdVersion: '18.2.0',
         name       : 'Openstack Elastic Agent Plugin',
         description: 'Openstack Elastic Agent Plugin for GoCD',
         vendorName : 'ThoughtWorks Inc',

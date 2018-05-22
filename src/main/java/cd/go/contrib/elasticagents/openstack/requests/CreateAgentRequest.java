@@ -17,6 +17,7 @@
 package cd.go.contrib.elasticagents.openstack.requests;
 
 import cd.go.contrib.elasticagents.openstack.AgentInstances;
+import cd.go.contrib.elasticagents.openstack.PendingAgentsService;
 import cd.go.contrib.elasticagents.openstack.PluginRequest;
 import cd.go.contrib.elasticagents.openstack.RequestExecutor;
 import cd.go.contrib.elasticagents.openstack.executors.CreateAgentRequestExecutor;
@@ -34,14 +35,16 @@ public class CreateAgentRequest {
     public static final Gson GSON = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
     private String autoRegisterKey;
     private Map<String, String> properties;
+    private Map<String, Object> jobIdentifier;
     private String environment;
 
     public CreateAgentRequest() {
 
     }
 
-    public CreateAgentRequest(String autoRegisterKey, Map<String, String> properties, String environment) {
+    public CreateAgentRequest(String autoRegisterKey, Map<String, String> properties, Map<String, Object> jobIdentifier, String environment) {
         this.autoRegisterKey = autoRegisterKey;
+        this.jobIdentifier = jobIdentifier;
         this.properties = properties;
         this.environment = environment;
     }
@@ -62,17 +65,29 @@ public class CreateAgentRequest {
         return environment;
     }
 
-    public RequestExecutor executor(AgentInstances agentInstances, PluginRequest pluginRequest) throws Exception {
-        return new CreateAgentRequestExecutor(this, agentInstances, pluginRequest, new OpenstackClientWrapper(pluginRequest.getPluginSettings()));
+    public RequestExecutor executor(PendingAgentsService pendingAgents, AgentInstances agentInstances, PluginRequest pluginRequest) throws Exception {
+        return new CreateAgentRequestExecutor(this, agentInstances, pluginRequest, new OpenstackClientWrapper(pluginRequest.getPluginSettings()), pendingAgents);
     }
 
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("CreateAgentRequest{");
         sb.append("autoRegisterKey='").append(autoRegisterKey).append('\'');
+        sb.append(", jobIdentifier=").append(jobIdentifier);
         sb.append(", properties=").append(properties);
         sb.append(", environment='").append(environment).append('\'');
         sb.append('}');
         return sb.toString();
+    }
+
+    public Map<String, Object> job() {
+        return jobIdentifier;
+    }
+
+    public boolean jobMatches(Map<String, Object> otherJob) {
+        if(jobIdentifier.size() != otherJob.size())
+            return false;
+        return jobIdentifier.entrySet().containsAll(otherJob.entrySet());
+
     }
 }

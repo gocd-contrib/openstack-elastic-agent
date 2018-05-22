@@ -82,7 +82,6 @@ To build the jar, run `./gradlew clean test assemble`
 
 ## TODO
 
-1. Openstack Keystone V3 API support
 2. Multi tenant/project support
 3. Multi authentication support ( eg. each pipeline can have their own openstack credential )
 4. More examples on how to create custom VM.

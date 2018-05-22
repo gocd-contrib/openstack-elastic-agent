@@ -38,20 +38,20 @@ public class OpenstackClientWrapper {
     }
 
     public String getImageId(String nameOrId, String transactionId) {
-        LOG.debug(format("[{0}] [getImageId] nameOrId [{1}]", transactionId, nameOrId));
+        LOG.debug(format("[{0}] [getImageIdOrName] nameOrId [{1}]", transactionId, nameOrId));
         Image image = client.compute().images().get(nameOrId);
         if (image == null) {
             for (Image tmpImage : client.compute().images().list()) {
                 String imageName = tmpImage.getName();
                 if (tmpImage.getName() != null && imageName.equals(nameOrId)) {
                     if (!previousImageIds.containsKey(imageName)) {
-                        LOG.debug(format("[{0}] [getImageId] initiate list of previous image is for name [{1}]", transactionId, imageName));
+                        LOG.debug(format("[{0}] [getImageIdOrName] initiate list of previous image is for name [{1}]", transactionId, imageName));
                         previousImageIds.put(tmpImage.getName(), new ArrayList<String>());
                     }
                     final List<String> usedImageIds = previousImageIds.get(imageName);
                     final String imageId = tmpImage.getId();
                     if (!usedImageIds.contains(imageId)) {
-                        LOG.debug(format("[{0}] [getImageId] for image name [{1}] add id [{2}]", transactionId, imageName, imageId));
+                        LOG.debug(format("[{0}] [getImageIdOrName] for image name [{1}] add id [{2}]", transactionId, imageName, imageId));
                         usedImageIds.add(imageId);
                     }
                     return imageId;

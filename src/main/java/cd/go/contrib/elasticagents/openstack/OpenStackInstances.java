@@ -32,10 +32,7 @@ import static java.text.MessageFormat.format;
 import static org.apache.commons.lang.StringUtils.stripToEmpty;
 
 public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
-
-
     private final ConcurrentHashMap<String, OpenStackInstance> instances = new ConcurrentHashMap<>();
-    private final Map<String, OpenStackInstance> previousImageId = new ConcurrentHashMap<>();
     private boolean refreshed;
 
     @Override
@@ -73,8 +70,11 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
     @Override
     public void refreshAll(PluginRequest pluginRequest) throws Exception {
         if (!refreshed) {
-            String agentID;
             PluginSettings pluginSettings = pluginRequest.getPluginSettings();
+            if(pluginSettings == null) {
+                LOG.warn("Openstack elastic agents plugin settings are empty");
+                return;
+            }
             Agents agents = pluginRequest.listAgents();
             Map<String, String> op_instance_prefix = new HashMap<String, String>();
             op_instance_prefix.put("name", pluginSettings.getOpenstackVmPrefix());
@@ -138,23 +138,23 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
 
 
         LOG.debug(format("[{0}] [matchInstance] Trying to match image name/id: [{1}] with instance image: [{2}]", transactionId,
-                proposedImageIdOrName, instance.getImageId()));
-        if (!proposedImageIdOrName.equals(instance.getImageId())) {
+                proposedImageIdOrName, instance.getImageIdOrName()));
+        if (!proposedImageIdOrName.equals(instance.getImageIdOrName())) {
             LOG.debug(format("[{0}] [matchInstance] image name/id: [{1}] did NOT match with instance image: [{2}]", transactionId,
-                    proposedImageIdOrName, instance.getImageId()));
+                    proposedImageIdOrName, instance.getImageIdOrName()));
             String proposedImageId = client.getImageId(proposedImageIdOrName, transactionId);
             LOG.debug(format("[{0}] [matchInstance] Trying to match image id: [{1}] with instance image: [{2}]", transactionId,
-                    proposedImageId, instance.getImageId()));
-            if (!proposedImageId.equals(instance.getImageId())) {
+                    proposedImageId, instance.getImageIdOrName()));
+            if (!proposedImageId.equals(instance.getImageIdOrName())) {
                 LOG.debug(format("[{0}] [matchInstance] image id: [{1}] did NOT match with instance image: [{2}]", transactionId,
-                        proposedImageId, instance.getImageId()));
+                        proposedImageId, instance.getImageIdOrName()));
                 if (usePreviousImageId) {
                     proposedImageId = stripToEmpty(client.getPreviousImageId(proposedImageIdOrName, transactionId));
                     LOG.debug(format("[{0}] [matchInstance] Trying to match previous image id: [{1}] with instance image: [{2}]", transactionId,
-                            proposedImageId, instance.getImageId()));
-                    if (!proposedImageId.equals(instance.getImageId())) {
+                            proposedImageId, instance.getImageIdOrName()));
+                    if (!proposedImageId.equals(instance.getImageIdOrName())) {
                         LOG.debug(format("[{0}] [matchInstance] previous image id: [{1}] did NOT match with instance image: [{2}]", transactionId,
-                                proposedImageId, instance.getImageId()));
+                                proposedImageId, instance.getImageIdOrName()));
                         return false;
                     }
                 } else {
@@ -169,16 +169,16 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
             proposedFlavorIdOrName = pluginSettings.getOpenstackFlavor();
         }
         LOG.debug(format("[{0}] [matchInstance] Trying to match flavor name: [{1}] with instance flavor: [{2}]", transactionId,
-                proposedFlavorIdOrName, instance.getFlavorId()));
-        if (!proposedFlavorIdOrName.equals(instance.getFlavorId())) {
+                proposedFlavorIdOrName, instance.getFlavorIdOrName()));
+        if (!proposedFlavorIdOrName.equals(instance.getFlavorIdOrName())) {
             LOG.debug(format("[{0}] [matchInstance] flavor name: [{1}] did NOT match with instance flavor: [{2}]", transactionId,
-                    proposedFlavorIdOrName, instance.getFlavorId()));
+                    proposedFlavorIdOrName, instance.getFlavorIdOrName()));
             proposedFlavorIdOrName = client.getFlavorId(proposedFlavorIdOrName);
             LOG.debug(format("[{0}] [matchInstance] Trying to match flavor name: [{1}] with instance flavor: [{2}]", transactionId,
-                    proposedFlavorIdOrName, instance.getFlavorId()));
-            if (!proposedFlavorIdOrName.equals(instance.getFlavorId())) {
+                    proposedFlavorIdOrName, instance.getFlavorIdOrName()));
+            if (!proposedFlavorIdOrName.equals(instance.getFlavorIdOrName())) {
                 LOG.debug(format("[{0}] [matchInstance] flavor name: [{1}] did NOT match with instance flavor: [{2}]", transactionId,
-                        proposedFlavorIdOrName, instance.getFlavorId()));
+                        proposedFlavorIdOrName, instance.getFlavorIdOrName()));
                 return false;
             }
         }

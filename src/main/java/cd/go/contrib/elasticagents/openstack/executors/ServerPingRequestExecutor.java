@@ -37,8 +37,11 @@ public class ServerPingRequestExecutor implements RequestExecutor {
 
     @Override
     public GoPluginApiResponse execute() throws Exception {
-
         PluginSettings pluginSettings = pluginRequest.getPluginSettings();
+        if(pluginSettings == null) {
+            LOG.warn("Openstack elastic agents plugin settings are empty");
+            return DefaultGoPluginApiResponse.success("");
+        }
 
         Agents agents = pluginRequest.listAgents();
         Agents missingAgents = new Agents();
