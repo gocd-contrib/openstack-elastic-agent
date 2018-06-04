@@ -28,7 +28,7 @@ To build the jar, run `./gradlew clean test assemble`
   * Go Server URL
      * eg. https://your-go-server:8154/go
   * Agent auto-register (in minutes)*
-     * eg. 30
+     * eg. `30` if you want the agent to live for 30 minutes 
   * Openstack Endpoint
      * eg. https://your-openstack-public-endpoint:5000/v2.0
   * Openstack Tenant
@@ -37,13 +37,17 @@ To build the jar, run `./gradlew clean test assemble`
      * eg. gocdstack
   * Openstack Password
      * eg. gocdstack
-  * Openstack VM Prefix ( this is the prefix added to the VM's hostname to distinguish elastic agent VM to others
+  * Openstack VM Prefix (this is the prefix added to the VM's hostname to distinguish elastic agent VM to others)
      * eg. gocdea
-  * Openstack Image ( this is the VM image ID or image name from Openstack )
+  * Openstack Image (this is the VM image ID or image name from Openstack)
      * eg. `d921abbb-772b-4c96-a150-798506f2a37b`, `ubuntu-16.04`
-  * Openstack Flavor ( this is the Flavor ID or flavor name from Openstack )
+  * Openstack Image Cache TTL ( the cache keeps the image ID of the image name  for the given amount of minutes)
+     * eg. `30`
+  * Allow Use of Previous Openstack Image 
+     * if the previous image ID for given image name should be used as fallback
+  * Openstack Flavor (this is the Flavor ID or flavor name from Openstack)
      * eg `fa8c735b-d477-4649-bb6a-8d58f2052971`, `12234`, `m1.small`
-  * Openstack Network ( this is the Network ID from Openstack )
+  * Openstack Network (this is the Network ID from Openstack)
     * eg 6d6ceece-6de5-4be5-8a5a-180151f91820
   * Default Max Instance Limit (for each profile)
     * eg 5

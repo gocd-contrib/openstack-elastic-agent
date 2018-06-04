@@ -49,11 +49,11 @@ public class CreateAgentRequestExecutorTest {
         osInstance = mock(OpenStackInstance.class);
         when(osInstance.getImageIdOrName()).thenReturn(IMAGE_ID);
         when(osInstance.getFlavorIdOrName()).thenReturn(FLAVOR_ID);
-        when(openstackClientWrapper.getImageId(anyString(),anyString())).thenReturn(IMAGE_ID);
-        when(openstackClientWrapper.getFlavorId(anyString())).thenReturn(FLAVOR_ID);
-        job1 =  new HashMap<>();
+        when(openstackClientWrapper.getImageId(anyString(), anyString())).thenReturn(IMAGE_ID);
+        when(openstackClientWrapper.getFlavorId(anyString(), anyString())).thenReturn(FLAVOR_ID);
+        job1 = new HashMap<>();
         populateJobFields(job1);
-        job2 =  new HashMap<>();
+        job2 = new HashMap<>();
         populateJobFields(job2);
         job2.put("job_id", 101);
     }

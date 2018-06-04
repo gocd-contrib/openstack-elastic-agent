@@ -68,7 +68,7 @@ public class CreateAgentRequestExecutor implements RequestExecutor {
         String requestImageId = OpenStackInstance.getImageIdOrName(request, pluginSettings);
         requestImageId = clientWrapper.getImageId(requestImageId, transactionId);
         String flavorId = OpenStackInstance.getFlavorIdOrName(request, pluginSettings);
-        flavorId = clientWrapper.getFlavorId(flavorId);
+        flavorId = clientWrapper.getFlavorId(flavorId, transactionId);
 
         for(PendingAgent agent : pendingAgentsService.getAgents()) {
             LOG.debug(format("[{0}] [create-agent] Check if pending agent {1} match job profile", transactionId, agent));

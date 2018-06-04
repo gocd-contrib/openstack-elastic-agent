@@ -154,7 +154,7 @@ public class OpenStackInstance {
         ServerCreateBuilder scb = Builders.server()
                 .image(client.getImageId(imageNameOrId, transactionId))
                 .name(instance_name)
-                .flavor(client.getFlavorId(flavorNameOrId))
+                .flavor(client.getFlavorId(flavorNameOrId, transactionId))
                 .networks(Arrays.asList(networkId))
                 .addMetadata(mdata);
         if(encodedUserData != null)

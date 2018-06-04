@@ -173,7 +173,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         if (!proposedFlavorIdOrName.equals(instance.getFlavorIdOrName())) {
             LOG.debug(format("[{0}] [matchInstance] flavor name: [{1}] did NOT match with instance flavor: [{2}]", transactionId,
                     proposedFlavorIdOrName, instance.getFlavorIdOrName()));
-            proposedFlavorIdOrName = client.getFlavorId(proposedFlavorIdOrName);
+            proposedFlavorIdOrName = client.getFlavorId(proposedFlavorIdOrName, transactionId);
             LOG.debug(format("[{0}] [matchInstance] Trying to match flavor name: [{1}] with instance flavor: [{2}]", transactionId,
                     proposedFlavorIdOrName, instance.getFlavorIdOrName()));
             if (!proposedFlavorIdOrName.equals(instance.getFlavorIdOrName())) {

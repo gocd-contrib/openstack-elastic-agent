@@ -75,6 +75,10 @@ public class PluginSettings {
     private String openstackImage;
 
     @Expose
+    @SerializedName("openstack_image_cache_ttl")
+    private String openstackImageCacheTTL;
+
+    @Expose
     @SerializedName("use_previous_openstack_image")
     private Boolean usePreviousOpenstackImage;
 
@@ -115,6 +119,7 @@ public class PluginSettings {
         if (openstackPassword!= null ? !openstackPassword.equals(that.openstackPassword) : that.openstackPassword!= null) return false;
         if (openstackVmPrefix!= null ? !openstackVmPrefix.equals(that.openstackVmPrefix) : that.openstackVmPrefix!= null) return false;
         if (openstackImage!= null ? !openstackImage.equals(that.openstackImage) : that.openstackImage!= null) return false;
+        if (openstackImageCacheTTL!= null ? !openstackImageCacheTTL.equals(that.openstackImageCacheTTL) : that.openstackImageCacheTTL!= null) return false;
         if (openstackFlavor!= null ? !openstackFlavor.equals(that.openstackFlavor) : that.openstackFlavor!= null) return false;
         if (openstackNetwork!= null ? !openstackNetwork.equals(that.openstackNetwork) : that.openstackNetwork!= null) return false;
         return openstackUserdata!= null ? openstackUserdata.equals(that.openstackUserdata) : that.openstackUserdata== null;
@@ -134,6 +139,7 @@ public class PluginSettings {
         result = 31 * result + (openstackPassword!= null ? openstackPassword.hashCode() : 0);
         result = 31 * result + (openstackVmPrefix!= null ? openstackVmPrefix.hashCode() : 0);
         result = 31 * result + (openstackImage!= null ? openstackImage.hashCode() : 0);
+        result = 31 * result + (openstackImageCacheTTL!= null ? openstackImageCacheTTL.hashCode() : 0);
         result = 31 * result + (openstackFlavor!= null ? openstackFlavor.hashCode() : 0);
         result = 31 * result + (openstackNetwork!= null ? openstackNetwork.hashCode() : 0);
         result = 31 * result + (openstackUserdata!= null ? openstackUserdata.hashCode() : 0);
@@ -199,6 +205,10 @@ public class PluginSettings {
         return openstackImage;
     }
 
+    public String getOpenstackImageCacheTTL() {
+        return openstackImageCacheTTL;
+    }
+
     public Boolean getUsePreviousOpenstackImage() {
         return usePreviousOpenstackImage;
     }
@@ -245,6 +255,10 @@ public class PluginSettings {
 
     public void setOpenstackImage(String openstackImage) {
         this.openstackImage = openstackImage;
+    }
+
+    public void setOpenstackImageCacheTTL(String openstackImageCacheTTL) {
+        this.openstackImageCacheTTL = openstackImageCacheTTL;
     }
 
     public void setUsePreviousOpenstackImage(Boolean usePreviousOpenstackImage) {

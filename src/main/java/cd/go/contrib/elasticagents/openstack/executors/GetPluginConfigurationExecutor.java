@@ -39,12 +39,13 @@ public class GetPluginConfigurationExecutor implements RequestExecutor {
     public static final Field OPENSTACK_PASSWORD = new NonBlankField("openstack_password", "OpenStack Password", null, true, true, "7");
     public static final Field OPENSTACK_VM_PREFIX = new NonBlankField("openstack_vm_prefix", "OpenStack VM Prefix", null, true, false, "8");
     public static final Field OPENSTACK_IMAGE = new NonBlankField("openstack_image", "OpenStack Image", null, true, false, "9");
-    public static final Field USE_PREVIOUS_OPENSTACK_IMAGE = new NonBlankField("use_previous_openstack_image", "Allow Use of Previous Openstack Image", "false", true, false, "10");
-    public static final Field OPENSTACK_FLAVOR = new NonBlankField("openstack_flavor", "OpenStack Flavor", null, true, false, "11");
-    public static final Field OPENSTACK_NETWORK = new NonBlankField("openstack_network", "OpenStack Network", null, true, false, "12");
+    public static final Field OPENSTACK_IMAGE_CACHE_TTL = new NonBlankField("openstack_image_cache_ttl", "OpenStack Image Cache TTL (in minutes)", "30", true, false, "10");
+    public static final Field USE_PREVIOUS_OPENSTACK_IMAGE = new NonBlankField("use_previous_openstack_image", "Allow Use of Previous Openstack Image", "false", true, false, "11");
+    public static final Field OPENSTACK_FLAVOR = new NonBlankField("openstack_flavor", "OpenStack Flavor", null, true, false, "12");
+    public static final Field OPENSTACK_NETWORK = new NonBlankField("openstack_network", "OpenStack Network", null, true, false, "13");
     public static final Field DEFAULT_MAX_INSTANCE_LIMIT = new PositiveNumberField("default_max_instance_limit", "Default Max Instance Limit", "10", true,
-            false, "13");
-    public static final Field OPENSTACK_USERDATA = new Field("openstack_userdata", "OpenStack Userdata", null, false, false, "14");
+            false, "14");
+    public static final Field OPENSTACK_USERDATA = new Field("openstack_userdata", "OpenStack Userdata", null, false, false, "15");
 
     //public static final Field AGENT_RESOURCES = new Field("resources", "Agent Resources", null, false, false, "11");
     //public static final Field AGENT_ENVIRONMENTS = new Field("environments", "Environments", null, false, false, "12");
@@ -63,6 +64,7 @@ public class GetPluginConfigurationExecutor implements RequestExecutor {
         FIELDS.put(OPENSTACK_PASSWORD.key(), OPENSTACK_PASSWORD);
         FIELDS.put(OPENSTACK_VM_PREFIX.key(), OPENSTACK_VM_PREFIX);
         FIELDS.put(OPENSTACK_IMAGE.key(), OPENSTACK_IMAGE);
+        FIELDS.put(OPENSTACK_IMAGE_CACHE_TTL.key(), OPENSTACK_IMAGE_CACHE_TTL);
         FIELDS.put(USE_PREVIOUS_OPENSTACK_IMAGE.key(), USE_PREVIOUS_OPENSTACK_IMAGE);
         FIELDS.put(OPENSTACK_FLAVOR.key(), OPENSTACK_FLAVOR);
         FIELDS.put(OPENSTACK_NETWORK.key(), OPENSTACK_NETWORK);
