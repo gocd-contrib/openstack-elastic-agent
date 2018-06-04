@@ -34,7 +34,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static cd.go.contrib.elasticagents.openstack.Constants.*;
+import static cd.go.contrib.elasticagents.openstack.Constants.OPENSTACK_USERDATA_ARGS;
 
 public class OpenStackInstance {
 
@@ -48,9 +48,11 @@ public class OpenStackInstance {
     public static final Logger LOG = Logger.getLoggerFor(OpenStackInstance.class);
 
 
-    public String environment() { return environment; }
+    public String environment() {
+        return environment;
+    }
 
-    public OpenStackInstance(String id, Date createdAt, String environment, String imageId, String flavorId ) {
+    public OpenStackInstance(String id, Date createdAt, String environment, String imageId, String flavorId) {
         this.id = id;
         this.createdAt = new DateTime(createdAt);
         this.environment = environment;
@@ -71,7 +73,9 @@ public class OpenStackInstance {
         return id;
     }
 
-    public DateTime createAt() { return createdAt; }
+    public DateTime createAt() {
+        return createdAt;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -91,7 +95,7 @@ public class OpenStackInstance {
 
     public static OpenStackInstance find(OSClient os_client, String instanceId) throws InterruptedException, OS4JException {
         Server server = os_client.compute().servers().get(instanceId);
-        if(server.getId() == null)
+        if (server.getId() == null)
             return null;
         return new OpenStackInstance(server.getId(),
                 server.getCreated(),
@@ -110,10 +114,10 @@ public class OpenStackInstance {
         HashMap<String, String> mdata = new HashMap<>();
 
         Iterator entries = request.properties().entrySet().iterator();
-        while(entries.hasNext()){
+        while (entries.hasNext()) {
             Map.Entry entry = (Map.Entry) entries.next();
-            if (!((String)entry.getKey()).equals(OPENSTACK_USERDATA_ARGS)){
-                mdata.put((String)entry.getKey(),(String)entry.getValue());
+            if (!((String) entry.getKey()).equals(OPENSTACK_USERDATA_ARGS)) {
+                mdata.put((String) entry.getKey(), (String) entry.getValue());
             }
         }
 
@@ -128,10 +132,10 @@ public class OpenStackInstance {
         // cc_openstack_gocd.py will take care of this
         // /mdata.put("goserver_agent.auto.register.elasticAgent.agentId", opsInstanceName);
 
-        if ( request.properties().containsKey(Constants.BOOTSTRAPPER_ARGS)) {
+        if (request.properties().containsKey(Constants.BOOTSTRAPPER_ARGS)) {
             mdata.put(Constants.GOAGENT_PROPERTIES_PREFIX + Constants.BOOTSTRAPPER_KEY, request.properties().get(Constants.BOOTSTRAPPER_ARGS));
         }
-        mdata.put(Constants.GOAGENT_PROPERTIES_PREFIX + Constants.GO_SERVER_URL_KEY, request.properties().containsValue(Constants.GO_SERVER_URL_ARGS) ? request.properties().get(Constants.GO_SERVER_URL_ARGS) : settings.getGoServerUrl() );
+        mdata.put(Constants.GOAGENT_PROPERTIES_PREFIX + Constants.GO_SERVER_URL_KEY, request.properties().containsValue(Constants.GO_SERVER_URL_ARGS) ? request.properties().get(Constants.GO_SERVER_URL_ARGS) : settings.getGoServerUrl());
 
 
         instance_name = settings.getOpenstackVmPrefix() + RandomStringUtils.randomAlphanumeric(12).toLowerCase();
@@ -147,8 +151,8 @@ public class OpenStackInstance {
         LOG.debug(request.properties().toString());
 
         final String encodedUserData = getEncodedUserData(request, settings);
-        String imageNameOrId = getImageIdOrName(request, settings);
-        String flavorNameOrId = getFlavorIdOrName(request, settings);
+        String imageNameOrId = getImageIdOrName(request.properties(), settings);
+        String flavorNameOrId = getFlavorIdOrName(request.properties(), settings);
         String networkId = StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_NETWORK_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_NETWORK_ID_ARGS) : settings.getOpenstackNetwork();
         OpenstackClientWrapper client = new OpenstackClientWrapper(osclient);
         ServerCreateBuilder scb = Builders.server()
@@ -157,14 +161,14 @@ public class OpenStackInstance {
                 .flavor(client.getFlavorId(flavorNameOrId, transactionId))
                 .networks(Arrays.asList(networkId))
                 .addMetadata(mdata);
-        if(encodedUserData != null)
+        if (encodedUserData != null)
             scb = scb.userData(encodedUserData);
 
-        if (StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_SECURITY_GROUP))){
+        if (StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_SECURITY_GROUP))) {
             scb.addSecurityGroup(request.properties().get(Constants.OPENSTACK_SECURITY_GROUP));
         }
 
-        if (StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_KEYPAIR))){
+        if (StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_KEYPAIR))) {
             scb.keypairName(request.properties().get(Constants.OPENSTACK_KEYPAIR));
         }
 
@@ -176,25 +180,25 @@ public class OpenStackInstance {
 
     }
 
-    public static String getFlavorIdOrName(CreateAgentRequest request, PluginSettings settings) {
-        return StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_FLAVOR_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_FLAVOR_ID_ARGS) : settings.getOpenstackFlavor();
+    public static String getFlavorIdOrName(Map<String, String> properties, PluginSettings settings) {
+        return StringUtils.isNotBlank(properties.get(Constants.OPENSTACK_FLAVOR_ID_ARGS)) ? properties.get(Constants.OPENSTACK_FLAVOR_ID_ARGS) : settings.getOpenstackFlavor();
     }
 
-    public static String getImageIdOrName(CreateAgentRequest request, PluginSettings settings) {
-        return StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_IMAGE_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_IMAGE_ID_ARGS) : settings.getOpenstackImage();
+    public static String getImageIdOrName(Map<String, String> properties, PluginSettings settings) {
+        return StringUtils.isNotBlank(properties.get(Constants.OPENSTACK_IMAGE_ID_ARGS)) ? properties.get(Constants.OPENSTACK_IMAGE_ID_ARGS) : settings.getOpenstackImage();
     }
 
     public static String getEncodedUserData(CreateAgentRequest request, PluginSettings settings) {
         String userData = getUserData(request, settings);
-        if(userData == null)
-            return  null;
+        if (userData == null)
+            return null;
         final byte[] userDataBytes = userData.getBytes(StandardCharsets.UTF_8);
         return Base64.encodeBase64String(userDataBytes);
     }
 
     public static String getUserData(CreateAgentRequest request, PluginSettings settings) {
         String requestUserData = request.properties().get(Constants.OPENSTACK_USERDATA_ARGS);
-        if(StringUtils.isNotBlank(requestUserData))
+        if (StringUtils.isNotBlank(requestUserData))
             return requestUserData;
 
         return settings.getOpenstackUserdata();

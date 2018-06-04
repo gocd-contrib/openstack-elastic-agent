@@ -100,8 +100,14 @@
 </div>
 
 <div class="form_item_block">
+  <label>Default Minimum Instance Limit (for each profile)<span class='asterix'>*</span></label>
+  <input type="text" ng-model="default_min_instance_limit" ng-required="true" placeholder="1"/>
+  <span class="form_error" ng-show="GOINPUTNAME[default_min_instance_limit].$error.server">{{ GOINPUTNAME[default_min_instance_limit].$error.server}}</span>
+</div>
+
+<div class="form_item_block">
   <label>Default Max Instance Limit (for each profile)<span class='asterix'>*</span></label>
-  <input type="text" ng-model="default_max_instance_limit" ng-required="true"/>
+  <input type="text" ng-model="default_max_instance_limit" ng-required="true" placeholder="10"/>
   <span class="form_error" ng-show="GOINPUTNAME[default_max_instance_limit].$error.server">{{ GOINPUTNAME[default_max_instance_limit].$error.server}}</span>
 </div>
 

@@ -91,7 +91,7 @@ public class CreateAgentRequestExecutorTest {
         PendingAgent[] pending = new PendingAgent[1];
         Map<String, String> props = new HashMap<>();
         CreateAgentRequest originalRequest = new CreateAgentRequest("123", props, job1, null);
-        pending[0] = new PendingAgent(osInstance,originalRequest);
+        pending[0] = new PendingAgent(osInstance, originalRequest);
         when(pendingAgents.getAgents()).thenReturn(pending);
         when(pluginRequest.listAgents()).thenReturn(agents);
         when(pluginRequest.getPluginSettings()).thenReturn(pluginSettings);
@@ -104,7 +104,7 @@ public class CreateAgentRequestExecutorTest {
         executor.execute();
 
         // Assert
-        verify(agentInstances, times(0)).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
+        verify(agentInstances, never()).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
     }
 
     @Test
@@ -113,7 +113,7 @@ public class CreateAgentRequestExecutorTest {
         PendingAgent[] pending = new PendingAgent[1];
         Map<String, String> props = new HashMap<>();
         CreateAgentRequest originalRequest = new CreateAgentRequest("123", props, job1, null);
-        pending[0] = new PendingAgent(osInstance,originalRequest);
+        pending[0] = new PendingAgent(osInstance, originalRequest);
         when(pendingAgents.getAgents()).thenReturn(pending);
         when(pluginRequest.listAgents()).thenReturn(agents);
         when(pluginRequest.getPluginSettings()).thenReturn(pluginSettings);
@@ -167,9 +167,33 @@ public class CreateAgentRequestExecutorTest {
     }
 
     @Test
-    public void executeShouldNotCreateAgentWhenOnlyIdleAgentExist() throws Exception {
+    public void executeShouldCreateAgentWhenOnlyIdleAgentExist() throws Exception {
         // Arrange
         agents.add(new Agent("id1", Agent.AgentState.Idle, Agent.BuildState.Idle, Agent.ConfigState.Enabled));
+        agents.add(new Agent("id2", Agent.AgentState.Idle, Agent.BuildState.Idle, Agent.ConfigState.Enabled));
+        when(pluginRequest.listAgents()).thenReturn(agents);
+        when(pluginRequest.getPluginSettings()).thenReturn(pluginSettings);
+        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.<String, String>anyMap(), anyString(), any(PluginSettings.class),
+                any(OpenstackClientWrapper.class), anyString(), anyBoolean())).thenReturn(true);
+        Map<String, String> properties = new HashMap<>();
+        properties.put(Constants.OPENSTACK_MIN_INSTANCE_LIMIT, "3");
+        properties.put(Constants.OPENSTACK_MAX_INSTANCE_LIMIT, "");
+        createAgentRequest = new CreateAgentRequest("abc-key", properties, job1, "");
+        CreateAgentRequestExecutor executor = new CreateAgentRequestExecutor(createAgentRequest, agentInstances, pluginRequest, openstackClientWrapper, pendingAgents);
+
+        // Act
+        executor.execute();
+
+        // Assert
+        verify(agentInstances, atLeastOnce()).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
+    }
+
+    @Test
+    public void executeShouldNotCreateAgentWhenThreeIdleAgentExist() throws Exception {
+        // Arrange
+        agents.add(new Agent("id1", Agent.AgentState.Idle, Agent.BuildState.Idle, Agent.ConfigState.Enabled));
+        agents.add(new Agent("id2", Agent.AgentState.Idle, Agent.BuildState.Idle, Agent.ConfigState.Enabled));
+        agents.add(new Agent("id3", Agent.AgentState.Idle, Agent.BuildState.Idle, Agent.ConfigState.Enabled));
         when(pluginRequest.listAgents()).thenReturn(agents);
         when(pluginRequest.getPluginSettings()).thenReturn(pluginSettings);
         when(agentInstances.matchInstance(anyString(), ArgumentMatchers.<String, String>anyMap(), anyString(), any(PluginSettings.class),
@@ -183,17 +207,20 @@ public class CreateAgentRequestExecutorTest {
         executor.execute();
 
         // Assert
-        verify(agentInstances, times(0)).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
+        verify(agentInstances, never()).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
     }
 
     @Test
     public void executeShouldNotCreateAgentWhenIdleAndBuildingAgentExist() throws Exception {
         // Arrange
         agents.add(new Agent("id1", Agent.AgentState.Idle, Agent.BuildState.Idle, Agent.ConfigState.Enabled));
-        agents.add(new Agent("id2", Agent.AgentState.Building, Agent.BuildState.Building, Agent.ConfigState.Enabled));
+        agents.add(new Agent("id2", Agent.AgentState.Idle, Agent.BuildState.Idle, Agent.ConfigState.Enabled));
+        agents.add(new Agent("id3", Agent.AgentState.Idle, Agent.BuildState.Idle, Agent.ConfigState.Enabled));
+        agents.add(new Agent("id4", Agent.AgentState.Building, Agent.BuildState.Building, Agent.ConfigState.Enabled));
         when(pluginRequest.listAgents()).thenReturn(agents);
         when(pluginRequest.getPluginSettings()).thenReturn(pluginSettings);
         Map<String, String> properties = new HashMap<>();
+        properties.put(Constants.OPENSTACK_MIN_INSTANCE_LIMIT, "3");
         createAgentRequest = new CreateAgentRequest("abc-key", properties, job1, "");
         when(agentInstances.matchInstance(anyString(), ArgumentMatchers.<String, String>anyMap(), anyString(), any(PluginSettings.class),
                 any(OpenstackClientWrapper.class), anyString(), anyBoolean())).thenReturn(true);
@@ -203,7 +230,7 @@ public class CreateAgentRequestExecutorTest {
         executor.execute();
 
         // Assert
-        verify(agentInstances, times(0)).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
+        verify(agentInstances, never()).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
     }
 
     @Test
@@ -225,7 +252,7 @@ public class CreateAgentRequestExecutorTest {
         executor.execute();
 
         // Assert
-        verify(agentInstances, times(0)).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
+        verify(agentInstances, never()).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
     }
 
     @Test
@@ -269,7 +296,7 @@ public class CreateAgentRequestExecutorTest {
         executor.execute();
 
         // Assert
-        verify(agentInstances, times(0)).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
+        verify(agentInstances, never()).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
     }
 
     @Test
@@ -298,7 +325,6 @@ public class CreateAgentRequestExecutorTest {
         executor.execute();
 
         // Assert
-        verify(agentInstances, times(0)).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
+        verify(agentInstances, never()).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
     }
-
 }

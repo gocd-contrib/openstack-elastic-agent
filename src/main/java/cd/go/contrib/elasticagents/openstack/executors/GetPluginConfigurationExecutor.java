@@ -43,9 +43,11 @@ public class GetPluginConfigurationExecutor implements RequestExecutor {
     public static final Field USE_PREVIOUS_OPENSTACK_IMAGE = new NonBlankField("use_previous_openstack_image", "Allow Use of Previous Openstack Image", "false", true, false, "11");
     public static final Field OPENSTACK_FLAVOR = new NonBlankField("openstack_flavor", "OpenStack Flavor", null, true, false, "12");
     public static final Field OPENSTACK_NETWORK = new NonBlankField("openstack_network", "OpenStack Network", null, true, false, "13");
-    public static final Field DEFAULT_MAX_INSTANCE_LIMIT = new PositiveNumberField("default_max_instance_limit", "Default Max Instance Limit", "10", true,
+    public static final Field DEFAULT_MIN_INSTANCE_LIMIT = new PositiveNumberField("default_min_instance_limit", "Default Minimum Instance Limit", "1", true,
             false, "14");
-    public static final Field OPENSTACK_USERDATA = new Field("openstack_userdata", "OpenStack Userdata", null, false, false, "15");
+    public static final Field DEFAULT_MAX_INSTANCE_LIMIT = new PositiveNumberField("default_max_instance_limit", "Default Max Instance Limit", "10", true,
+            false, "15");
+    public static final Field OPENSTACK_USERDATA = new Field("openstack_userdata", "OpenStack Userdata", null, false, false, "16");
 
     //public static final Field AGENT_RESOURCES = new Field("resources", "Agent Resources", null, false, false, "11");
     //public static final Field AGENT_ENVIRONMENTS = new Field("environments", "Environments", null, false, false, "12");
@@ -55,6 +57,7 @@ public class GetPluginConfigurationExecutor implements RequestExecutor {
     static {
         FIELDS.put(GO_SERVER_URL.key(), GO_SERVER_URL);
         FIELDS.put(AUTOREGISTER_TIMEOUT.key(), AUTOREGISTER_TIMEOUT);
+        FIELDS.put(DEFAULT_MIN_INSTANCE_LIMIT.key(), DEFAULT_MIN_INSTANCE_LIMIT);
         FIELDS.put(DEFAULT_MAX_INSTANCE_LIMIT.key(), DEFAULT_MAX_INSTANCE_LIMIT);
         FIELDS.put(OPENSTACK_ENDPOINT.key(), OPENSTACK_ENDPOINT);
         FIELDS.put(OPENSTACK_KEYSTONE_VERSION.key(), OPENSTACK_KEYSTONE_VERSION);

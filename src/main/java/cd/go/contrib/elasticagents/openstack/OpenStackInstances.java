@@ -71,7 +71,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
     public void refreshAll(PluginRequest pluginRequest) throws Exception {
         if (!refreshed) {
             PluginSettings pluginSettings = pluginRequest.getPluginSettings();
-            if(pluginSettings == null) {
+            if (pluginSettings == null) {
                 LOG.warn("Openstack elastic agents plugin settings are empty");
                 return;
             }
@@ -130,12 +130,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         LOG.debug(format("[{0}] [matchInstance] Request environment [{1}] did match agent's environment: [{2}]", transactionId, requestEnvironment,
                 agentEnvironment));
 
-        String proposedImageIdOrName = properties.get(Constants.OPENSTACK_IMAGE_ID_ARGS);
-        if (StringUtils.isBlank(proposedImageIdOrName)) {
-            LOG.debug("properties do not have image - maybe because elastic profile has blank image and expects image from global settings.");
-            proposedImageIdOrName = pluginSettings.getOpenstackImage();
-        }
-
+        String proposedImageIdOrName = OpenStackInstance.getImageIdOrName(properties, pluginSettings);
 
         LOG.debug(format("[{0}] [matchInstance] Trying to match image name/id: [{1}] with instance image: [{2}]", transactionId,
                 proposedImageIdOrName, instance.getImageIdOrName()));
@@ -163,11 +158,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
             }
         }
 
-        String proposedFlavorIdOrName = properties.get(Constants.OPENSTACK_FLAVOR_ID_ARGS);
-        if (StringUtils.isBlank(proposedFlavorIdOrName)) {
-            LOG.debug("properties do not have flavor - maybe because elastic profile has blank flavor and expects flavor from global settings.");
-            proposedFlavorIdOrName = pluginSettings.getOpenstackFlavor();
-        }
+        String proposedFlavorIdOrName = OpenStackInstance.getFlavorIdOrName(properties, pluginSettings);
         LOG.debug(format("[{0}] [matchInstance] Trying to match flavor name: [{1}] with instance flavor: [{2}]", transactionId,
                 proposedFlavorIdOrName, instance.getFlavorIdOrName()));
         if (!proposedFlavorIdOrName.equals(instance.getFlavorIdOrName())) {

@@ -51,6 +51,10 @@ public class PluginSettings {
     private String autoRegisterTimeout;
 
     @Expose
+    @SerializedName("default_min_instance_limit")
+    private String defaultMinInstanceLimit;
+
+    @Expose
     @SerializedName("default_max_instance_limit")
     private String defaultMaxInstanceLimit;
 
@@ -113,6 +117,7 @@ public class PluginSettings {
         if (autoRegisterTimeout != null ? !autoRegisterTimeout.equals(that.autoRegisterTimeout) : that.autoRegisterTimeout != null)
             return false;
         if (openstackDomain!= null ? !openstackDomain.equals(that.openstackDomain) : that.openstackDomain!= null) return false;
+        if (defaultMinInstanceLimit != null ? !defaultMinInstanceLimit.equals(that.defaultMinInstanceLimit) : that.defaultMinInstanceLimit != null) return false;
         if (defaultMaxInstanceLimit != null ? !defaultMaxInstanceLimit.equals(that.defaultMaxInstanceLimit) : that.defaultMaxInstanceLimit != null) return false;
         if (openstackTenant!= null ? !openstackTenant.equals(that.openstackTenant) : that.openstackTenant!= null) return false;
         if (openstackUser!= null ? !openstackUser.equals(that.openstackUser) : that.openstackUser!= null) return false;
@@ -133,6 +138,7 @@ public class PluginSettings {
         result = 31 * result + (openstackKeystoneVersion!= null ? openstackKeystoneVersion.hashCode() : 0);
         result = 31 * result + (autoRegisterTimeout != null ? autoRegisterTimeout.hashCode() : 0);
         result = 31 * result + (openstackDomain!= null ? openstackDomain.hashCode() : 0);
+        result = 31 * result + (defaultMinInstanceLimit != null ? defaultMinInstanceLimit.hashCode() : 0);
         result = 31 * result + (defaultMaxInstanceLimit != null ? defaultMaxInstanceLimit.hashCode() : 0);
         result = 31 * result + (openstackTenant!= null ? openstackTenant.hashCode() : 0);
         result = 31 * result + (openstackUser!= null ? openstackUser.hashCode() : 0);
@@ -158,6 +164,13 @@ public class PluginSettings {
             autoRegisterTimeout = "10";
         }
         return autoRegisterTimeout;
+    }
+
+    public String getDefaultMinInstanceLimit() {
+        if (defaultMinInstanceLimit == null) {
+            defaultMinInstanceLimit = "1";
+        }
+        return defaultMinInstanceLimit;
     }
 
     public String getDefaultMaxInstanceLimit() {
