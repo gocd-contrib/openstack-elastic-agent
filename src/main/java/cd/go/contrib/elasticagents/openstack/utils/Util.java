@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.Properties;
+import java.util.Random;
 
 public class Util {
 
@@ -58,5 +59,17 @@ public class Util {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * E.g. if 10 is given, a random value between -10 and 10 should be returned.
+     *
+     * @param plusminus int to have as limit on max and min of random int.
+     * @return A random int based on given plusminus int.
+     */
+    public static int randomPlusMinus(int plusminus) {
+        Random rand = new Random();
+        int random = rand.nextInt(plusminus + plusminus + 1) - plusminus;
+        return random;
     }
 }

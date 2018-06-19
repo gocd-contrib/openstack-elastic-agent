@@ -21,13 +21,19 @@
 </div>
 
 <div class="form_item_block">
-  <label>Agent Time to live (in minutes)<span class='asterix'>*</span></label>
-  <input type="text" ng-model="auto_register_timeout" ng-required="true"/>
+  <label>Agent Time to live (E.g. 30 minutes)<span class='asterix'>*</span></label>
+  <input type="text" ng-model="auto_register_timeout" ng-required="true" placeholder="30"/>
   <span class="form_error" ng-show="GOINPUTNAME[auto_register_timeout].$error.server">{{ GOINPUTNAME[auto_register_timeout].$error.server}}</span>
 </div>
 
 <div class="form_item_block">
-  <label>Openstack Endpoint<span class='asterix'>*</span></label>
+  <label>Agent TTL plus minus random amount of minutes (E.g. 30 +/- 10 results in between 20 and 40 minutes)<span class='asterix'>*</span></label>
+  <input type="text" ng-model="agent_ttl_plus_minus" ng-required="true"/>
+  <span class="form_error" ng-show="GOINPUTNAME[agent_ttl_plus_minus].$error.server">{{ GOINPUTNAME[agent_ttl_plus_minus].$error.server}}</span>
+</div>
+
+<div class="form_item_block">
+  <label>Openstack Endpoint URL<span class='asterix'>*</span></label>
   <input type="text" ng-model="openstack_endpoint" ng-required="true"/>
   <span class="form_error" ng-show="GOINPUTNAME[openstack_endpoint].$error.server">{{ GOINPUTNAME[openstack_endpoint].$error.server}}</span>
 </div>
@@ -75,13 +81,13 @@
 </div>
 
 <div class="form_item_block">
-  <label>Openstack Image Cache TTL (in minutes)<span class='asterix'>*</span></label>
-  <input type="text" ng-model="openstack_image_cache_ttl" ng-required="true"/>
+  <label>Openstack Image Name -> Image ID Cache TTL (in minutes)<span class='asterix'>*</span></label>
+  <input type="text" ng-model="openstack_image_cache_ttl" ng-required="true" placeholder="30"/>
   <span class="form_error" ng-show="GOINPUTNAME[openstack_image_cache_ttl].$error.server">{{ GOINPUTNAME[openstack_image_cache_ttl].$error.server}}</span>
 </div>
 
 <div class="form_item_block">
-  <label>Allow Use of Previous Openstack Image</label>
+  <label>Allow Use of Previous Openstack Image ID when Image Name has been updated with new Image ID</label>
   <input type="radio" ng-model="use_previous_openstack_image" value="true"/> True
   <input type="radio" ng-model="use_previous_openstack_image" value="false"/> False
   <span class="form_error" ng-show="GOINPUTNAME[use_previous_openstack_image].$error.server">{{ GOINPUTNAME[use_previous_openstack_image].$error.server}}</span>

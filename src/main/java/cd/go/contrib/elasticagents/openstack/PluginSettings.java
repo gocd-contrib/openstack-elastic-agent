@@ -54,6 +54,9 @@ public class PluginSettings {
     @SerializedName("default_min_instance_limit")
     private String defaultMinInstanceLimit;
 
+    @SerializedName("agent_ttl_plus_minus")
+    private String agentTTLPlusMinus;
+
     @Expose
     @SerializedName("default_max_instance_limit")
     private String defaultMaxInstanceLimit;
@@ -171,6 +174,20 @@ public class PluginSettings {
             defaultMinInstanceLimit = "1";
         }
         return defaultMinInstanceLimit;
+    }
+
+    public int getAgentTTLPlusMinus() {
+        int result;
+        try {
+            result = Integer.parseInt(agentTTLPlusMinus);
+        } catch (NumberFormatException nfe) {
+            result = 0;
+        }
+        return result;
+    }
+
+    public void setAgentTTLPlusMinus(String agentTTLPlusMinus) {
+        this.agentTTLPlusMinus = agentTTLPlusMinus;
     }
 
     public String getDefaultMaxInstanceLimit() {

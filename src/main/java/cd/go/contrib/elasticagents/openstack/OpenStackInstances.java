@@ -18,6 +18,8 @@ package cd.go.contrib.elasticagents.openstack;
 
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
+import cd.go.contrib.elasticagents.openstack.utils.Util;
+import com.thoughtworks.go.plugin.api.logging.Logger;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.joda.time.Period;
@@ -27,12 +29,14 @@ import org.openstack4j.model.compute.Server;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static cd.go.contrib.elasticagents.openstack.OpenStackPlugin.LOG;
 import static java.text.MessageFormat.format;
 import static org.apache.commons.lang.StringUtils.stripToEmpty;
 
 public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
-    private final ConcurrentHashMap<String, OpenStackInstance> instances = new ConcurrentHashMap<>();
+
+    public static final Logger LOG = Logger.getLoggerFor(OpenStackInstances.class);
+
+    private final Map<String, OpenStackInstance> instances = new ConcurrentHashMap<>();
     private boolean refreshed;
 
     @Override
@@ -59,6 +63,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
     public void terminate(String instanceId, PluginSettings settings) throws Exception {
         OpenStackInstance opInstance = instances.get(instanceId);
         if (opInstance != null) {
+            LOG.info(format("[terminate] OpenStack instance [{0}]", instanceId));
             opInstance.terminate(os_client(settings));
         } else {
             OpenStackPlugin.LOG.warn("Requested to terminate an instance that does not exist " + instanceId);
@@ -72,7 +77,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         if (!refreshed) {
             PluginSettings pluginSettings = pluginRequest.getPluginSettings();
             if (pluginSettings == null) {
-                LOG.warn("Openstack elastic agents plugin settings are empty");
+                LOG.warn("OpenStack elastic agents plugin settings are empty");
                 return;
             }
             Agents agents = pluginRequest.listAgents();
@@ -217,7 +222,12 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
                 continue;
             }
 
-            if (DateUtils.addMinutes(instance.createAt().toDate(), settings.getAutoRegisterPeriod().getMinutes()).before(new Date())) {
+            int random = Util.randomPlusMinus(settings.getAgentTTLPlusMinus());
+            int minutesTTL = settings.getAutoRegisterPeriod().getMinutes() + random;
+            Date expireDate = DateUtils.addMinutes(instance.createAt().toDate(), minutesTTL);
+            LOG.debug(format("[instancesCreatedAfterTimeout] Agent: [{0}] with minutesTTL: [{1}]", agent.elasticAgentId(), minutesTTL));
+            if (expireDate.before(new Date())) {
+                LOG.info(format("[instancesCreatedAfterTimeout] Agent: [{0}] to be terminated with minutesTTL: [{1}]", agent.elasticAgentId(), minutesTTL));
                 oldAgents.add(agent);
             }
         }
