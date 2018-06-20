@@ -45,7 +45,7 @@
 </div>
 
 <div class="form_item_block">
-    <label ng-class="{'is-invalid-label': GOINPUTNAME[openstack_min_instance_limit].$error.server}">Minimum Instance Limit</label>
+    <label ng-class="{'is-invalid-label': GOINPUTNAME[openstack_min_instance_limit].$error.server}">Minimum Instance Limit (only relevant when there is a need for agents of this profile)</label>
     <input ng-class="{'is-invalid-input': GOINPUTNAME[openstack_min_instance_limit].$error.server}" type="text" ng-model="openstack_min_instance_limit" ng-required="false" placeholder="1"/>
     <span class="form_error form-error" ng-class="{'is-visible': GOINPUTNAME[openstack_min_instance_limit].$error.server}" ng-show="GOINPUTNAME[openstack_min_instance_limit].$error.server">{{GOINPUTNAME[openstack_min_instance_limit].$error.server}}</span>
 </div>

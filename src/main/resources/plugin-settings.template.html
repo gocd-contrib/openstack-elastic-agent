@@ -21,15 +21,15 @@
 </div>
 
 <div class="form_item_block">
-  <label>Agent Time to live (E.g. 30 minutes)<span class='asterix'>*</span></label>
+  <label>Agent Time To Live minimum (E.g. 30 minutes)<span class='asterix'>*</span></label>
   <input type="text" ng-model="auto_register_timeout" ng-required="true" placeholder="30"/>
   <span class="form_error" ng-show="GOINPUTNAME[auto_register_timeout].$error.server">{{ GOINPUTNAME[auto_register_timeout].$error.server}}</span>
 </div>
 
 <div class="form_item_block">
-  <label>Agent TTL plus minus random amount of minutes (E.g. 30 +/- 10 results in between 20 and 40 minutes)<span class='asterix'>*</span></label>
-  <input type="text" ng-model="agent_ttl_plus_minus" ng-required="true"/>
-  <span class="form_error" ng-show="GOINPUTNAME[agent_ttl_plus_minus].$error.server">{{ GOINPUTNAME[agent_ttl_plus_minus].$error.server}}</span>
+  <label>Agent Time To Live maximum (A random TTL between minimum and maximum will be generated, e.g. min 30 and max 60 results in between 30 and 60 minutes)<span class='asterix'>*</span></label>
+  <input type="text" ng-model="agent_ttl_max" ng-required="true" placeholder="60" />
+  <span class="form_error" ng-show="GOINPUTNAME[agent_ttl_max].$error.server">{{ GOINPUTNAME[agent_ttl_max].$error.server}}</span>
 </div>
 
 <div class="form_item_block">
@@ -106,13 +106,13 @@
 </div>
 
 <div class="form_item_block">
-  <label>Default Minimum Instance Limit (for each profile)<span class='asterix'>*</span></label>
+  <label>Default minimum instance limit (only relevant when there is a need for agents of that profile)<span class='asterix'>*</span></label>
   <input type="text" ng-model="default_min_instance_limit" ng-required="true" placeholder="1"/>
   <span class="form_error" ng-show="GOINPUTNAME[default_min_instance_limit].$error.server">{{ GOINPUTNAME[default_min_instance_limit].$error.server}}</span>
 </div>
 
 <div class="form_item_block">
-  <label>Default Max Instance Limit (for each profile)<span class='asterix'>*</span></label>
+  <label>Default maximum instance limit (for each profile)<span class='asterix'>*</span></label>
   <input type="text" ng-model="default_max_instance_limit" ng-required="true" placeholder="10"/>
   <span class="form_error" ng-show="GOINPUTNAME[default_max_instance_limit].$error.server">{{ GOINPUTNAME[default_max_instance_limit].$error.server}}</span>
 </div>

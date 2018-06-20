@@ -51,11 +51,12 @@ public class PluginSettings {
     private String autoRegisterTimeout;
 
     @Expose
+    @SerializedName("agent_ttl_max")
+    private String agentTTLMax;
+
+    @Expose
     @SerializedName("default_min_instance_limit")
     private String defaultMinInstanceLimit;
-
-    @SerializedName("agent_ttl_plus_minus")
-    private String agentTTLPlusMinus;
 
     @Expose
     @SerializedName("default_max_instance_limit")
@@ -115,43 +116,59 @@ public class PluginSettings {
         PluginSettings that = (PluginSettings) o;
 
         if (goServerUrl != null ? !goServerUrl.equals(that.goServerUrl) : that.goServerUrl != null) return false;
-        if (openstackEndpoint!= null ? !openstackEndpoint.equals(that.openstackEndpoint) : that.openstackEndpoint!= null) return false;
-        if (openstackKeystoneVersion!= null ? !openstackKeystoneVersion.equals(that.openstackKeystoneVersion) : that.openstackKeystoneVersion!= null) return false;
+        if (openstackEndpoint != null ? !openstackEndpoint.equals(that.openstackEndpoint) : that.openstackEndpoint != null)
+            return false;
+        if (openstackKeystoneVersion != null ? !openstackKeystoneVersion.equals(that.openstackKeystoneVersion) : that.openstackKeystoneVersion != null)
+            return false;
         if (autoRegisterTimeout != null ? !autoRegisterTimeout.equals(that.autoRegisterTimeout) : that.autoRegisterTimeout != null)
             return false;
-        if (openstackDomain!= null ? !openstackDomain.equals(that.openstackDomain) : that.openstackDomain!= null) return false;
-        if (defaultMinInstanceLimit != null ? !defaultMinInstanceLimit.equals(that.defaultMinInstanceLimit) : that.defaultMinInstanceLimit != null) return false;
-        if (defaultMaxInstanceLimit != null ? !defaultMaxInstanceLimit.equals(that.defaultMaxInstanceLimit) : that.defaultMaxInstanceLimit != null) return false;
-        if (openstackTenant!= null ? !openstackTenant.equals(that.openstackTenant) : that.openstackTenant!= null) return false;
-        if (openstackUser!= null ? !openstackUser.equals(that.openstackUser) : that.openstackUser!= null) return false;
-        if (openstackPassword!= null ? !openstackPassword.equals(that.openstackPassword) : that.openstackPassword!= null) return false;
-        if (openstackVmPrefix!= null ? !openstackVmPrefix.equals(that.openstackVmPrefix) : that.openstackVmPrefix!= null) return false;
-        if (openstackImage!= null ? !openstackImage.equals(that.openstackImage) : that.openstackImage!= null) return false;
-        if (openstackImageCacheTTL!= null ? !openstackImageCacheTTL.equals(that.openstackImageCacheTTL) : that.openstackImageCacheTTL!= null) return false;
-        if (openstackFlavor!= null ? !openstackFlavor.equals(that.openstackFlavor) : that.openstackFlavor!= null) return false;
-        if (openstackNetwork!= null ? !openstackNetwork.equals(that.openstackNetwork) : that.openstackNetwork!= null) return false;
-        return openstackUserdata!= null ? openstackUserdata.equals(that.openstackUserdata) : that.openstackUserdata== null;
+        if (agentTTLMax != null ? !agentTTLMax.equals(that.agentTTLMax) : that.agentTTLMax != null)
+            return false;
+        if (openstackDomain != null ? !openstackDomain.equals(that.openstackDomain) : that.openstackDomain != null)
+            return false;
+        if (defaultMinInstanceLimit != null ? !defaultMinInstanceLimit.equals(that.defaultMinInstanceLimit) : that.defaultMinInstanceLimit != null)
+            return false;
+        if (defaultMaxInstanceLimit != null ? !defaultMaxInstanceLimit.equals(that.defaultMaxInstanceLimit) : that.defaultMaxInstanceLimit != null)
+            return false;
+        if (openstackTenant != null ? !openstackTenant.equals(that.openstackTenant) : that.openstackTenant != null)
+            return false;
+        if (openstackUser != null ? !openstackUser.equals(that.openstackUser) : that.openstackUser != null)
+            return false;
+        if (openstackPassword != null ? !openstackPassword.equals(that.openstackPassword) : that.openstackPassword != null)
+            return false;
+        if (openstackVmPrefix != null ? !openstackVmPrefix.equals(that.openstackVmPrefix) : that.openstackVmPrefix != null)
+            return false;
+        if (openstackImage != null ? !openstackImage.equals(that.openstackImage) : that.openstackImage != null)
+            return false;
+        if (openstackImageCacheTTL != null ? !openstackImageCacheTTL.equals(that.openstackImageCacheTTL) : that.openstackImageCacheTTL != null)
+            return false;
+        if (openstackFlavor != null ? !openstackFlavor.equals(that.openstackFlavor) : that.openstackFlavor != null)
+            return false;
+        if (openstackNetwork != null ? !openstackNetwork.equals(that.openstackNetwork) : that.openstackNetwork != null)
+            return false;
+        return openstackUserdata != null ? openstackUserdata.equals(that.openstackUserdata) : that.openstackUserdata == null;
 
     }
 
     @Override
     public int hashCode() {
         int result = goServerUrl != null ? goServerUrl.hashCode() : 0;
-        result = 31 * result + (openstackEndpoint!= null ? openstackEndpoint.hashCode() : 0);
-        result = 31 * result + (openstackKeystoneVersion!= null ? openstackKeystoneVersion.hashCode() : 0);
+        result = 31 * result + (openstackEndpoint != null ? openstackEndpoint.hashCode() : 0);
+        result = 31 * result + (openstackKeystoneVersion != null ? openstackKeystoneVersion.hashCode() : 0);
         result = 31 * result + (autoRegisterTimeout != null ? autoRegisterTimeout.hashCode() : 0);
-        result = 31 * result + (openstackDomain!= null ? openstackDomain.hashCode() : 0);
+        result = 31 * result + (agentTTLMax != null ? agentTTLMax.hashCode() : 0);
+        result = 31 * result + (openstackDomain != null ? openstackDomain.hashCode() : 0);
         result = 31 * result + (defaultMinInstanceLimit != null ? defaultMinInstanceLimit.hashCode() : 0);
         result = 31 * result + (defaultMaxInstanceLimit != null ? defaultMaxInstanceLimit.hashCode() : 0);
-        result = 31 * result + (openstackTenant!= null ? openstackTenant.hashCode() : 0);
-        result = 31 * result + (openstackUser!= null ? openstackUser.hashCode() : 0);
-        result = 31 * result + (openstackPassword!= null ? openstackPassword.hashCode() : 0);
-        result = 31 * result + (openstackVmPrefix!= null ? openstackVmPrefix.hashCode() : 0);
-        result = 31 * result + (openstackImage!= null ? openstackImage.hashCode() : 0);
-        result = 31 * result + (openstackImageCacheTTL!= null ? openstackImageCacheTTL.hashCode() : 0);
-        result = 31 * result + (openstackFlavor!= null ? openstackFlavor.hashCode() : 0);
-        result = 31 * result + (openstackNetwork!= null ? openstackNetwork.hashCode() : 0);
-        result = 31 * result + (openstackUserdata!= null ? openstackUserdata.hashCode() : 0);
+        result = 31 * result + (openstackTenant != null ? openstackTenant.hashCode() : 0);
+        result = 31 * result + (openstackUser != null ? openstackUser.hashCode() : 0);
+        result = 31 * result + (openstackPassword != null ? openstackPassword.hashCode() : 0);
+        result = 31 * result + (openstackVmPrefix != null ? openstackVmPrefix.hashCode() : 0);
+        result = 31 * result + (openstackImage != null ? openstackImage.hashCode() : 0);
+        result = 31 * result + (openstackImageCacheTTL != null ? openstackImageCacheTTL.hashCode() : 0);
+        result = 31 * result + (openstackFlavor != null ? openstackFlavor.hashCode() : 0);
+        result = 31 * result + (openstackNetwork != null ? openstackNetwork.hashCode() : 0);
+        result = 31 * result + (openstackUserdata != null ? openstackUserdata.hashCode() : 0);
         return result;
     }
 
@@ -176,18 +193,18 @@ public class PluginSettings {
         return defaultMinInstanceLimit;
     }
 
-    public int getAgentTTLPlusMinus() {
+    public int getAgentTTLMax() {
         int result;
         try {
-            result = Integer.parseInt(agentTTLPlusMinus);
+            result = Integer.parseInt(agentTTLMax);
         } catch (NumberFormatException nfe) {
             result = 0;
         }
         return result;
     }
 
-    public void setAgentTTLPlusMinus(String agentTTLPlusMinus) {
-        this.agentTTLPlusMinus = agentTTLPlusMinus;
+    public void setAgentTTLMax(String agentTTLMax) {
+        this.agentTTLMax = agentTTLMax;
     }
 
     public String getDefaultMaxInstanceLimit() {
@@ -206,7 +223,7 @@ public class PluginSettings {
     }
 
     public String getOpenstackKeystoneVersion() {
-        openstackKeystoneVersion =  (openstackKeystoneVersion == null) ? "2" : openstackKeystoneVersion;
+        openstackKeystoneVersion = (openstackKeystoneVersion == null) ? "2" : openstackKeystoneVersion;
         return openstackKeystoneVersion;
     }
 

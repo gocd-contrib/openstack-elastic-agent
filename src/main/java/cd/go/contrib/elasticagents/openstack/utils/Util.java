@@ -62,14 +62,19 @@ public class Util {
     }
 
     /**
-     * E.g. if 10 is given, a random value between -10 and 10 should be returned.
+     * E.g. if agentMinTTL 10 and agentMaxTTL 20 is given, a random value between 10 and 20 should be returned.
      *
-     * @param plusminus int to have as limit on max and min of random int.
-     * @return A random int based on given plusminus int.
+     * @param agentMinTTL positive int
+     * @param agentMaxTTL positive int
+     * @return Random value between agentMinTTL and agentMaxTTL or at least agentMinTTL minutes.
      */
-    public static int randomPlusMinus(int plusminus) {
+    public static int calculateTTL(int agentMinTTL, int agentMaxTTL) {
+        if (agentMaxTTL < agentMinTTL)
+            return agentMinTTL;
         Random rand = new Random();
-        int random = rand.nextInt(plusminus + plusminus + 1) - plusminus;
-        return random;
+        int result;
+        int random = agentMaxTTL - agentMinTTL;
+        result = agentMinTTL + rand.nextInt(random + 1);
+        return result;
     }
 }

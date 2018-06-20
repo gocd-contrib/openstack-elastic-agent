@@ -31,7 +31,7 @@ public class GetPluginConfigurationExecutor implements RequestExecutor {
     public static final Field GO_SERVER_URL = new NonBlankField("go_server_url", "Go Server URL", null, true, false, "0");
     public static final Field AUTOREGISTER_TIMEOUT = new PositiveNumberField("auto_register_timeout", "Agent auto-register Timeout (in minutes)", "10", true,
             false, "1");
-    public static final Field AGENT_TTL_PLUS_MINUS = new PositiveNumberField("agent_ttl_plus_minus", "Agent TTL plus minus (in minutes)", "0", true,
+    public static final Field AGENT_TTL_MAX = new PositiveNumberField("agent_ttl_max", "Agent TTL maximum (in minutes)", "0", true,
             false, "2");
     public static final Field OPENSTACK_ENDPOINT = new NonBlankField("openstack_endpoint", "OpenStack Endpoint", null, true, false, "3");
     public static final Field OPENSTACK_KEYSTONE_VERSION = new NonBlankField("openstack_keystone_version", "OpenStack Keystone Version", null, true, false, "4");
@@ -59,7 +59,7 @@ public class GetPluginConfigurationExecutor implements RequestExecutor {
     static {
         FIELDS.put(GO_SERVER_URL.key(), GO_SERVER_URL);
         FIELDS.put(AUTOREGISTER_TIMEOUT.key(), AUTOREGISTER_TIMEOUT);
-        FIELDS.put(AGENT_TTL_PLUS_MINUS.key(), AGENT_TTL_PLUS_MINUS);
+        FIELDS.put(AGENT_TTL_MAX.key(), AGENT_TTL_MAX);
         FIELDS.put(DEFAULT_MIN_INSTANCE_LIMIT.key(), DEFAULT_MIN_INSTANCE_LIMIT);
         FIELDS.put(DEFAULT_MAX_INSTANCE_LIMIT.key(), DEFAULT_MAX_INSTANCE_LIMIT);
         FIELDS.put(OPENSTACK_ENDPOINT.key(), OPENSTACK_ENDPOINT);

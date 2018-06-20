@@ -20,7 +20,6 @@ import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
 import cd.go.contrib.elasticagents.openstack.utils.Util;
 import com.thoughtworks.go.plugin.api.logging.Logger;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.joda.time.Period;
 import org.openstack4j.api.OSClient;
@@ -222,8 +221,8 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
                 continue;
             }
 
-            int random = Util.randomPlusMinus(settings.getAgentTTLPlusMinus());
-            int minutesTTL = settings.getAutoRegisterPeriod().getMinutes() + random;
+            LOG.debug(format("[instancesCreatedAfterTimeout] agentTTLMin: [{0}] agentTTLMax: [{1}]", settings.getAutoRegisterPeriod().getMinutes(), settings.getAgentTTLMax()));
+            int minutesTTL = Util.calculateTTL(settings.getAutoRegisterPeriod().getMinutes(), settings.getAgentTTLMax());
             Date expireDate = DateUtils.addMinutes(instance.createAt().toDate(), minutesTTL);
             LOG.debug(format("[instancesCreatedAfterTimeout] Agent: [{0}] with minutesTTL: [{1}]", agent.elasticAgentId(), minutesTTL));
             if (expireDate.before(new Date())) {
