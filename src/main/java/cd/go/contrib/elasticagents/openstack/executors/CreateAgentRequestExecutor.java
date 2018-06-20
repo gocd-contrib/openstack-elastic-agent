@@ -24,6 +24,8 @@ import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static java.text.MessageFormat.format;
@@ -53,9 +55,10 @@ public class CreateAgentRequestExecutor implements RequestExecutor {
         LOG.debug(format("[{0}] [create-agent] {1}", transactionId, request));
 
         int matchingAgentCount = 0;
-        int maxInstanceLimit;
+        List<String> idleAgentsFound = new ArrayList<>();
 
         final String profileMaxLimitStr = request.properties().get(Constants.OPENSTACK_MAX_INSTANCE_LIMIT);
+        int maxInstanceLimit;
         if (StringUtils.isNotBlank(profileMaxLimitStr) && StringUtils.isNumeric(profileMaxLimitStr)) {
             maxInstanceLimit = Integer.parseInt(profileMaxLimitStr);
             LOG.debug(format("[{0}] [create-agent] Using maxInstanceLimit from profile value: {1}", transactionId, request));
@@ -65,22 +68,32 @@ public class CreateAgentRequestExecutor implements RequestExecutor {
         }
 
         PluginSettings pluginSettings = pluginRequest.getPluginSettings();
-        String requestImageId = OpenStackInstance.getImageIdOrName(request, pluginSettings);
+        String requestImageId = OpenStackInstance.getImageIdOrName(request.properties(), pluginSettings);
         requestImageId = clientWrapper.getImageId(requestImageId, transactionId);
-        String flavorId = OpenStackInstance.getFlavorIdOrName(request, pluginSettings);
-        flavorId = clientWrapper.getFlavorId(flavorId);
+        String flavorId = OpenStackInstance.getFlavorIdOrName(request.properties(), pluginSettings);
+        flavorId = clientWrapper.getFlavorId(flavorId, transactionId);
 
-        for(PendingAgent agent : pendingAgentsService.getAgents()) {
+        for (PendingAgent agent : pendingAgentsService.getAgents()) {
             LOG.debug(format("[{0}] [create-agent] Check if pending agent {1} match job profile", transactionId, agent));
             AgentMatchResult matchResult = agent.match(transactionId, requestImageId, flavorId, request.environment(), request.job());
-            if(matchResult.isJobMatch()) {
+            if (matchResult.isJobMatch()) {
                 LOG.info(format("[{0}] [create-agent] Will NOT create new instance, agent for job {1} is still being created {2} ", transactionId, request.job(), agent.elasticAgentId()));
                 return new DefaultGoPluginApiResponse(200);
             }
-            if(matchResult.isProfileMatch()) {
+            if (matchResult.isProfileMatch()) {
                 LOG.debug(format("[{0}] [create-agent] found matching pending agent {1} ", transactionId, agent.elasticAgentId()));
                 matchingAgentCount++;
             }
+        }
+
+        final String profileMinLimitStr = request.properties().get(Constants.OPENSTACK_MIN_INSTANCE_LIMIT);
+        int minInstanceLimit;
+        if (StringUtils.isNotBlank(profileMinLimitStr) && StringUtils.isNumeric(profileMinLimitStr)) {
+            minInstanceLimit = Integer.parseInt(profileMinLimitStr);
+            LOG.debug(format("[{0}] [create-agent] Using minInstanceLimit from profile value: {1}", transactionId, request));
+        } else {
+            minInstanceLimit = Integer.parseInt(pluginRequest.getPluginSettings().getDefaultMinInstanceLimit());
+            LOG.debug(format("[{0}] [create-agent] Using minInstanceLimit from default plugin value: {1}", transactionId, request));
         }
 
         for (Agent agent : agents.agents()) {
@@ -90,8 +103,12 @@ public class CreateAgentRequestExecutor implements RequestExecutor {
                 matchingAgentCount++;
                 LOG.debug(format("[{0}] [create-agent] found matching agent {1} ", transactionId, agent.elasticAgentId()));
                 if ((agent.agentState() == Agent.AgentState.Idle)) {
-                    LOG.info(format("[{0}] [create-agent] Will NOT create new instance, found matching idle agent {1} ", transactionId, agent.elasticAgentId()));
-                    return new DefaultGoPluginApiResponse(200);
+                    idleAgentsFound.add(agent.elasticAgentId());
+                    LOG.info(format("[{0}] [create-agent] found {1} matching idle agent {2} ", transactionId, idleAgentsFound, agent.elasticAgentId()));
+                    if (idleAgentsFound.size() >= minInstanceLimit) {
+                        LOG.info(format("[{0}] [create-agent] Will NOT create new instance, found {1} matching idle agent {2} ", transactionId, minInstanceLimit, idleAgentsFound));
+                        return new DefaultGoPluginApiResponse(200);
+                    }
                 }
             }
         }

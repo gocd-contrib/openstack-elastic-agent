@@ -18,7 +18,8 @@ package cd.go.contrib.elasticagents.openstack;
 
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
-import org.apache.commons.lang.StringUtils;
+import cd.go.contrib.elasticagents.openstack.utils.Util;
+import com.thoughtworks.go.plugin.api.logging.Logger;
 import org.apache.commons.lang.time.DateUtils;
 import org.joda.time.Period;
 import org.openstack4j.api.OSClient;
@@ -27,12 +28,14 @@ import org.openstack4j.model.compute.Server;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static cd.go.contrib.elasticagents.openstack.OpenStackPlugin.LOG;
 import static java.text.MessageFormat.format;
 import static org.apache.commons.lang.StringUtils.stripToEmpty;
 
 public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
-    private final ConcurrentHashMap<String, OpenStackInstance> instances = new ConcurrentHashMap<>();
+
+    public static final Logger LOG = Logger.getLoggerFor(OpenStackInstances.class);
+
+    private final Map<String, OpenStackInstance> instances = new ConcurrentHashMap<>();
     private boolean refreshed;
 
     @Override
@@ -59,6 +62,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
     public void terminate(String instanceId, PluginSettings settings) throws Exception {
         OpenStackInstance opInstance = instances.get(instanceId);
         if (opInstance != null) {
+            LOG.info(format("[terminate] OpenStack instance [{0}]", instanceId));
             opInstance.terminate(os_client(settings));
         } else {
             OpenStackPlugin.LOG.warn("Requested to terminate an instance that does not exist " + instanceId);
@@ -71,8 +75,8 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
     public void refreshAll(PluginRequest pluginRequest) throws Exception {
         if (!refreshed) {
             PluginSettings pluginSettings = pluginRequest.getPluginSettings();
-            if(pluginSettings == null) {
-                LOG.warn("Openstack elastic agents plugin settings are empty");
+            if (pluginSettings == null) {
+                LOG.warn("OpenStack elastic agents plugin settings are empty");
                 return;
             }
             Agents agents = pluginRequest.listAgents();
@@ -130,12 +134,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         LOG.debug(format("[{0}] [matchInstance] Request environment [{1}] did match agent's environment: [{2}]", transactionId, requestEnvironment,
                 agentEnvironment));
 
-        String proposedImageIdOrName = properties.get(Constants.OPENSTACK_IMAGE_ID_ARGS);
-        if (StringUtils.isBlank(proposedImageIdOrName)) {
-            LOG.debug("properties do not have image - maybe because elastic profile has blank image and expects image from global settings.");
-            proposedImageIdOrName = pluginSettings.getOpenstackImage();
-        }
-
+        String proposedImageIdOrName = OpenStackInstance.getImageIdOrName(properties, pluginSettings);
 
         LOG.debug(format("[{0}] [matchInstance] Trying to match image name/id: [{1}] with instance image: [{2}]", transactionId,
                 proposedImageIdOrName, instance.getImageIdOrName()));
@@ -163,17 +162,13 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
             }
         }
 
-        String proposedFlavorIdOrName = properties.get(Constants.OPENSTACK_FLAVOR_ID_ARGS);
-        if (StringUtils.isBlank(proposedFlavorIdOrName)) {
-            LOG.debug("properties do not have flavor - maybe because elastic profile has blank flavor and expects flavor from global settings.");
-            proposedFlavorIdOrName = pluginSettings.getOpenstackFlavor();
-        }
+        String proposedFlavorIdOrName = OpenStackInstance.getFlavorIdOrName(properties, pluginSettings);
         LOG.debug(format("[{0}] [matchInstance] Trying to match flavor name: [{1}] with instance flavor: [{2}]", transactionId,
                 proposedFlavorIdOrName, instance.getFlavorIdOrName()));
         if (!proposedFlavorIdOrName.equals(instance.getFlavorIdOrName())) {
             LOG.debug(format("[{0}] [matchInstance] flavor name: [{1}] did NOT match with instance flavor: [{2}]", transactionId,
                     proposedFlavorIdOrName, instance.getFlavorIdOrName()));
-            proposedFlavorIdOrName = client.getFlavorId(proposedFlavorIdOrName);
+            proposedFlavorIdOrName = client.getFlavorId(proposedFlavorIdOrName, transactionId);
             LOG.debug(format("[{0}] [matchInstance] Trying to match flavor name: [{1}] with instance flavor: [{2}]", transactionId,
                     proposedFlavorIdOrName, instance.getFlavorIdOrName()));
             if (!proposedFlavorIdOrName.equals(instance.getFlavorIdOrName())) {
@@ -226,7 +221,12 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
                 continue;
             }
 
-            if (DateUtils.addMinutes(instance.createAt().toDate(), settings.getAutoRegisterPeriod().getMinutes()).before(new Date())) {
+            LOG.debug(format("[instancesCreatedAfterTimeout] agentTTLMin: [{0}] agentTTLMax: [{1}]", settings.getAutoRegisterPeriod().getMinutes(), settings.getAgentTTLMax()));
+            int minutesTTL = Util.calculateTTL(settings.getAutoRegisterPeriod().getMinutes(), settings.getAgentTTLMax());
+            Date expireDate = DateUtils.addMinutes(instance.createAt().toDate(), minutesTTL);
+            LOG.debug(format("[instancesCreatedAfterTimeout] Agent: [{0}] with minutesTTL: [{1}]", agent.elasticAgentId(), minutesTTL));
+            if (expireDate.before(new Date())) {
+                LOG.info(format("[instancesCreatedAfterTimeout] Agent: [{0}] to be terminated with minutesTTL: [{1}]", agent.elasticAgentId(), minutesTTL));
                 oldAgents.add(agent);
             }
         }

@@ -18,7 +18,7 @@ apply plugin: 'java'
 apply plugin: 'maven'
 
 group = 'cd.go.contrib'
-version = '0.10.0'
+version = '0.11.0'
 description = 'GoCD OpenStack Elastic Agents'
 
 // these values that go into plugin.xml
@@ -33,8 +33,8 @@ project.ext.pluginDesc = [
 ]
 
 // Force 1.7 compatibility to ensure that it works with older JVMs
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 buildDir = "${projectDir}/target"
 
@@ -63,6 +63,8 @@ dependencies {
     compile group: 'commons-io', name: 'commons-io', version: '2.5'
     compile group: 'commons-lang', name: 'commons-lang', version: '2.6'
     compile group: 'commons-codec', name: 'commons-codec', version: '1.10'
+    compile group: 'org.cache2k', name: 'cache2k-api', version: '1.0.2.Final'
+    compile group: 'org.cache2k', name: 'cache2k-core', version: '1.0.2.Final'
 
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
@@ -108,7 +110,7 @@ jar {
     from(configurations.compile) {
         into "lib/"
     }
-    from(sourceSets.main.java){
+    from(sourceSets.main.java) {
         into "/"
     }
 }

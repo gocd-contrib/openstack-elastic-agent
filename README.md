@@ -27,8 +27,10 @@ To build the jar, run `./gradlew clean test assemble`
 2. Example "Plugin Settings"  ( This is the global settings and some properties can be overriden on in the elastic profile )
   * Go Server URL
      * eg. https://your-go-server:8154/go
-  * Agent auto-register (in minutes)*
-     * eg. 30
+  * Agent Time To Live minimum (in minutes)*
+     * eg. `30` if you want the agent to live for at least 30 minutes 
+  * Agent Time To Live maximum (in minutes)*
+     * eg. `60` if you want the agent to live a random amount between 30 and 60 minutes 
   * Openstack Endpoint
      * eg. https://your-openstack-public-endpoint:5000/v2.0
   * Openstack Tenant
@@ -37,14 +39,20 @@ To build the jar, run `./gradlew clean test assemble`
      * eg. gocdstack
   * Openstack Password
      * eg. gocdstack
-  * Openstack VM Prefix ( this is the prefix added to the VM's hostname to distinguish elastic agent VM to others
+  * Openstack VM Prefix (this is the prefix added to the VM's hostname to distinguish elastic agent VM to others)
      * eg. gocdea
-  * Openstack Image ( this is the VM image ID or image name from Openstack )
+  * Openstack Image (this is the VM image ID or image name from Openstack)
      * eg. `d921abbb-772b-4c96-a150-798506f2a37b`, `ubuntu-16.04`
-  * Openstack Flavor ( this is the Flavor ID or flavor name from Openstack )
+  * Openstack Image Name -> Image ID Cache TTL ( the cache keeps the image ID of the image name  for the given amount of minutes)
+     * eg. `30`
+  * Allow Use of Previous Openstack Image 
+     * if the previous image ID for given image name should be used as fallback
+  * Openstack Flavor (this is the Flavor ID or flavor name from Openstack)
      * eg `fa8c735b-d477-4649-bb6a-8d58f2052971`, `12234`, `m1.small`
-  * Openstack Network ( this is the Network ID from Openstack )
+  * Openstack Network (this is the Network ID from Openstack)
     * eg 6d6ceece-6de5-4be5-8a5a-180151f91820
+  * Default Min Instance Limit (only relevant when there is a need for agents of that profile)
+    * eg 2
   * Default Max Instance Limit (for each profile)
     * eg 5
   * Openstack UserData

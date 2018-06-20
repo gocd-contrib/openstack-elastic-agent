@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.Properties;
+import java.util.Random;
 
 public class Util {
 
@@ -58,5 +59,22 @@ public class Util {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * E.g. if agentMinTTL 10 and agentMaxTTL 20 is given, a random value between 10 and 20 should be returned.
+     *
+     * @param agentMinTTL positive int
+     * @param agentMaxTTL positive int
+     * @return Random value between agentMinTTL and agentMaxTTL or at least agentMinTTL minutes.
+     */
+    public static int calculateTTL(int agentMinTTL, int agentMaxTTL) {
+        if (agentMaxTTL < agentMinTTL)
+            return agentMinTTL;
+        Random rand = new Random();
+        int result;
+        int random = agentMaxTTL - agentMinTTL;
+        result = agentMinTTL + rand.nextInt(random + 1);
+        return result;
     }
 }
