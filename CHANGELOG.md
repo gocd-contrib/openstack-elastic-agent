@@ -1,3 +1,9 @@
+### 0.11.0
+
+ * Added cache for calls to OpenStack API
+ * Make it possible to spin up more agents than needed at the moment.
+ * Add randomness to agent's lifetime
+
 ### 0.10.0
 
  - Move to version 3.0 of the elastic agent endpoint, requires Go Server >= v18.2
