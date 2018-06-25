@@ -13,3 +13,9 @@ out/
 
 target/
 **/*.iml
+
+# Eclipse
+.settings
+bin/
+.classpath
+.project

@@ -101,6 +101,10 @@ public class PluginSettings {
     @Expose
     @SerializedName("openstack_userdata")
     private String openstackUserdata;
+    
+    @Expose
+    @SerializedName("ssl_verification_disabled")
+    private Boolean sslVerificationDisabled;
 
     private Period autoRegisterPeriod;
 
@@ -272,6 +276,10 @@ public class PluginSettings {
         return openstackUserdata;
     }
 
+    public Boolean getSSLVerificationDisabled() {
+        return sslVerificationDisabled;
+    }
+    
     public void setOpenstackEndpoint(String openstackEndpoint) {
         this.openstackEndpoint = openstackEndpoint;
     }
@@ -323,5 +331,9 @@ public class PluginSettings {
     public void setOpenstackUserdata(String openstackUserdata) {
         this.openstackUserdata = openstackUserdata;
     }
+    
+    public void setSSLVerificationDisabled(Boolean sslVerificationDisabled) {
+        this.sslVerificationDisabled = sslVerificationDisabled;
+    }    
 
 }
