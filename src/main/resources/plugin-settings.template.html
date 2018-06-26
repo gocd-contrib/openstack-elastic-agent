@@ -19,7 +19,7 @@
   <input type="text" ng-model="go_server_url" ng-required="true"/>
   <span class="form_error" ng-show="GOINPUTNAME[go_server_url].$error.server">{{ GOINPUTNAME[go_server_url].$error.server}}</span>
 </div>
-
+  
 <div class="form_item_block">
   <label>Agent Time To Live minimum (E.g. 30 minutes)<span class='asterix'>*</span></label>
   <input type="text" ng-model="auto_register_timeout" ng-required="true" placeholder="30"/>
@@ -123,4 +123,10 @@
   <span class="form_error" ng-show="GOINPUTNAME[openstack_network].$error.server">{{ GOINPUTNAME[openstack_network].$error.server}}</span>
 </div>
 
+<div class="form_item_block">
+  <label>Disable SSL verification when self-signed certificates are used<span class='asterix'>*</span></label>
+  <input type="radio" ng-model="ssl_verification_disabled" value="true"/> True
+  <input type="radio" ng-model="ssl_verification_disabled" value="false" checked="checked"/> False
+  <span class="form_error" ng-show="GOINPUTNAME[ssl_verification_disabled].$error.server">{{ GOINPUTNAME[ssl_verification_disabled].$error.server}}</span>
+</div>  
 

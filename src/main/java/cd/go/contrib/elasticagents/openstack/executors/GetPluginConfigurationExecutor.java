@@ -50,6 +50,7 @@ public class GetPluginConfigurationExecutor implements RequestExecutor {
     public static final Field DEFAULT_MAX_INSTANCE_LIMIT = new PositiveNumberField("default_max_instance_limit", "Default Max Instance Limit", "10", true,
             false, "16");
     public static final Field OPENSTACK_USERDATA = new Field("openstack_userdata", "OpenStack Userdata", null, false, false, "17");
+    public static final Field SSL_VERIFICATION_DISABLED = new NonBlankField("ssl_verification_disabled", "Disable SSL verification", "false", true, false, "18");
 
     //public static final Field AGENT_RESOURCES = new Field("resources", "Agent Resources", null, false, false, "11");
     //public static final Field AGENT_ENVIRONMENTS = new Field("environments", "Environments", null, false, false, "12");
@@ -75,6 +76,7 @@ public class GetPluginConfigurationExecutor implements RequestExecutor {
         FIELDS.put(OPENSTACK_FLAVOR.key(), OPENSTACK_FLAVOR);
         FIELDS.put(OPENSTACK_NETWORK.key(), OPENSTACK_NETWORK);
         FIELDS.put(OPENSTACK_USERDATA.key(), OPENSTACK_USERDATA);
+        FIELDS.put(SSL_VERIFICATION_DISABLED.key(), SSL_VERIFICATION_DISABLED);
 
         // agent spec
         //FIELDS.put(AGENT_RESOURCES.key(), AGENT_RESOURCES);
