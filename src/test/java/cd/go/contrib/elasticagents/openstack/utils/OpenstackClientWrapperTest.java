@@ -24,7 +24,7 @@ public class OpenstackClientWrapperTest {
     private String transactionId = UUID.randomUUID().toString();
 
     @Test
-    public void shouldGetImageIdGivenImageName() {
+    public void shouldGetImageIdGivenImageName() throws ImageNotFoundException {
 
         // Arrange
         String imageName = "ImageName";
@@ -60,7 +60,7 @@ public class OpenstackClientWrapperTest {
     }
 
     @Test
-    public void shouldGetPreviousImageIdGivenImageName() {
+    public void shouldGetPreviousImageIdGivenImageName() throws ImageNotFoundException {
 
         // Arrange
         String imageName = "ImageName";

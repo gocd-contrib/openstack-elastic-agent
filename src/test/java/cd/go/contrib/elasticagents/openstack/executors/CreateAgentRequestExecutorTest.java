@@ -2,6 +2,7 @@ package cd.go.contrib.elasticagents.openstack.executors;
 
 import cd.go.contrib.elasticagents.openstack.*;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
+import cd.go.contrib.elasticagents.openstack.utils.ImageNotFoundException;
 import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +30,7 @@ public class CreateAgentRequestExecutorTest {
     private Map<String, Object> job2;
 
     @Before
-    public void SetUp() {
+    public void SetUp() throws ImageNotFoundException {
         createAgentRequest = mock(CreateAgentRequest.class);
         agentInstances = mock(AgentInstances.class);
         pluginRequest = mock(PluginRequest.class);

@@ -17,6 +17,7 @@
 package cd.go.contrib.elasticagents.openstack;
 
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
+import cd.go.contrib.elasticagents.openstack.utils.ImageNotFoundException;
 import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
 import com.google.gson.Gson;
 import com.thoughtworks.go.plugin.api.logging.Logger;
@@ -30,7 +31,6 @@ import org.openstack4j.api.exceptions.OS4JException;
 import org.openstack4j.model.compute.Server;
 import org.openstack4j.model.compute.builder.ServerCreateBuilder;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -107,7 +107,7 @@ public class OpenStackInstance {
         os_client.compute().servers().delete(id);
     }
 
-    public static OpenStackInstance create(CreateAgentRequest request, PluginSettings settings, OSClient osclient, String transactionId) throws InterruptedException, OS4JException, IOException {
+    public static OpenStackInstance create(CreateAgentRequest request, PluginSettings settings, OSClient osclient, String transactionId) throws OS4JException, ImageNotFoundException {
 
         String instance_name;
 
@@ -151,12 +151,13 @@ public class OpenStackInstance {
         LOG.debug(request.properties().toString());
 
         final String encodedUserData = getEncodedUserData(request, settings);
+        OpenstackClientWrapper client = new OpenstackClientWrapper(osclient);
         String imageNameOrId = getImageIdOrName(request.properties(), settings);
+        imageNameOrId = client.getImageId(imageNameOrId, transactionId);
         String flavorNameOrId = getFlavorIdOrName(request.properties(), settings);
         String networkId = StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_NETWORK_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_NETWORK_ID_ARGS) : settings.getOpenstackNetwork();
-        OpenstackClientWrapper client = new OpenstackClientWrapper(osclient);
         ServerCreateBuilder scb = Builders.server()
-                .image(client.getImageId(imageNameOrId, transactionId))
+                .image(imageNameOrId)
                 .name(instance_name)
                 .flavor(client.getFlavorId(flavorNameOrId, transactionId))
                 .networks(Arrays.asList(networkId))
