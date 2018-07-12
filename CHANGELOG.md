@@ -1,3 +1,8 @@
+### 0.12.0
+
+ * adds optional ignoring of ssl certificates
+ * fixes handling invalid image ID \#15
+
 ### 0.11.0
 
  * Added cache for calls to OpenStack API
