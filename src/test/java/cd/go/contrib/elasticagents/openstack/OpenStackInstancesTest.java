@@ -1,5 +1,6 @@
 package cd.go.contrib.elasticagents.openstack;
 
+import cd.go.contrib.elasticagents.openstack.utils.ImageNotFoundException;
 import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
 import org.cache2k.Cache;
 import org.cache2k.Cache2kBuilder;
@@ -29,7 +30,7 @@ public class OpenStackInstancesTest {
     private String transactionId = UUID.randomUUID().toString();
 
     @Before
-    public void SetUp() {
+    public void SetUp() throws ImageNotFoundException {
         client = mock(OpenstackClientWrapper.class);
         instanceId = "b45b5658-b093-4a58-bf22-17d898171c95";
         instance = new OpenStackInstance(instanceId, new Date(), null,

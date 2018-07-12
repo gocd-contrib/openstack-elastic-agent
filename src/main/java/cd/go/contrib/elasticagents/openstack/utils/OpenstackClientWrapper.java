@@ -52,7 +52,7 @@ public class OpenstackClientWrapper {
         return client;
     }
 
-    public String getImageId(String nameOrId, String transactionId) {
+    public String getImageId(String nameOrId, String transactionId) throws ImageNotFoundException {
         LOG.debug(format("[{0}] [getImageId] nameOrId [{1}]", transactionId, nameOrId));
         String imageId = imageCache.get(nameOrId);
         if (imageId != null) {
@@ -79,9 +79,10 @@ public class OpenstackClientWrapper {
                     return imageId;
                 }
             }
-            throw new RuntimeException("Failed to find image " + nameOrId);
+            LOG.error("Failed to find image by ID " + nameOrId);
+            throw new ImageNotFoundException("Failed to find image " + nameOrId);
         } else {
-            LOG.warn("Failed to find image by ID " + nameOrId);
+            LOG.debug("Found image by ID " + nameOrId);
             imageCache.put(nameOrId, nameOrId);
             return nameOrId;
         }

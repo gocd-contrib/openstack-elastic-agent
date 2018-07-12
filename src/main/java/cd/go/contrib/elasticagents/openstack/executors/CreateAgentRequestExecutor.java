@@ -18,6 +18,7 @@ package cd.go.contrib.elasticagents.openstack.executors;
 
 import cd.go.contrib.elasticagents.openstack.*;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
+import cd.go.contrib.elasticagents.openstack.utils.ImageNotFoundException;
 import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
 import com.thoughtworks.go.plugin.api.logging.Logger;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
@@ -118,9 +119,13 @@ public class CreateAgentRequestExecutor implements RequestExecutor {
             return new DefaultGoPluginApiResponse(200);
         }
 
-        LOG.info(format("[{0}] [create-agent] Will create new agent since no matching agents found", transactionId));
-        OpenStackInstance pendingInstance = agentInstances.create(request, pluginRequest.getPluginSettings(), transactionId);
-        this.pendingAgentsService.addPending(pendingInstance, request);
+        try {
+            OpenStackInstance pendingInstance = agentInstances.create(request, pluginRequest.getPluginSettings(), transactionId);
+            LOG.info(format("[{0}] [create-agent] Will create new agent since no matching agents found", transactionId));
+            this.pendingAgentsService.addPending(pendingInstance, request);
+        } catch (ImageNotFoundException ex) {
+            LOG.error(format("[{0}] [create-agent] Cannot create new agent since no image found", transactionId));
+        }
         return new DefaultGoPluginApiResponse(200);
     }
 }

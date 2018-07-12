@@ -17,6 +17,7 @@
 package cd.go.contrib.elasticagents.openstack;
 
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
+import cd.go.contrib.elasticagents.openstack.utils.ImageNotFoundException;
 import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
 import cd.go.contrib.elasticagents.openstack.utils.Util;
 import com.thoughtworks.go.plugin.api.logging.Logger;
@@ -141,7 +142,13 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         if (!proposedImageIdOrName.equals(instance.getImageIdOrName())) {
             LOG.debug(format("[{0}] [matchInstance] image name/id: [{1}] did NOT match with instance image: [{2}]", transactionId,
                     proposedImageIdOrName, instance.getImageIdOrName()));
-            String proposedImageId = client.getImageId(proposedImageIdOrName, transactionId);
+            String proposedImageId = null;
+            try {
+                proposedImageId = client.getImageId(proposedImageIdOrName, transactionId);
+            } catch (ImageNotFoundException e) {
+
+                return false;
+            }
             LOG.debug(format("[{0}] [matchInstance] Trying to match image id: [{1}] with instance image: [{2}]", transactionId,
                     proposedImageId, instance.getImageIdOrName()));
             if (!proposedImageId.equals(instance.getImageIdOrName())) {
