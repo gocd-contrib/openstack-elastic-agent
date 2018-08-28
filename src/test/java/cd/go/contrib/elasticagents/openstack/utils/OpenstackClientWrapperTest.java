@@ -50,7 +50,9 @@ public class OpenstackClientWrapperTest {
 
         doReturn(images).when(imageService).list();
 
-        final OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(client);
+        Cache<String, String> imageCache = new Cache2kBuilder<String, String>() {}.entryCapacity(100).build();
+
+        final OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(client, imageCache, null);
 
         // Act
         final String imageId = clientWrapper.getImageId(imageName, transactionId);

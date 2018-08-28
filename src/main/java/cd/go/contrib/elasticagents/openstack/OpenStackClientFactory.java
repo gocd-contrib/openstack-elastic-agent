@@ -29,7 +29,7 @@ public class OpenStackClientFactory {
     private static OSClient client;
     private static PluginSettings pluginSettings;
 
-    public static synchronized OSClient os_client(PluginSettings pluginSettings) throws Exception {
+    public static synchronized OSClient os_client(PluginSettings pluginSettings) {
         if (pluginSettings.equals(OpenStackClientFactory.pluginSettings) && OpenStackClientFactory.client != null) {
             if (OpenStackClientFactory.client.getToken().getExpires().after(new Date(System.currentTimeMillis() + 5 * 60 * 1000))) {
                 LOG.debug("OpenStackClientFactory - token is still valid : " + OpenStackClientFactory.client.getToken().getExpires().toString());
@@ -49,7 +49,7 @@ public class OpenStackClientFactory {
         return config;
     }
 
-    private static OSClient createClient(PluginSettings pluginSettings) throws Exception {
+    private static OSClient createClient(PluginSettings pluginSettings) {
         if (OpenStackClientFactory.client == null) {
             LOG.debug("OpenStackClientFactory - get new token from OpenStack");
         } else {

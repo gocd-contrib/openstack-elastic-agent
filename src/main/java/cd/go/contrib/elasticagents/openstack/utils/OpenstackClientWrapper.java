@@ -32,18 +32,13 @@ public class OpenstackClientWrapper {
     private static Cache<String, String> flavorCache;
     private static int imageCacheTTL = 30;
 
-    public OpenstackClientWrapper(OSClient os) {
-        this.client = os;
-        initCache(30);
-    }
-
     public OpenstackClientWrapper(OSClient os, Cache<String, String> imageCache, Cache<String, String> flavorCache) {
         this.client = os;
         OpenstackClientWrapper.imageCache = imageCache;
         OpenstackClientWrapper.flavorCache = flavorCache;
     }
 
-    public OpenstackClientWrapper(PluginSettings settings) throws Exception {
+    public OpenstackClientWrapper(PluginSettings settings) {
         client = OpenStackClientFactory.os_client(settings);
         initCache(Integer.parseInt(settings.getOpenstackImageCacheTTL()));
     }
@@ -129,7 +124,7 @@ public class OpenstackClientWrapper {
         previousImageIds.clear();
     }
 
-    private void initCache(int minutesTTL) {
+    private synchronized void initCache(int minutesTTL) {
 
         if (OpenstackClientWrapper.imageCache == null || imageCacheTTL != minutesTTL) {
             LOG.info(format("[initCache] with TTL [{0}] minutes", minutesTTL));
