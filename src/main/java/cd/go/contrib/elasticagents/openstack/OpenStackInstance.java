@@ -151,7 +151,7 @@ public class OpenStackInstance {
         LOG.debug(request.properties().toString());
 
         final String encodedUserData = getEncodedUserData(request, settings);
-        OpenstackClientWrapper client = new OpenstackClientWrapper(osclient);
+        OpenstackClientWrapper client = new OpenstackClientWrapper(settings);
         String imageNameOrId = getImageIdOrName(request.properties(), settings);
         imageNameOrId = client.getImageId(imageNameOrId, transactionId);
         String flavorNameOrId = getFlavorIdOrName(request.properties(), settings);
