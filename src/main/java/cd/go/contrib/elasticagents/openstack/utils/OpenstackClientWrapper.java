@@ -51,10 +51,10 @@ public class OpenstackClientWrapper {
         LOG.debug(format("[{0}] [getImageId] nameOrId [{1}]", transactionId, nameOrId));
         String imageId = imageCache.get(nameOrId);
         if (imageId != null) {
-            LOG.debug(format("[{0}] [getImageId] found [{1}] with imageId [{2}] in imageCache", transactionId, nameOrId, imageId));
+            LOG.info(format("[{0}] [getImageId] found [{1}] with imageId [{2}] in imageCache", transactionId, nameOrId, imageId));
             return imageId;
         }
-        LOG.debug(format("[{0}] [getImageId] NOT found [{1}] in imageCache", transactionId, nameOrId));
+        LOG.info(format("[{0}] [getImageId] NOT found [{1}] in imageCache", transactionId, nameOrId));
         Image image = client.compute().images().get(nameOrId);
         if (image == null) {
             for (Image tmpImage : client.compute().images().list()) {
@@ -100,10 +100,10 @@ public class OpenstackClientWrapper {
         LOG.debug(format("[{0}] [getFlavorId] nameOrId [{1}]", transactionId, nameOrId));
         String flavorId = flavorCache.get(nameOrId);
         if (flavorId != null) {
-            LOG.debug(format("[{0}] [getFlavorId] found [{1}] with flavorId [{2}] in flavorCache", transactionId, nameOrId, flavorId));
+            LOG.info(format("[{0}] [getFlavorId] found [{1}] with flavorId [{2}] in flavorCache", transactionId, nameOrId, flavorId));
             return flavorId;
         }
-        LOG.debug(format("[{0}] [getFlavorId] NOT found [{1}] in flavorCache", transactionId, nameOrId));
+        LOG.info(format("[{0}] [getFlavorId] NOT found [{1}] in flavorCache", transactionId, nameOrId));
         Flavor flavor = client.compute().flavors().get(nameOrId);
         if (flavor == null) {
             for (Flavor someFlavor : client.compute().flavors().list()) {
