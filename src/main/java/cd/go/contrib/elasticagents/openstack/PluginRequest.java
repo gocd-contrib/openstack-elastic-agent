@@ -23,8 +23,7 @@ import com.thoughtworks.go.plugin.api.response.GoApiResponse;
 
 import java.util.Collection;
 
-import static cd.go.contrib.elasticagents.openstack.Constants.API_VERSION;
-import static cd.go.contrib.elasticagents.openstack.Constants.PLUGIN_IDENTIFIER;
+import static cd.go.contrib.elasticagents.openstack.Constants.*;
 
 public class PluginRequest {
     private final GoApplicationAccessor accessor;
@@ -36,7 +35,7 @@ public class PluginRequest {
     }
 
     public PluginSettings getPluginSettings() throws ServerRequestFailedException {
-        DefaultGoApiRequest request = new DefaultGoApiRequest(Constants.REQUEST_SERVER_GET_PLUGIN_SETTINGS, API_VERSION, PLUGIN_IDENTIFIER);
+        DefaultGoApiRequest request = new DefaultGoApiRequest(REQUEST_SERVER_GET_PLUGIN_SETTINGS, PLUGIN_SETTINGS_PROCESSOR_API_VERSION, PLUGIN_IDENTIFIER);
         GoApiResponse response = accessor.submit(request);
 
         if (response.responseCode() != 200) {
@@ -47,7 +46,7 @@ public class PluginRequest {
     }
 
     public Agents listAgents() throws ServerRequestFailedException {
-        DefaultGoApiRequest request = new DefaultGoApiRequest(Constants.REQUEST_SERVER_LIST_AGENTS, API_VERSION, PLUGIN_IDENTIFIER);
+        DefaultGoApiRequest request = new DefaultGoApiRequest(REQUEST_SERVER_LIST_AGENTS, ELASTIC_AGENT_PROCESSOR_API_VERSION, PLUGIN_IDENTIFIER);
         GoApiResponse response = accessor.submit(request);
 
         if (response.responseCode() != 200) {
@@ -63,7 +62,7 @@ public class PluginRequest {
             return;
         }
 
-        DefaultGoApiRequest request = new DefaultGoApiRequest(Constants.PROCESS_DISABLE_AGENTS, API_VERSION, PLUGIN_IDENTIFIER);
+        DefaultGoApiRequest request = new DefaultGoApiRequest(PROCESS_DISABLE_AGENTS, ELASTIC_AGENT_PROCESSOR_API_VERSION, PLUGIN_IDENTIFIER);
 
         request.setRequestBody(Agent.toJSONArray(toBeDisabled));
 
@@ -79,7 +78,7 @@ public class PluginRequest {
             return;
         }
 
-        DefaultGoApiRequest request = new DefaultGoApiRequest(Constants.PROCESS_DELETE_AGENTS, API_VERSION, PLUGIN_IDENTIFIER);
+        DefaultGoApiRequest request = new DefaultGoApiRequest(PROCESS_DELETE_AGENTS, ELASTIC_AGENT_PROCESSOR_API_VERSION, PLUGIN_IDENTIFIER);
         request.setRequestBody(Agent.toJSONArray(toBeDeleted));
         GoApiResponse response = accessor.submit(request);
 
