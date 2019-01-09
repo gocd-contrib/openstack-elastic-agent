@@ -78,7 +78,7 @@ public class CreateAgentRequestExecutor implements RequestExecutor {
             LOG.debug(format("[{0}] [create-agent] Check if pending agent {1} match job profile", transactionId, agent));
             AgentMatchResult matchResult = agent.match(transactionId, requestImageId, flavorId, request.environment(), request.job());
             if (matchResult.isJobMatch()) {
-                LOG.info(format("[{0}] [create-agent] Will NOT create new instance, agent for job {1} is still being created {2} ", transactionId, request.job(), agent.elasticAgentId()));
+                LOG.info(format("[{0}] [create-agent] Will NOT create new instance, agent for job {1} is still being created {2} ", transactionId, request.job().getRepresentation(), agent.elasticAgentId()));
                 return new DefaultGoPluginApiResponse(200);
             }
             if (matchResult.isProfileMatch()) {

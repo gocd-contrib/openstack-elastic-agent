@@ -17,10 +17,7 @@
 package cd.go.contrib.elasticagents.openstack;
 
 import cd.go.contrib.elasticagents.openstack.executors.*;
-import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
-import cd.go.contrib.elasticagents.openstack.requests.ProfileValidateRequest;
-import cd.go.contrib.elasticagents.openstack.requests.ShouldAssignWorkRequest;
-import cd.go.contrib.elasticagents.openstack.requests.ValidatePluginSettings;
+import cd.go.contrib.elasticagents.openstack.requests.*;
 import com.thoughtworks.go.plugin.api.GoApplicationAccessor;
 import com.thoughtworks.go.plugin.api.GoPlugin;
 import com.thoughtworks.go.plugin.api.GoPluginIdentifier;
@@ -53,7 +50,7 @@ public class OpenStackPlugin implements GoPlugin {
     public GoPluginApiResponse handle(GoPluginApiRequest request) throws UnhandledRequestTypeException {
         try {
             switch (Request.fromString(request.requestName())) {
-                case REQUEST_GET_CAPABILITIES:
+                case REQUEST_CAPABILITIES:
                     return new GetCapabilitiesExecutor().execute();
                 case REQUEST_SHOULD_ASSIGN_WORK:
                     refreshInstances();
@@ -78,7 +75,10 @@ public class OpenStackPlugin implements GoPlugin {
                     return new GetPluginSettingsIconExecutor().execute();
                 case PLUGIN_SETTINGS_VALIDATE_CONFIGURATION:
                     return ValidatePluginSettings.fromJSON(request.requestBody()).executor().execute();
-                 default:
+                case REQUEST_JOB_COMPLETION:
+                    refreshInstances();
+                    return JobCompletionRequest.fromJSON(request.requestBody()).executor(agentInstances, pluginRequest).execute();
+                default:
                     throw new UnhandledRequestTypeException(request.requestName());
             }
         } catch (Exception e) {
@@ -100,4 +100,4 @@ public class OpenStackPlugin implements GoPlugin {
         return PLUGIN_IDENTIFIER;
     }
 
- }
+}

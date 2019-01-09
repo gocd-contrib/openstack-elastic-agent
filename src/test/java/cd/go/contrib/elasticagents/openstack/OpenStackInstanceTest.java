@@ -1,32 +1,29 @@
 package cd.go.contrib.elasticagents.openstack;
 
+import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 import org.junit.Before;
 import org.junit.Test;
-import org.openstack4j.api.OSClient;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class OpenStackInstanceTest {
 
     private CreateAgentRequest request;
     private PluginSettings settings;
-    private OSClient client;
-    HashMap<String, String> properties;
-    private Map<String, Object> job1;
+    private HashMap<String, String> properties;
 
     @Before
     public void SetUpMocks() {
-        client = mock(OSClient.class);
         properties = new HashMap<>();
-        job1 = new HashMap<>();
+        JobIdentifier job1 = mock(JobIdentifier.class);
         settings = new PluginSettings();
-        request = new CreateAgentRequest("abc-key", properties, job1,"testing");
+        request = new CreateAgentRequest("abc-key", properties, job1, "testing");
     }
 
     @Test
