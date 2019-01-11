@@ -81,7 +81,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
                 return;
             }
             Agents agents = pluginRequest.listAgents();
-            Map<String, String> op_instance_prefix = new HashMap<String, String>();
+            Map<String, String> op_instance_prefix = new HashMap<>();
             op_instance_prefix.put("name", pluginSettings.getOpenstackVmPrefix());
             List<Server> allInstances = (List<Server>) os_client(pluginSettings).compute().servers().list(op_instance_prefix);
             for (Server server : allInstances) {
@@ -196,7 +196,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
     private OpenStackInstances unregisteredAfterTimeout(PluginSettings settings, Agents knownAgents) throws Exception {
 
         String agentID;
-        Map<String, String> op_instance_prefix = new HashMap<String, String>();
+        Map<String, String> op_instance_prefix = new HashMap<>();
         op_instance_prefix.put("name", settings.getOpenstackVmPrefix());
 
         Period period = settings.getAutoRegisterPeriod();

@@ -1,5 +1,6 @@
 package cd.go.contrib.elasticagents.openstack;
 
+import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 
 import java.util.Map;
@@ -21,7 +22,7 @@ public class PendingAgent {
         this.pendingInstanceFlavorId = pendingInstance.getFlavorIdOrName();
     }
 
-    public AgentMatchResult match(String transactionId, String proposedImageIdOrName, String proposedFlavorIdOrName, String requestEnvironment, Map<String, Object> job) {
+    public AgentMatchResult match(String transactionId, String proposedImageIdOrName, String proposedFlavorIdOrName, String requestEnvironment, JobIdentifier job) {
         String id = this.elasticAgentId();
         LOG.debug(format("[{0}] [matchPendingInstance] Instance: {1}", transactionId, id));
 

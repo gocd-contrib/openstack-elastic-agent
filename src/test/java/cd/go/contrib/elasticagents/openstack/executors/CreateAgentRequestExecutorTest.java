@@ -1,6 +1,7 @@
 package cd.go.contrib.elasticagents.openstack.executors;
 
 import cd.go.contrib.elasticagents.openstack.*;
+import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 import cd.go.contrib.elasticagents.openstack.utils.ImageNotFoundException;
 import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
@@ -19,15 +20,15 @@ public class CreateAgentRequestExecutorTest {
     private static final String IMAGE_ID = "7637f039-027d-471f-8d6c-4177635f84f8";
     private static final String FLAVOR_ID = "5";
     private CreateAgentRequest createAgentRequest;
-    private AgentInstances agentInstances;
+    private AgentInstances<OpenStackInstance> agentInstances;
     private PluginRequest pluginRequest;
     private Agents agents;
     private PluginSettings pluginSettings;
     private OpenstackClientWrapper openstackClientWrapper;
     private PendingAgentsService pendingAgents;
     private OpenStackInstance osInstance;
-    private Map<String, Object> job1;
-    private Map<String, Object> job2;
+    private JobIdentifier job1;
+    private JobIdentifier job2;
 
     @Before
     public void SetUp() throws ImageNotFoundException {
@@ -52,21 +53,21 @@ public class CreateAgentRequestExecutorTest {
         when(osInstance.getFlavorIdOrName()).thenReturn(FLAVOR_ID);
         when(openstackClientWrapper.getImageId(anyString(), anyString())).thenReturn(IMAGE_ID);
         when(openstackClientWrapper.getFlavorId(anyString(), anyString())).thenReturn(FLAVOR_ID);
-        job1 = new HashMap<>();
+        job1 = mock(JobIdentifier.class);
         populateJobFields(job1);
-        job2 = new HashMap<>();
+        job2 = mock(JobIdentifier.class);
         populateJobFields(job2);
-        job2.put("job_id", 101);
+        when(job2.getJobId()).thenReturn(101L);
     }
 
-    private void populateJobFields(Map<String, Object> job) {
-        job.put("job_id", 100);
-        job.put("job_name", "test-job1");
-        job.put("pipeline_counter", 1);
-        job.put("pipeline_label", "build");
-        job.put("pipeline_name", "build");
-        job.put("stage_counter", "1");
-        job.put("stage_name", "test-stage");
+    private void populateJobFields(JobIdentifier job) {
+        when(job.getJobId()).thenReturn(100L);
+        when(job.getPipelineName()).thenReturn("build");
+        when(job.getPipelineLabel()).thenReturn("build");
+        when(job.getPipelineCounter()).thenReturn(1L);
+        when(job.getStageName()).thenReturn("test-stage");
+        when(job.getStageCounter()).thenReturn("1");
+        when(job.getJobName()).thenReturn("test-job1");
     }
 
     @Test

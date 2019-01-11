@@ -21,9 +21,11 @@ import cd.go.contrib.elasticagents.openstack.AgentInstances;
 import cd.go.contrib.elasticagents.openstack.PluginRequest;
 import cd.go.contrib.elasticagents.openstack.RequestExecutor;
 import cd.go.contrib.elasticagents.openstack.executors.ShouldAssignWorkRequestExecutor;
+import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.Expose;
 
 import java.util.Map;
 
@@ -31,7 +33,8 @@ public class ShouldAssignWorkRequest {
     public static final Gson GSON = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
     private String environment;
     private Agent agent;
-    private Map<String, String> jobIdentifier;
+    @Expose
+    private JobIdentifier jobIdentifier;
     private Map<String, String> properties;
 
     public static ShouldAssignWorkRequest fromJSON(String json) {
@@ -66,7 +69,7 @@ public class ShouldAssignWorkRequest {
     public String toString() {
         final StringBuffer sb = new StringBuffer("ShouldAssignWorkRequest{");
         sb.append("environment='").append(environment).append('\'');
-        sb.append(", jobIdentifier=").append(jobIdentifier);
+        sb.append(", jobIdentifier='").append(jobIdentifier.getRepresentation()).append('\'');
         sb.append(", agent=").append(agent);
         sb.append(", properties=").append(properties);
         sb.append('}');
