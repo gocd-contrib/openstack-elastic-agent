@@ -1,3 +1,8 @@
+### 0.13.0
+
+ * fix openstack API caching issues
+ * upgrade to elastic api V4 with minimal no-op implementation \#18
+
 ### 0.12.0
 
  * adds optional ignoring of ssl certificates
