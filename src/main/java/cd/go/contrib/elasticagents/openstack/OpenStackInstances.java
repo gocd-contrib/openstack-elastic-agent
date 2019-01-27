@@ -21,7 +21,7 @@ import cd.go.contrib.elasticagents.openstack.utils.ImageNotFoundException;
 import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
 import cd.go.contrib.elasticagents.openstack.utils.Util;
 import com.thoughtworks.go.plugin.api.logging.Logger;
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.Period;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.model.compute.Server;
@@ -30,7 +30,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.text.MessageFormat.format;
-import static org.apache.commons.lang.StringUtils.stripToEmpty;
+import static org.apache.commons.lang3.StringUtils.stripToEmpty;
 
 public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
 
