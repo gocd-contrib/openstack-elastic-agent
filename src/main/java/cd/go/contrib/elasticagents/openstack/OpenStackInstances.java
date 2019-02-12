@@ -111,8 +111,8 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         }
     }
 
-    public boolean isInstanceAlive(PluginSettings settings, String id) throws Exception {
-        return os_client(settings).compute().servers().get(id) == null ? false : true;
+    public boolean doesInstanceExist(PluginSettings settings, String id) throws Exception {
+        return os_client(settings).compute().servers().get(id) != null;
     }
 
     public boolean matchInstance(String id, Map<String, String> properties, String requestEnvironment, PluginSettings pluginSettings, OpenstackClientWrapper
@@ -243,6 +243,12 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
     @Override
     public OpenStackInstance find(String agentId) {
         return instances.get(agentId);
+    }
+
+    @Override
+    public boolean isInstanceInErrorState(PluginSettings settings, String id) throws Exception {
+        Server instance = os_client(settings).compute().servers().get(id);
+        return instance != null && instance.getStatus() != null && instance.getStatus().equals(Server.Status.ERROR);
     }
 
 }

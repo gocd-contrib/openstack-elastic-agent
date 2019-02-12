@@ -124,6 +124,13 @@
 </div>
 
 <div class="form_item_block">
+  <label>Delete instances in ERROR state</label>
+  <input type="radio" ng-model="delete_error_instances" value="true"/> True
+  <input type="radio" ng-model="delete_error_instances" value="false" checked="checked"/> False
+  <span class="form_error" ng-show="GOINPUTNAME[delete_error_instances].$error.server">{{ GOINPUTNAME[delete_error_instances].$error.server}}</span>
+</div>
+
+<div class="form_item_block">
   <label>Disable SSL verification when self-signed certificates are used<span class='asterix'>*</span></label>
   <input type="radio" ng-model="ssl_verification_disabled" value="true"/> True
   <input type="radio" ng-model="ssl_verification_disabled" value="false" checked="checked"/> False
