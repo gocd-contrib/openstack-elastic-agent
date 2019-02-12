@@ -35,6 +35,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static cd.go.contrib.elasticagents.openstack.Constants.OPENSTACK_USERDATA_ARGS;
+import static java.text.MessageFormat.format;
 
 public class OpenStackInstance {
 
@@ -65,6 +66,8 @@ public class OpenStackInstance {
         this.createdAt = new DateTime(createdAt);
         this.environment = environment;
         Server server = os_client.compute().servers().get(id);
+        if(server == null)
+            throw new RuntimeException(format("Instance {0} does not exist", id));
         this.imageId = server.getImageId();
         this.flavorId = server.getFlavorId();
     }

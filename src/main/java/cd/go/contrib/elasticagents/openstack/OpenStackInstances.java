@@ -208,6 +208,8 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
             if (knownAgents.containsAgentWithId(server.getId())) {
                 continue;
             }
+            if(!doesInstanceExist(settings, server.getId()))
+                continue;
             if (DateUtils.addMinutes(server.getCreated(), period.getMinutes()).before(new Date())) {
                 unregisteredInstances.register(new OpenStackInstance(server.getId(),
                         server.getCreated(),
