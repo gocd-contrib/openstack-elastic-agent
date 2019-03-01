@@ -42,6 +42,9 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
     @Override
     public OpenStackInstance create(CreateAgentRequest request, PluginSettings settings, String transactionId) throws Exception {
         OpenStackInstance op_instance = OpenStackInstance.create(request, settings, os_client(settings), transactionId);
+        op_instance.setMaxCompletedJobs(request.properties().get(Constants.AGENT_JOB_LIMIT_MAX));
+        LOG.info(format("[create agent] properties: .", request.properties()));
+
         register(op_instance);
         return op_instance;
     }

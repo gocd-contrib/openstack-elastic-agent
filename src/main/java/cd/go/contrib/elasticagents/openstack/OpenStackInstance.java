@@ -36,11 +36,14 @@ import java.util.*;
 
 import static cd.go.contrib.elasticagents.openstack.Constants.OPENSTACK_USERDATA_ARGS;
 import static java.text.MessageFormat.format;
+import static cd.go.contrib.elasticagents.openstack.utils.Util.integerFromString;
 
 public class OpenStackInstance {
 
     private static final Gson GSON = new Gson();
     private String id;
+    private Integer jobsCompleted = 0;
+    private Integer maxCompletedJobs = 0;
     private final DateTime createdAt;
     private final String environment;
     private final String imageId;
@@ -74,6 +77,22 @@ public class OpenStackInstance {
 
     public String id() {
         return id;
+    }
+
+    /**
+     * Increment the job counter and return a boolean
+     * indicating if the instance should be terminated.
+     *
+     * @return Boolean indicating if the instance has executed
+     *         more jobs than its configured maximum
+     */
+    public boolean incrementJobsCompleted() {
+        jobsCompleted++;
+        return maxCompletedJobs != 0 && jobsCompleted >= maxCompletedJobs;
+    }
+
+    public void setMaxCompletedJobs(String maxCompletedJobs) {
+        this.maxCompletedJobs = integerFromString(maxCompletedJobs);
     }
 
     public DateTime createAt() {

@@ -48,6 +48,7 @@ public interface Constants {
     String ENVIRONMENT_KEY = "agent.auto.register.environments";
     String PLUGIN_ID_KEY = "agent.auto.register.elasticAgent.pluginId";
     String REGISTER_KEY = "agent.auto.register.key";
+    String AGENT_JOB_LIMIT_MAX = "agent_job_limit_max";
     String BOOTSTRAPPER_KEY = "AGENT_BOOTSTRAPPER_ARGS";
     String BOOTSTRAPPER_ARGS = "openstack_go_agent_bootstrapper";
     String GO_SERVER_URL_KEY = "GO_SERVER_URL";

@@ -77,4 +77,14 @@ public class Util {
         result = agentMinTTL + rand.nextInt(random + 1);
         return result;
     }
+
+    public static int integerFromString(String value) {
+        int result;
+        try {
+            result = Integer.parseInt(value);
+        } catch (NumberFormatException nfe) {
+            result = 0;
+        }
+        return result;
+    }
 }
