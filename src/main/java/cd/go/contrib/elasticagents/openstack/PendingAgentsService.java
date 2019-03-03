@@ -45,16 +45,18 @@ public class PendingAgentsService {
             try {
                 String instanceId = entry.getKey();
                 if (!agentInstances.doesInstanceExist(pluginRequest.getPluginSettings(), instanceId)) {
-                    LOG.info(format("[refresh-pending] Pending agent {0} has disappeared from openstack", instanceId));
+                    LOG.info(format("[refresh-pending] Pending agent {0} has disappeared from OpenStack", instanceId));
                     iter.remove();
                 }
                 else if(agentInstances.isInstanceInErrorState(pluginRequest.getPluginSettings(), instanceId)) {
-                    LOG.error(format("[refresh-pending] Pending agent's instance {0} is in ERROR state on openstack", instanceId));
+                    LOG.error(format("[refresh-pending] Pending agent instance {0} is in ERROR state on OpenStack", instanceId));
                     iter.remove();
                     if(pluginRequest.getPluginSettings().getOpenstackDeleteErrorInstances()) {
-                        LOG.error(format("[refresh-pending] Deleting pending agent's ERROR instance {0}", instanceId));
+                        LOG.error(format("[refresh-pending] Deleting pending agent ERROR instance {0}", instanceId));
                         agentInstances.terminate(instanceId, pluginRequest.getPluginSettings());
                     }
+                } else {
+                    LOG.info(format("[refresh-pending] Pending agent {0} has still pending", instanceId));
                 }
             } catch (Exception e) {
                 LOG.error("Failed to check instance state", e);

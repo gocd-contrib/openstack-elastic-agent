@@ -1,6 +1,9 @@
 package cd.go.contrib.elasticagents.openstack.executors;
 
-import cd.go.contrib.elasticagents.openstack.*;
+import cd.go.contrib.elasticagents.openstack.AgentInstances;
+import cd.go.contrib.elasticagents.openstack.OpenStackInstance;
+import cd.go.contrib.elasticagents.openstack.PluginRequest;
+import cd.go.contrib.elasticagents.openstack.RequestExecutor;
 import cd.go.contrib.elasticagents.openstack.requests.JobCompletionRequest;
 import com.thoughtworks.go.plugin.api.logging.Logger;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
@@ -23,7 +26,10 @@ public class JobCompletionRequestExecutor implements RequestExecutor {
 
     @Override
     public GoPluginApiResponse execute() throws Exception {
-        if ( agentInstances.find(jobCompletionRequest.getElasticAgentId()).incrementJobsCompleted() ) {
+        final OpenStackInstance instance = agentInstances.find(jobCompletionRequest.getElasticAgentId());
+        LOG.info(format("[job-completed] instance {0} has {1}/{2} completed jobs.",
+                jobCompletionRequest.getElasticAgentId(), instance.getJobsCompleted(), instance.getMaxCompletedJobs()));
+        if (instance.incrementJobsCompleted()) {
             LOG.info(format("[job-completed] Will terminate instance {0} as it has completed enough jobs.", jobCompletionRequest.getElasticAgentId()));
             agentInstances.terminate(jobCompletionRequest.getElasticAgentId(), pluginRequest.getPluginSettings());
         } else {

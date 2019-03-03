@@ -57,7 +57,7 @@
 </div>
 
 <div class="form_item_block">
-    <label ng-class="{'is-invalid-label': GOINPUTNAME[agent_job_limit_max].$error.server}">Max Instance Limit</label>
+    <label ng-class="{'is-invalid-label': GOINPUTNAME[agent_job_limit_max].$error.server}">Max Completed Jobs per Agent</label>
     <input ng-class="{'is-invalid-input': GOINPUTNAME[agent_job_limit_max].$error.server}" type="text" ng-model="agent_job_limit_max" ng-required="false" placeholder="0"/>
     <span class="form_error form-error" ng-class="{'is-visible': GOINPUTNAME[agent_job_limit_max].$error.server}" ng-show="GOINPUTNAME[agent_job_limit_max].$error.server">{{GOINPUTNAME[agent_job_limit_max].$error.server}}</span>
 </div>
