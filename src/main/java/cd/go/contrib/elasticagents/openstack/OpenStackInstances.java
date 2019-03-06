@@ -42,6 +42,9 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
     @Override
     public OpenStackInstance create(CreateAgentRequest request, PluginSettings settings, String transactionId) throws Exception {
         OpenStackInstance op_instance = OpenStackInstance.create(request, settings, os_client(settings), transactionId);
+        op_instance.setMaxCompletedJobs(request.properties().get(Constants.AGENT_JOB_LIMIT_MAX));
+        LOG.info(format("[create agent] properties: .", request.properties()));
+
         register(op_instance);
         return op_instance;
     }
@@ -111,8 +114,8 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         }
     }
 
-    public boolean isInstanceAlive(PluginSettings settings, String id) throws Exception {
-        return os_client(settings).compute().servers().get(id) == null ? false : true;
+    public boolean doesInstanceExist(PluginSettings settings, String id) throws Exception {
+        return os_client(settings).compute().servers().get(id) != null;
     }
 
     public boolean matchInstance(String id, Map<String, String> properties, String requestEnvironment, PluginSettings pluginSettings, OpenstackClientWrapper
@@ -208,6 +211,8 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
             if (knownAgents.containsAgentWithId(server.getId())) {
                 continue;
             }
+            if(!doesInstanceExist(settings, server.getId()))
+                continue;
             if (DateUtils.addMinutes(server.getCreated(), period.getMinutes()).before(new Date())) {
                 unregisteredInstances.register(new OpenStackInstance(server.getId(),
                         server.getCreated(),
@@ -243,6 +248,12 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
     @Override
     public OpenStackInstance find(String agentId) {
         return instances.get(agentId);
+    }
+
+    @Override
+    public boolean isInstanceInErrorState(PluginSettings settings, String id) throws Exception {
+        Server instance = os_client(settings).compute().servers().get(id);
+        return instance != null && instance.getStatus() != null && instance.getStatus().equals(Server.Status.ERROR);
     }
 
 }

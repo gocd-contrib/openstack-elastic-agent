@@ -106,6 +106,10 @@ public class PluginSettings {
     @SerializedName("ssl_verification_disabled")
     private Boolean sslVerificationDisabled;
 
+    @Expose
+    @SerializedName("delete_error_instances")
+    private Boolean deleteErrorInstances;
+
     private Period autoRegisterPeriod;
 
     public static PluginSettings fromJSON(String json) {
@@ -149,6 +153,8 @@ public class PluginSettings {
         if (openstackFlavor != null ? !openstackFlavor.equals(that.openstackFlavor) : that.openstackFlavor != null)
             return false;
         if (openstackNetwork != null ? !openstackNetwork.equals(that.openstackNetwork) : that.openstackNetwork != null)
+            return false;
+        if (deleteErrorInstances != that.deleteErrorInstances)
             return false;
         return openstackUserdata != null ? openstackUserdata.equals(that.openstackUserdata) : that.openstackUserdata == null;
 
@@ -334,6 +340,15 @@ public class PluginSettings {
     
     public void setSSLVerificationDisabled(Boolean sslVerificationDisabled) {
         this.sslVerificationDisabled = sslVerificationDisabled;
-    }    
+    }
 
+    public Boolean getOpenstackDeleteErrorInstances() {
+        if(deleteErrorInstances == null)
+            return false;
+        return deleteErrorInstances;
+    }
+
+    public void setDeleteErrorInstances(boolean deleteErrorInstances) {
+        this.deleteErrorInstances = deleteErrorInstances;
+    }
 }

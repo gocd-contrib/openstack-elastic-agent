@@ -35,11 +35,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static cd.go.contrib.elasticagents.openstack.Constants.OPENSTACK_USERDATA_ARGS;
+import static cd.go.contrib.elasticagents.openstack.utils.Util.integerFromString;
+import static java.text.MessageFormat.format;
 
 public class OpenStackInstance {
 
     private static final Gson GSON = new Gson();
     private String id;
+    private Integer jobsCompleted = 0;
+    private Integer maxCompletedJobs = 0;
     private final DateTime createdAt;
     private final String environment;
     private final String imageId;
@@ -65,12 +69,40 @@ public class OpenStackInstance {
         this.createdAt = new DateTime(createdAt);
         this.environment = environment;
         Server server = os_client.compute().servers().get(id);
+        if(server == null)
+            throw new RuntimeException(format("Instance {0} does not exist", id));
         this.imageId = server.getImageId();
         this.flavorId = server.getFlavorId();
     }
 
     public String id() {
         return id;
+    }
+
+    public Integer getJobsCompleted() {
+        return jobsCompleted;
+    }
+
+    public Integer getMaxCompletedJobs() {
+        return maxCompletedJobs;
+    }
+
+    /**
+     * Increment the job counter and return a boolean
+     * indicating if the instance should be terminated.
+     *
+     * @return Boolean indicating if the instance has executed
+     *         more jobs than its configured maximum
+     */
+    public boolean incrementJobsCompleted() {
+        jobsCompleted++;
+        LOG.info(format("instance {0} has completed {1} jobs", id, jobsCompleted));
+        return maxCompletedJobs != 0 && jobsCompleted >= maxCompletedJobs;
+    }
+
+    public void setMaxCompletedJobs(String maxCompletedJobs) {
+        this.maxCompletedJobs = integerFromString(maxCompletedJobs);
+        LOG.info(format("instance {0} set maxCompletedJobs={1}", id, maxCompletedJobs));
     }
 
     public DateTime createAt() {

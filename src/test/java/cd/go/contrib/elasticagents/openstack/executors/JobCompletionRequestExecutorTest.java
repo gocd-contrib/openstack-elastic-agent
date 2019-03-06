@@ -17,26 +17,52 @@
 package cd.go.contrib.elasticagents.openstack.executors;
 
 import cd.go.contrib.elasticagents.openstack.AgentInstances;
+import cd.go.contrib.elasticagents.openstack.OpenStackInstance;
 import cd.go.contrib.elasticagents.openstack.PluginRequest;
 import cd.go.contrib.elasticagents.openstack.PluginSettings;
 import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
 import cd.go.contrib.elasticagents.openstack.requests.JobCompletionRequest;
 import org.junit.Test;
 
+import java.util.Date;
+
 import static org.mockito.Mockito.*;
 
 public class JobCompletionRequestExecutorTest {
 
     @Test
-    public void shouldTerminateAgentAfterJobCompletes() throws Exception {
+    public void shouldNotTerminateAgentAfterInsufficientJobCompletes() throws Exception {
         String elasticAgentId = "agent-id";
         JobCompletionRequest request = new JobCompletionRequest(elasticAgentId, new JobIdentifier());
         AgentInstances agentInstances = mock(AgentInstances.class);
         PluginRequest pluginRequest = mock(PluginRequest.class);
         PluginSettings settings = mock(PluginSettings.class);
+        String instanceId = "b45b5658-b093-4a58-bf22-17d898171c95";
+        OpenStackInstance opInstance = new OpenStackInstance(instanceId, new Date(), null,
+                "7637f039-027d-471f-8d6c-4177635f84f8", "c1980bb5-ed59-4573-83c9-8391b53b3a55");
         when(pluginRequest.getPluginSettings()).thenReturn(settings);
+        when(agentInstances.find(anyString())).thenReturn(opInstance);
         new JobCompletionRequestExecutor(request, agentInstances, pluginRequest).execute();
 
         verify(agentInstances, never()).terminate(elasticAgentId, settings);
+    }
+
+    @Test
+    public void shouldTerminateAgentAfterEnoughJobCompletes() throws Exception {
+        String elasticAgentId = "agent-id";
+        JobCompletionRequest request = new JobCompletionRequest(elasticAgentId, new JobIdentifier());
+        AgentInstances agentInstances = mock(AgentInstances.class);
+        PluginRequest pluginRequest = mock(PluginRequest.class);
+        PluginSettings settings = mock(PluginSettings.class);
+        String instanceId = "b45b5658-b093-4a58-bf22-17d898171c95";
+        OpenStackInstance opInstance = new OpenStackInstance(instanceId, new Date(), null,
+                "7637f039-027d-471f-8d6c-4177635f84f8", "c1980bb5-ed59-4573-83c9-8391b53b3a55");
+        opInstance.setMaxCompletedJobs("2");
+        when(pluginRequest.getPluginSettings()).thenReturn(settings);
+        when(agentInstances.find(anyString())).thenReturn(opInstance);
+        new JobCompletionRequestExecutor(request, agentInstances, pluginRequest).execute();
+        new JobCompletionRequestExecutor(request, agentInstances, pluginRequest).execute();
+
+        verify(agentInstances).terminate(elasticAgentId, settings);
     }
 }

@@ -54,7 +54,7 @@ public interface AgentInstances<T> {
     /**
      * This message is sent when the plugin needs to terminate the agent instance.
      *
-     * @param agentId  the elastic agent id
+     * @param agentId  the elastic agent id, which is the same as openstack ID
      * @param settings the plugin settings object
      * @throws AgentNotFoundException if the agent instance could not be found
      */
@@ -71,7 +71,7 @@ public interface AgentInstances<T> {
     void terminateUnregisteredInstances(PluginSettings settings, Agents agents) throws Exception;
 
 
-    boolean isInstanceAlive(PluginSettings settings, String id) throws Exception;
+    boolean doesInstanceExist(PluginSettings settings, String id) throws Exception;
 
     boolean matchInstance(String id, Map<String, String> properties, String environment, PluginSettings pluginSettings, OpenstackClientWrapper client,
                           String transactionId, boolean usePreviousImageId);
@@ -104,4 +104,6 @@ public interface AgentInstances<T> {
      * @param agentId the elastic agent id
      */
     T find(String agentId);
+
+    boolean isInstanceInErrorState(PluginSettings pluginSettings, String id) throws Exception;
 }

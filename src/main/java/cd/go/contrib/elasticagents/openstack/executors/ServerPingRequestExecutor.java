@@ -17,7 +17,6 @@
 package cd.go.contrib.elasticagents.openstack.executors;
 
 import cd.go.contrib.elasticagents.openstack.*;
-import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
@@ -51,7 +50,7 @@ public class ServerPingRequestExecutor implements RequestExecutor {
                 missingAgents.add(agent);
             }else{
                 if (agent.agentState() == Agent.AgentState.LostContact){
-                    if (!agentInstances.isInstanceAlive(pluginSettings,agent.elasticAgentId())){
+                    if (!agentInstances.doesInstanceExist(pluginSettings,agent.elasticAgentId())){
                         missingAgents.add(agent);
                     }
                 }

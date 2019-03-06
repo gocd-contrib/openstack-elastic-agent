@@ -1,3 +1,7 @@
+### 0.14.0
+
+ * added feature to delete instances in error state
+
 ### 0.13.0
 
  * fix openstack API caching issues

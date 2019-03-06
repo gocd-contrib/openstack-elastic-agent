@@ -37,6 +37,7 @@ public class GetProfileMetadataExecutor implements RequestExecutor {
     public static final Metadata OPENSTACK_MIN_INSTANCE_LIMIT = new Metadata(Constants.OPENSTACK_MIN_INSTANCE_LIMIT, false, false);
     public static final Metadata OPENSTACK_MAX_INSTANCE_LIMIT = new Metadata(Constants.OPENSTACK_MAX_INSTANCE_LIMIT, false, false);
     public static final Metadata OPENSTACK_USERDATA = new Metadata(Constants.OPENSTACK_USERDATA_ARGS, false, false);
+    public static final Metadata AGENT_JOB_LIMIT_MAX = new Metadata(Constants.AGENT_JOB_LIMIT_MAX, false, false);
 
     public static final List<Metadata> FIELDS = new ArrayList<>();
 
@@ -49,6 +50,7 @@ public class GetProfileMetadataExecutor implements RequestExecutor {
         FIELDS.add(OPENSTACK_MIN_INSTANCE_LIMIT);
         FIELDS.add(OPENSTACK_MAX_INSTANCE_LIMIT);
         FIELDS.add(OPENSTACK_USERDATA);
+        FIELDS.add(AGENT_JOB_LIMIT_MAX);
     }
 
     @Override
