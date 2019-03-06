@@ -83,9 +83,9 @@ public interface AgentInstances<T> {
      *
      * @param settings the plugin settings object
      * @param agents   the list of all the agents
-     * @return a list of agent instances which were created after {@link PluginSettings#getAutoRegisterPeriod()} ago.
+     * @return a list of agent instances which were created after {@link PluginSettings#getAgentTTLMinPeriod()} ago.
      */
-    Agents instancesCreatedAfterTimeout(PluginSettings settings, Agents agents);
+    Agents instancesCreatedAfterTTL(PluginSettings settings, Agents agents);
 
     /**
      * This message is sent after plugin initialization time so that the plugin may connect to the cloud provider
@@ -105,5 +105,7 @@ public interface AgentInstances<T> {
      */
     T find(String agentId);
 
-    boolean isInstanceInErrorState(PluginSettings pluginSettings, String id) throws Exception;
+    boolean isInstanceInErrorState(PluginSettings settings, String id) throws Exception;
+
+    boolean hasAgentRegisterTimedOut(PluginSettings settings, String id) throws Exception;
 }

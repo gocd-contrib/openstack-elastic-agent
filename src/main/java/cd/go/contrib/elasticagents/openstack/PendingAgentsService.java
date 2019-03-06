@@ -55,8 +55,11 @@ public class PendingAgentsService {
                         LOG.error(format("[refresh-pending] Deleting pending agent ERROR instance {0}", instanceId));
                         agentInstances.terminate(instanceId, pluginRequest.getPluginSettings());
                     }
+                } else if(agentInstances.hasAgentRegisterTimedOut(pluginRequest.getPluginSettings(), instanceId)) {
+                    LOG.warn(format("[refresh-pending] Pending agent {0} has been pending for too long, terminating instance", instanceId));
+                    agentInstances.terminate(instanceId, pluginRequest.getPluginSettings());
                 } else {
-                    LOG.info(format("[refresh-pending] Pending agent {0} has still pending", instanceId));
+                    LOG.info(format("[refresh-pending] Pending agent {0} is still pending", instanceId));
                 }
             } catch (Exception e) {
                 LOG.error("Failed to check instance state", e);
