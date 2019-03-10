@@ -58,7 +58,7 @@ public class ServerPingRequestExecutor implements RequestExecutor {
         }
         disableIdleAgents(missingAgents);
 
-        Agents idleAgents = agentInstances.instancesCreatedAfterTimeout(pluginSettings,agents);
+        Agents idleAgents = agentInstances.instancesCreatedAfterTTL(pluginSettings,agents);
         disableIdleAgents(idleAgents);
         terminateDisabledAgents(idleAgents, pluginSettings);
 

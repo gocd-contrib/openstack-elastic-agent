@@ -47,8 +47,12 @@ public class PluginSettings {
     private String openstackDomain;
 
     @Expose
+    @SerializedName("agent_pending_register_timeout")
+    private String agentPendingRegisterTimeout;
+
+    @Expose
     @SerializedName("auto_register_timeout")
-    private String autoRegisterTimeout;
+    private String agentTTLMin;
 
     @Expose
     @SerializedName("agent_ttl_max")
@@ -110,7 +114,8 @@ public class PluginSettings {
     @SerializedName("delete_error_instances")
     private Boolean deleteErrorInstances;
 
-    private Period autoRegisterPeriod;
+    private Period agentRegisterPeriod;
+    private Period agentTTLMinPeriod;
 
     public static PluginSettings fromJSON(String json) {
         return GSON.fromJson(json, PluginSettings.class);
@@ -128,7 +133,7 @@ public class PluginSettings {
             return false;
         if (openstackKeystoneVersion != null ? !openstackKeystoneVersion.equals(that.openstackKeystoneVersion) : that.openstackKeystoneVersion != null)
             return false;
-        if (autoRegisterTimeout != null ? !autoRegisterTimeout.equals(that.autoRegisterTimeout) : that.autoRegisterTimeout != null)
+        if (agentTTLMin != null ? !agentTTLMin.equals(that.agentTTLMin) : that.agentTTLMin != null)
             return false;
         if (agentTTLMax != null ? !agentTTLMax.equals(that.agentTTLMax) : that.agentTTLMax != null)
             return false;
@@ -165,7 +170,8 @@ public class PluginSettings {
         int result = goServerUrl != null ? goServerUrl.hashCode() : 0;
         result = 31 * result + (openstackEndpoint != null ? openstackEndpoint.hashCode() : 0);
         result = 31 * result + (openstackKeystoneVersion != null ? openstackKeystoneVersion.hashCode() : 0);
-        result = 31 * result + (autoRegisterTimeout != null ? autoRegisterTimeout.hashCode() : 0);
+        result = 31 * result + (agentPendingRegisterTimeout != null ? agentPendingRegisterTimeout.hashCode() : 0);
+        result = 31 * result + (agentTTLMin != null ? agentTTLMin.hashCode() : 0);
         result = 31 * result + (agentTTLMax != null ? agentTTLMax.hashCode() : 0);
         result = 31 * result + (openstackDomain != null ? openstackDomain.hashCode() : 0);
         result = 31 * result + (defaultMinInstanceLimit != null ? defaultMinInstanceLimit.hashCode() : 0);
@@ -182,18 +188,32 @@ public class PluginSettings {
         return result;
     }
 
-    public Period getAutoRegisterPeriod() {
-        if (this.autoRegisterPeriod == null) {
-            this.autoRegisterPeriod = new Period().withMinutes(Integer.parseInt(getAutoRegisterTimeout()));
+    public Period getAgentPendingRegisterPeriod() {
+        if (this.agentRegisterPeriod == null) {
+            this.agentRegisterPeriod = new Period().withMinutes(Integer.parseInt(getAgentPendingRegisterTimeout()));
         }
-        return this.autoRegisterPeriod;
+        return this.agentRegisterPeriod;
     }
 
-    private String getAutoRegisterTimeout() {
-        if (autoRegisterTimeout == null) {
-            autoRegisterTimeout = "10";
+    private String getAgentPendingRegisterTimeout() {
+        if (agentPendingRegisterTimeout == null) {
+            agentPendingRegisterTimeout = "10";
         }
-        return autoRegisterTimeout;
+        return agentPendingRegisterTimeout;
+    }
+
+    public Period getAgentTTLMinPeriod() {
+        if (this.agentTTLMinPeriod == null) {
+            this.agentTTLMinPeriod = new Period().withMinutes(Integer.parseInt(getAgentTTLMin()));
+        }
+        return this.agentTTLMinPeriod;
+    }
+
+    private String getAgentTTLMin() {
+        if (agentTTLMin == null) {
+            agentTTLMin = "10";
+        }
+        return agentTTLMin;
     }
 
     public String getDefaultMinInstanceLimit() {

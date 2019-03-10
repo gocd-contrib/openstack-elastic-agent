@@ -3,11 +3,9 @@ package cd.go.contrib.elasticagents.openstack;
 import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 
-import java.util.Map;
-
 import static cd.go.contrib.elasticagents.openstack.OpenStackPlugin.LOG;
 import static java.text.MessageFormat.format;
-import static org.apache.commons.lang.StringUtils.stripToEmpty;
+import static org.apache.commons.lang3.StringUtils.stripToEmpty;
 
 public class PendingAgent {
     private final String pendingInstanceImageId;

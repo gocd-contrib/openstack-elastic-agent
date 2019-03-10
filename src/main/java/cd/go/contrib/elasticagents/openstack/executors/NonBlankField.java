@@ -16,7 +16,7 @@
 
 package cd.go.contrib.elasticagents.openstack.executors;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class NonBlankField extends Field {
 

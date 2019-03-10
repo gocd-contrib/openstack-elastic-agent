@@ -21,7 +21,7 @@ import cd.go.contrib.elasticagents.openstack.utils.ImageNotFoundException;
 import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
 import cd.go.contrib.elasticagents.openstack.utils.Util;
 import com.thoughtworks.go.plugin.api.logging.Logger;
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.Period;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.model.compute.Server;
@@ -30,7 +30,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.text.MessageFormat.format;
-import static org.apache.commons.lang.StringUtils.stripToEmpty;
+import static org.apache.commons.lang3.StringUtils.stripToEmpty;
 
 public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
 
@@ -202,7 +202,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         Map<String, String> op_instance_prefix = new HashMap<>();
         op_instance_prefix.put("name", settings.getOpenstackVmPrefix());
 
-        Period period = settings.getAutoRegisterPeriod();
+        Period period = settings.getAgentTTLMinPeriod();
         OpenStackInstances unregisteredInstances = new OpenStackInstances();
         OpenstackClientWrapper client = new OpenstackClientWrapper(settings);
         List<Server> allInstances = (List<Server>) client.getClient().compute().servers().list(op_instance_prefix);
@@ -224,7 +224,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
     }
 
     @Override
-    public Agents instancesCreatedAfterTimeout(PluginSettings settings, Agents agents) {
+    public Agents instancesCreatedAfterTTL(PluginSettings settings, Agents agents) {
         ArrayList<Agent> oldAgents = new ArrayList<>();
         for (Agent agent : agents.agents()) {
 
@@ -233,12 +233,12 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
                 continue;
             }
 
-            LOG.debug(format("[instancesCreatedAfterTimeout] agentTTLMin: [{0}] agentTTLMax: [{1}]", settings.getAutoRegisterPeriod().getMinutes(), settings.getAgentTTLMax()));
-            int minutesTTL = Util.calculateTTL(settings.getAutoRegisterPeriod().getMinutes(), settings.getAgentTTLMax());
+            LOG.debug(format("[instancesCreatedAfterTTL] agentTTLMin: [{0}] agentTTLMax: [{1}]", settings.getAgentTTLMinPeriod().getMinutes(), settings.getAgentTTLMax()));
+            int minutesTTL = Util.calculateTTL(settings.getAgentTTLMinPeriod().getMinutes(), settings.getAgentTTLMax());
             Date expireDate = DateUtils.addMinutes(instance.createAt().toDate(), minutesTTL);
-            LOG.debug(format("[instancesCreatedAfterTimeout] Agent: [{0}] with minutesTTL: [{1}]", agent.elasticAgentId(), minutesTTL));
+            LOG.debug(format("[instancesCreatedAfterTTL] Agent: [{0}] with minutesTTL: [{1}]", agent.elasticAgentId(), minutesTTL));
             if (expireDate.before(new Date())) {
-                LOG.info(format("[instancesCreatedAfterTimeout] Agent: [{0}] to be terminated with minutesTTL: [{1}]", agent.elasticAgentId(), minutesTTL));
+                LOG.info(format("[instancesCreatedAfterTTL] Agent: [{0}] to be terminated with minutesTTL: [{1}]", agent.elasticAgentId(), minutesTTL));
                 oldAgents.add(agent);
             }
         }
@@ -256,4 +256,22 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         return instance != null && instance.getStatus() != null && instance.getStatus().equals(Server.Status.ERROR);
     }
 
+    @Override
+    public boolean hasAgentRegisterTimedOut(PluginSettings settings, String id) throws Exception {
+        OpenStackInstance instance = instances.get(id);
+        if (instance == null) {
+            return false;
+        }
+
+        final int timeoutInMinutes = settings.getAgentPendingRegisterPeriod().getMinutes();
+        final Date createDate = instance.createAt().toDate();
+        Date timeoutDate = DateUtils.addMinutes(createDate, timeoutInMinutes);
+        LOG.info(format("[hasAgentRegisterTimedOut] Agent: [{0}] was created {1} and will time out {2} with timeoutInMinutes: [{3}]",
+                id, createDate, timeoutDate, timeoutInMinutes));
+        if (timeoutDate.before(new Date())) {
+            LOG.info(format("[hasAgentRegisterTimedOut] Agent: [{0}] has timed out and will be terminated with timeoutInMinutes: [{1}]", id, timeoutInMinutes));
+            return true;
+        }
+        return false;
+    }
 }
