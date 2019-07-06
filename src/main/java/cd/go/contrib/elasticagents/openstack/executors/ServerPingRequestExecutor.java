@@ -17,15 +17,15 @@
 package cd.go.contrib.elasticagents.openstack.executors;
 
 import cd.go.contrib.elasticagents.openstack.*;
+import com.thoughtworks.go.plugin.api.logging.Logger;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
 import java.util.Collection;
 
-import static cd.go.contrib.elasticagents.openstack.OpenStackPlugin.LOG;
-
 public class ServerPingRequestExecutor implements RequestExecutor {
 
+    private static final Logger LOG = Logger.getLoggerFor(ServerPingRequestExecutor.class);
     private final AgentInstances agentInstances;
     private final PluginRequest pluginRequest;
 
@@ -37,7 +37,7 @@ public class ServerPingRequestExecutor implements RequestExecutor {
     @Override
     public GoPluginApiResponse execute() throws Exception {
         PluginSettings pluginSettings = pluginRequest.getPluginSettings();
-        if(pluginSettings == null) {
+        if (pluginSettings == null) {
             LOG.warn("Openstack elastic agents plugin settings are empty");
             return DefaultGoPluginApiResponse.success("");
         }
@@ -46,11 +46,11 @@ public class ServerPingRequestExecutor implements RequestExecutor {
         Agents missingAgents = new Agents();
 
         for (Agent agent : agents.agents()) {
-            if (agentInstances.find(agent.elasticAgentId()) == null){
+            if (agentInstances.find(agent.elasticAgentId()) == null) {
                 missingAgents.add(agent);
-            }else{
-                if (agent.agentState() == Agent.AgentState.LostContact){
-                    if (!agentInstances.doesInstanceExist(pluginSettings,agent.elasticAgentId())){
+            } else {
+                if (agent.agentState() == Agent.AgentState.LostContact) {
+                    if (!agentInstances.doesInstanceExist(pluginSettings, agent.elasticAgentId())) {
                         missingAgents.add(agent);
                     }
                 }
@@ -58,7 +58,7 @@ public class ServerPingRequestExecutor implements RequestExecutor {
         }
         disableIdleAgents(missingAgents);
 
-        Agents idleAgents = agentInstances.instancesCreatedAfterTTL(pluginSettings,agents);
+        Agents idleAgents = agentInstances.instancesCreatedAfterTTL(pluginSettings, agents);
         disableIdleAgents(idleAgents);
         terminateDisabledAgents(idleAgents, pluginSettings);
 
@@ -75,7 +75,7 @@ public class ServerPingRequestExecutor implements RequestExecutor {
         this.pluginRequest.disableAgents(agents.findInstancesToDisable());
     }
 
-    private void deleteDisabledAgents(Agents agents) throws ServerRequestFailedException{
+    private void deleteDisabledAgents(Agents agents) throws ServerRequestFailedException {
         this.pluginRequest.deleteAgents(agents.findInstancesToTerminate());
     }
 

@@ -16,18 +16,22 @@
 
 package cd.go.contrib.elasticagents.openstack.executors;
 
-import cd.go.contrib.elasticagents.openstack.*;
+import cd.go.contrib.elasticagents.openstack.AgentInstances;
+import cd.go.contrib.elasticagents.openstack.OpenStackInstance;
+import cd.go.contrib.elasticagents.openstack.PluginRequest;
+import cd.go.contrib.elasticagents.openstack.RequestExecutor;
 import cd.go.contrib.elasticagents.openstack.requests.ShouldAssignWorkRequest;
 import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
+import com.thoughtworks.go.plugin.api.logging.Logger;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
 import java.util.UUID;
 
-import static cd.go.contrib.elasticagents.openstack.OpenStackPlugin.LOG;
 import static java.text.MessageFormat.format;
 
 public class ShouldAssignWorkRequestExecutor implements RequestExecutor {
+    private static final Logger LOG = Logger.getLoggerFor(ShouldAssignWorkRequestExecutor.class);
     private final AgentInstances agentInstances;
     private final PluginRequest pluginRequest;
     private final ShouldAssignWorkRequest request;
@@ -50,7 +54,7 @@ public class ShouldAssignWorkRequestExecutor implements RequestExecutor {
         }
 
         OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(pluginRequest.getPluginSettings());
-        if ((agentInstances.matchInstance(request.agent().elasticAgentId(), request.properties(), request.environment(), pluginRequest.getPluginSettings(), clientWrapper, transactionId, pluginRequest.getPluginSettings().getUsePreviousOpenstackImage())) ) {
+        if ((agentInstances.matchInstance(request.agent().elasticAgentId(), request.properties(), request.environment(), pluginRequest.getPluginSettings(), clientWrapper, transactionId, pluginRequest.getPluginSettings().getUsePreviousOpenstackImage()))) {
             LOG.info(format("[{0}] [should-assign-work] Work can be assigned to Agent {1}", transactionId, request.agent().elasticAgentId()));
             return DefaultGoPluginApiResponse.success("true");
         } else {

@@ -28,6 +28,7 @@ import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
 import static cd.go.contrib.elasticagents.openstack.Constants.PLUGIN_IDENTIFIER;
+import static java.text.MessageFormat.format;
 
 @Extension
 public class OpenStackPlugin implements GoPlugin {
@@ -53,10 +54,11 @@ public class OpenStackPlugin implements GoPlugin {
                 case REQUEST_CAPABILITIES:
                     return new GetCapabilitiesExecutor().execute();
                 case REQUEST_SHOULD_ASSIGN_WORK:
-                    refreshInstances();
+                    LOG.info(format("[{0}] {1}", request.requestName(), request));
                     return ShouldAssignWorkRequest.fromJSON(request.requestBody()).executor(agentInstances, pluginRequest).execute();
                 case REQUEST_CREATE_AGENT:
                     refreshInstances();
+                    pendingAgents.refreshAll(pluginRequest);
                     return CreateAgentRequest.fromJSON(request.requestBody()).executor(pendingAgents, agentInstances, pluginRequest).execute();
                 case REQUEST_SERVER_PING:
                     refreshInstances();
@@ -89,7 +91,6 @@ public class OpenStackPlugin implements GoPlugin {
     private void refreshInstances() {
         try {
             agentInstances.refreshAll(pluginRequest);
-            pendingAgents.refreshAll(pluginRequest);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
