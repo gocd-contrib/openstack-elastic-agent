@@ -77,6 +77,8 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
 
     @Override
     public void refreshAll(PluginRequest pluginRequest) throws Exception {
+        final long startTimeMillis = System.currentTimeMillis();
+        LOG.info(format("[refreshAll] refreshed=[{0}]", refreshed));
         if (!refreshed) {
             PluginSettings pluginSettings = pluginRequest.getPluginSettings();
             if (pluginSettings == null) {
@@ -99,6 +101,8 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
             }
             refreshed = true;
         }
+        final long durationInMillis = System.currentTimeMillis() - startTimeMillis;
+        LOG.info(format("[refreshAll] refreshing instances took {0} millis", durationInMillis));
     }
 
     @Override
@@ -198,7 +202,6 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
 
     private OpenStackInstances unregisteredAfterTimeout(PluginSettings settings, Agents knownAgents) throws Exception {
 
-        String agentID;
         Map<String, String> op_instance_prefix = new HashMap<>();
         op_instance_prefix.put("name", settings.getOpenstackVmPrefix());
 
@@ -211,7 +214,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
             if (knownAgents.containsAgentWithId(server.getId())) {
                 continue;
             }
-            if(!doesInstanceExist(settings, server.getId()))
+            if (!doesInstanceExist(settings, server.getId()))
                 continue;
             if (DateUtils.addMinutes(server.getCreated(), period.getMinutes()).before(new Date())) {
                 unregisteredInstances.register(new OpenStackInstance(server.getId(),
@@ -225,7 +228,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
 
     @Override
     public Agents instancesCreatedAfterTTL(PluginSettings settings, Agents agents) {
-        ArrayList<Agent> oldAgents = new ArrayList<>();
+        List<Agent> oldAgents = new ArrayList<>();
         for (Agent agent : agents.agents()) {
 
             OpenStackInstance instance = instances.get(agent.elasticAgentId());

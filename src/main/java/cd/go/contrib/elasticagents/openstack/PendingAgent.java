@@ -2,12 +2,13 @@ package cd.go.contrib.elasticagents.openstack;
 
 import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
+import com.thoughtworks.go.plugin.api.logging.Logger;
 
-import static cd.go.contrib.elasticagents.openstack.OpenStackPlugin.LOG;
 import static java.text.MessageFormat.format;
 import static org.apache.commons.lang3.StringUtils.stripToEmpty;
 
 public class PendingAgent {
+    private static final Logger LOG = Logger.getLoggerFor(PendingAgent.class);
     private final String pendingInstanceImageId;
     private final String pendingInstanceFlavorId;
     private OpenStackInstance pendingInstance;

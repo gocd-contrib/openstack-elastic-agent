@@ -11,12 +11,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import static java.text.MessageFormat.format;
 
 /**
- * Keeps a record of agent instances which have been requested on openstack
- * but not  yet registered with GoCD server.
+ * Keeps a record of agent instances which have been requested on OpenStack
+ * but not yet registered with GoCD server.
  */
 public class PendingAgentsService {
     private static final Logger LOG = Logger.getLoggerFor(PendingAgentsService.class);
-
+    private static boolean REFRESH_RUNNING = false;
     private AgentInstances agentInstances;
     private final ConcurrentHashMap<String, PendingAgent> pendingAgents = new ConcurrentHashMap<>();
 
@@ -34,10 +34,16 @@ public class PendingAgentsService {
     }
 
     public void refreshAll(PluginRequest pluginRequest) throws ServerRequestFailedException {
+        if (REFRESH_RUNNING) {
+            LOG.info(format("[refresh-pending] Refresh skipped already running in other thread, total pending agent count = {0}", pendingAgents.size()));
+            return;
+        }
+        REFRESH_RUNNING = true;
+        final long startTimeMillis = System.currentTimeMillis();
         Agents registeredAgents = pluginRequest.listAgents();
-        for(Agent agent : registeredAgents.agents()) {
+        for (Agent agent : registeredAgents.agents()) {
             PendingAgent removed = pendingAgents.remove(agent.elasticAgentId());
-            if(removed != null)
+            if (removed != null)
                 LOG.info(format("[refresh-pending] Agent {0} is registered with GoCD server and is no longer pending", removed));
         }
         for (Iterator<Map.Entry<String, PendingAgent>> iter = pendingAgents.entrySet().iterator(); iter.hasNext(); ) {
@@ -45,26 +51,28 @@ public class PendingAgentsService {
             try {
                 String instanceId = entry.getKey();
                 if (!agentInstances.doesInstanceExist(pluginRequest.getPluginSettings(), instanceId)) {
-                    LOG.info(format("[refresh-pending] Pending agent {0} has disappeared from OpenStack", instanceId));
+                    LOG.warn(format("[refresh-pending] Pending agent {0} has disappeared from OpenStack", instanceId));
                     iter.remove();
-                }
-                else if(agentInstances.isInstanceInErrorState(pluginRequest.getPluginSettings(), instanceId)) {
+                } else if (agentInstances.isInstanceInErrorState(pluginRequest.getPluginSettings(), instanceId)) {
                     LOG.error(format("[refresh-pending] Pending agent instance {0} is in ERROR state on OpenStack", instanceId));
                     iter.remove();
-                    if(pluginRequest.getPluginSettings().getOpenstackDeleteErrorInstances()) {
+                    if (pluginRequest.getPluginSettings().getOpenstackDeleteErrorInstances()) {
                         LOG.error(format("[refresh-pending] Deleting pending agent ERROR instance {0}", instanceId));
                         agentInstances.terminate(instanceId, pluginRequest.getPluginSettings());
                     }
-                } else if(agentInstances.hasAgentRegisterTimedOut(pluginRequest.getPluginSettings(), instanceId)) {
+                } else if (agentInstances.hasAgentRegisterTimedOut(pluginRequest.getPluginSettings(), instanceId)) {
                     LOG.warn(format("[refresh-pending] Pending agent {0} has been pending for too long, terminating instance", instanceId));
                     agentInstances.terminate(instanceId, pluginRequest.getPluginSettings());
                 } else {
-                    LOG.info(format("[refresh-pending] Pending agent {0} is still pending", instanceId));
+                    LOG.debug(format("[refresh-pending] Pending agent {0} is still pending", instanceId));
                 }
             } catch (Exception e) {
                 LOG.error("Failed to check instance state", e);
             }
         }
         LOG.info(format("[refresh-pending] Total pending agent count = {0}", pendingAgents.size()));
+        final long durationInMillis = System.currentTimeMillis() - startTimeMillis;
+        LOG.info(format("[refresh-pending] refreshing pending agents took {0} millis", durationInMillis));
+        REFRESH_RUNNING = false;
     }
 }
