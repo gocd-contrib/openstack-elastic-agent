@@ -30,7 +30,7 @@
 
 ### 0.8.0
 
-- Add Openstack Keystone V3 Authentication
+- Add OpenStack Keystone V3 Authentication
 
 ### 0.7.0
 

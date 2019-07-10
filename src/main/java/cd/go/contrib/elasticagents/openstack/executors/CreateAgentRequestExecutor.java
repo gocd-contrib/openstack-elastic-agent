@@ -17,6 +17,7 @@
 package cd.go.contrib.elasticagents.openstack.executors;
 
 import cd.go.contrib.elasticagents.openstack.*;
+import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 import cd.go.contrib.elasticagents.openstack.utils.ImageNotFoundException;
 import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
@@ -25,9 +26,7 @@ import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static java.text.MessageFormat.format;
 
@@ -41,7 +40,7 @@ public class CreateAgentRequestExecutor implements RequestExecutor {
     private PendingAgentsService pendingAgentsService;
 
     public CreateAgentRequestExecutor(CreateAgentRequest request, AgentInstances<OpenStackInstance> agentInstances, PluginRequest pluginRequest,
-                                      OpenstackClientWrapper clientWrapper, PendingAgentsService pendingAgentsService) throws Exception {
+                                      OpenstackClientWrapper clientWrapper, PendingAgentsService pendingAgentsService) {
         this.request = request;
         this.agentInstances = agentInstances;
         this.pluginRequest = pluginRequest;
@@ -54,6 +53,7 @@ public class CreateAgentRequestExecutor implements RequestExecutor {
         String transactionId = UUID.randomUUID().toString();
         Agents agents = pluginRequest.listAgents();
         LOG.debug(format("[{0}] [create-agent] {1}", transactionId, request));
+        ClusterProfileProperties settings = request.clusterProfileProperties();
 
         int matchingAgentCount = 0;
         List<String> idleAgentsFound = new ArrayList<>();
@@ -64,21 +64,21 @@ public class CreateAgentRequestExecutor implements RequestExecutor {
             maxInstanceLimit = Integer.parseInt(profileMaxLimitStr);
             LOG.debug(format("[{0}] [create-agent] Using maxInstanceLimit from profile value: {1}", transactionId, request));
         } else {
-            maxInstanceLimit = Integer.parseInt(pluginRequest.getPluginSettings().getDefaultMaxInstanceLimit());
+            maxInstanceLimit = Integer.parseInt(settings.getDefaultMaxInstanceLimit());
             LOG.debug(format("[{0}] [create-agent] Using maxInstanceLimit from default plugin value: {1}", transactionId, request));
         }
 
-        PluginSettings pluginSettings = pluginRequest.getPluginSettings();
-        String requestImageId = OpenStackInstance.getImageIdOrName(request.properties(), pluginSettings);
+        String requestImageId = OpenStackInstance.getImageIdOrName(request.properties(), settings);
         requestImageId = clientWrapper.getImageId(requestImageId, transactionId);
-        String flavorId = OpenStackInstance.getFlavorIdOrName(request.properties(), pluginSettings);
+        String flavorId = OpenStackInstance.getFlavorIdOrName(request.properties(), settings);
         flavorId = clientWrapper.getFlavorId(flavorId, transactionId);
 
         for (PendingAgent agent : pendingAgentsService.getAgents()) {
             LOG.debug(format("[{0}] [create-agent] Check if pending agent {1} match job profile", transactionId, agent));
             AgentMatchResult matchResult = agent.match(transactionId, requestImageId, flavorId, request.environment(), request.job());
             if (matchResult.isJobMatch()) {
-                LOG.info(format("[{0}] [create-agent] Will NOT create new instance, agent for job {1} is still being created {2} ", transactionId, request.job().getRepresentation(), agent.elasticAgentId()));
+                LOG.info(format("[{0}] [create-agent] Will NOT create new instance for job {1}, agent is still being created {2} ",
+                        transactionId, request.job().represent(), agent.elasticAgentId()));
                 return new DefaultGoPluginApiResponse(200);
             }
             if (matchResult.isProfileMatch()) {
@@ -93,21 +93,24 @@ public class CreateAgentRequestExecutor implements RequestExecutor {
             minInstanceLimit = Integer.parseInt(profileMinLimitStr);
             LOG.debug(format("[{0}] [create-agent] Using minInstanceLimit from profile value: {1}", transactionId, request));
         } else {
-            minInstanceLimit = Integer.parseInt(pluginRequest.getPluginSettings().getDefaultMinInstanceLimit());
+            minInstanceLimit = Integer.parseInt(settings.getDefaultMinInstanceLimit());
             LOG.debug(format("[{0}] [create-agent] Using minInstanceLimit from default plugin value: {1}", transactionId, request));
         }
 
         for (Agent agent : agents.agents()) {
-            LOG.debug(format("[{0}] [create-agent] Check if agent {1} match job profile", transactionId, agent));
-            if (agentInstances.matchInstance(agent.elasticAgentId(), request.properties(), request.environment(), pluginRequest.getPluginSettings(),
+            LOG.debug(format("[{0}] [create-agent] Check if agent {1} match job {2}", transactionId, agent, request.job().represent()));
+            if (agentInstances.matchInstance(agent.elasticAgentId(), request.properties(), request.environment(), settings,
                     clientWrapper, transactionId, false)) {
                 matchingAgentCount++;
-                LOG.debug(format("[{0}] [create-agent] found matching agent {1} ", transactionId, agent.elasticAgentId()));
+                LOG.debug(format("[{0}] [create-agent] found matching agent {1} for job {2}",
+                        transactionId, agent.elasticAgentId(), request.job().represent()));
                 if ((agent.agentState() == Agent.AgentState.Idle)) {
                     idleAgentsFound.add(agent.elasticAgentId());
-                    LOG.info(format("[{0}] [create-agent] found {1} matching idle agent {2} ", transactionId, idleAgentsFound, agent.elasticAgentId()));
+                    LOG.info(format("[{0}] [create-agent] found {1} matching idle agent {2} for job {3}",
+                            transactionId, idleAgentsFound, agent.elasticAgentId(), request.job().represent()));
                     if (idleAgentsFound.size() >= minInstanceLimit) {
-                        LOG.info(format("[{0}] [create-agent] Will NOT create new instance, found {1} matching idle agent {2} ", transactionId, minInstanceLimit, idleAgentsFound));
+                        LOG.info(format("[{0}] [create-agent] Will NOT create new instance, found {1} matching idle agent {2} for job {3}",
+                                transactionId, minInstanceLimit, idleAgentsFound), request.job().represent());
                         return new DefaultGoPluginApiResponse(200);
                     }
                 }
@@ -115,12 +118,20 @@ public class CreateAgentRequestExecutor implements RequestExecutor {
         }
 
         if (matchingAgentCount >= maxInstanceLimit) {
-            LOG.info(format("[{0}] [create-agent] Will NOT create new instance, has reached max instance limit of {1} ", transactionId, maxInstanceLimit));
+            List<Map<String, String>> messages = new ArrayList<>();
+            String maxLimitExceededMessage = String.format("Will NOT create new instance for job %s, has reached max instance limit of %s",
+                    request.job().represent(), maxInstanceLimit);
+            Map<String, String> messageToBeAdded = new HashMap<>();
+            messageToBeAdded.put("type", "warning");
+            messageToBeAdded.put("message", maxLimitExceededMessage);
+            messages.add(messageToBeAdded);
+            pluginRequest.addServerHealthMessage(messages);
+            LOG.warn(format("[{0}] [create-agent] {1}",transactionId, maxLimitExceededMessage));
             return new DefaultGoPluginApiResponse(200);
         }
 
         try {
-            OpenStackInstance pendingInstance = agentInstances.create(request, pluginRequest.getPluginSettings(), transactionId);
+            OpenStackInstance pendingInstance = agentInstances.create(request, pluginRequest, transactionId);
             LOG.info(format("[{0}] [create-agent] Will create new agent since no matching agents found", transactionId));
             this.pendingAgentsService.addPending(pendingInstance, request);
         } catch (ImageNotFoundException ex) {

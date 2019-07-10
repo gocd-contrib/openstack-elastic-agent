@@ -18,6 +18,7 @@ package cd.go.contrib.elasticagents.openstack.requests;
 
 import cd.go.contrib.elasticagents.openstack.*;
 import cd.go.contrib.elasticagents.openstack.executors.CreateAgentRequestExecutor;
+import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
 import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
 import com.google.gson.FieldNamingPolicy;
@@ -33,20 +34,32 @@ import java.util.Map;
 public class CreateAgentRequest {
     public static final Gson GSON = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
     private String autoRegisterKey;
-    private Map<String, String> properties;
+    private Map<String, String> elasticAgentProfileProperties;
     @Expose
     private JobIdentifier jobIdentifier;
     private String environment;
+    private ClusterProfileProperties clusterProfileProperties;
 
     public CreateAgentRequest() {
 
     }
 
-    public CreateAgentRequest(String autoRegisterKey, Map<String, String> properties, JobIdentifier jobIdentifier, String environment) {
+    public CreateAgentRequest(String autoRegisterKey, Map<String, String> elasticAgentProfileProperties, JobIdentifier jobIdentifier,
+                              String environment, Map<String, String> clusterProfileProperties) {
         this.autoRegisterKey = autoRegisterKey;
         this.jobIdentifier = jobIdentifier;
-        this.properties = properties;
+        this.elasticAgentProfileProperties = elasticAgentProfileProperties;
         this.environment = environment;
+        this.clusterProfileProperties = ClusterProfileProperties.fromConfiguration(clusterProfileProperties);
+    }
+
+    public CreateAgentRequest(String autoRegisterKey, Map<String, String> elasticAgentProfileProperties, JobIdentifier jobIdentifier,
+                              String environment, ClusterProfileProperties clusterProfileProperties) {
+        this.autoRegisterKey = autoRegisterKey;
+        this.elasticAgentProfileProperties = elasticAgentProfileProperties;
+        this.environment = environment;
+        this.jobIdentifier = jobIdentifier;
+        this.clusterProfileProperties = clusterProfileProperties;
     }
 
     public static CreateAgentRequest fromJSON(String json) {
@@ -58,7 +71,11 @@ public class CreateAgentRequest {
     }
 
     public Map<String, String> properties() {
-        return properties;
+        return elasticAgentProfileProperties;
+    }
+
+    public ClusterProfileProperties clusterProfileProperties() {
+        return clusterProfileProperties;
     }
 
     public String environment() {
@@ -66,18 +83,18 @@ public class CreateAgentRequest {
     }
 
     public RequestExecutor executor(PendingAgentsService pendingAgents, AgentInstances<OpenStackInstance> agentInstances, PluginRequest pluginRequest) throws Exception {
-        return new CreateAgentRequestExecutor(this, agentInstances, pluginRequest, new OpenstackClientWrapper(pluginRequest.getPluginSettings()), pendingAgents);
+        return new CreateAgentRequestExecutor(this, agentInstances, pluginRequest, new OpenstackClientWrapper(clusterProfileProperties), pendingAgents);
     }
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("CreateAgentRequest{");
-        sb.append("autoRegisterKey='").append(autoRegisterKey).append('\'');
-        sb.append(", jobIdentifier='").append(jobIdentifier.getRepresentation()).append('\'');
-        sb.append(", properties=").append(properties);
-        sb.append(", environment='").append(environment).append('\'');
-        sb.append('}');
-        return sb.toString();
+        return "CreateAgentRequest{" +
+                "autoRegisterKey='" + autoRegisterKey + '\'' +
+                ", elasticAgentProfileProperties=" + elasticAgentProfileProperties +
+                ", jobIdentifier=" + jobIdentifier +
+                ", environment='" + environment + '\'' +
+                ", clusterProfileProperties=" + clusterProfileProperties +
+                '}';
     }
 
     public JobIdentifier job() {

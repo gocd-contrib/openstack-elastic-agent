@@ -17,35 +17,21 @@
 package cd.go.contrib.elasticagents.openstack.executors;
 
 import cd.go.contrib.elasticagents.openstack.RequestExecutor;
-import cd.go.contrib.elasticagents.openstack.requests.ValidatePluginSettings;
+import cd.go.contrib.elasticagents.openstack.utils.Util;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
-import java.util.ArrayList;
-import java.util.Map;
+public class GetClusterProfileViewRequestExecutor implements RequestExecutor {
 
-public class ValidateConfigurationExecutor implements RequestExecutor {
     private static final Gson GSON = new Gson();
 
-    private final ValidatePluginSettings settings;
-
-    public ValidateConfigurationExecutor(ValidatePluginSettings settings) {
-        this.settings = settings;
-    }
-
-    public GoPluginApiResponse execute() {
-        ArrayList<Map<String, String>> result = new ArrayList<>();
-
-        for (Map.Entry<String, Field> entry : GetPluginConfigurationExecutor.FIELDS.entrySet()) {
-            Field field = entry.getValue();
-            Map<String, String> validationError = field.validate(settings.get(entry.getKey()));
-
-            if (!validationError.isEmpty()) {
-                result.add(validationError);
-            }
-        }
-
-        return DefaultGoPluginApiResponse.success(GSON.toJson(result));
+    @Override
+    public GoPluginApiResponse execute() throws Exception {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("template", Util.readResource("/plugin-settings.template.html"));
+        DefaultGoPluginApiResponse defaultGoPluginApiResponse = new DefaultGoPluginApiResponse(200, GSON.toJson(jsonObject));
+        return defaultGoPluginApiResponse;
     }
 }

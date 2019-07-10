@@ -202,6 +202,10 @@ public class PluginSettings {
         return agentPendingRegisterTimeout;
     }
 
+    public void setAgentPendingRegisterTimeout(String agentPendingRegisterTimeout) {
+        this.agentPendingRegisterTimeout = agentPendingRegisterTimeout;
+    }
+
     public Period getAgentTTLMinPeriod() {
         if (this.agentTTLMinPeriod == null) {
             this.agentTTLMinPeriod = new Period().withMinutes(Integer.parseInt(getAgentTTLMin()));
@@ -214,6 +218,10 @@ public class PluginSettings {
             agentTTLMin = "10";
         }
         return agentTTLMin;
+    }
+
+    public void setAgentTTLMin(String agentTTLMin) {
+        this.agentTTLMin = agentTTLMin;
     }
 
     public String getDefaultMinInstanceLimit() {
@@ -246,6 +254,10 @@ public class PluginSettings {
 
     public String getGoServerUrl() {
         return goServerUrl;
+    }
+
+    public void setGoServerUrl(String goServerUrl) {
+        this.goServerUrl = goServerUrl;
     }
 
     public String getOpenstackEndpoint() {
@@ -370,5 +382,34 @@ public class PluginSettings {
 
     public void setDeleteErrorInstances(boolean deleteErrorInstances) {
         this.deleteErrorInstances = deleteErrorInstances;
+    }
+
+    @Override
+    public String toString() {
+        return "PluginSettings{" +
+                "goServerUrl='" + goServerUrl + '\'' +
+                ", openstackEndpoint='" + openstackEndpoint + '\'' +
+                ", openstackKeystoneVersion='" + openstackKeystoneVersion + '\'' +
+                ", openstackDomain='" + openstackDomain + '\'' +
+                ", agentPendingRegisterTimeout='" + agentPendingRegisterTimeout + '\'' +
+                ", agentTTLMin='" + agentTTLMin + '\'' +
+                ", agentTTLMax='" + agentTTLMax + '\'' +
+                ", defaultMinInstanceLimit='" + defaultMinInstanceLimit + '\'' +
+                ", defaultMaxInstanceLimit='" + defaultMaxInstanceLimit + '\'' +
+                ", openstackTenant='" + openstackTenant + '\'' +
+                ", openstackUser='" + openstackUser + '\'' +
+                ", openstackPassword='" + openstackPassword + '\'' +
+                ", openstackVmPrefix='" + openstackVmPrefix + '\'' +
+                ", openstackImage='" + openstackImage + '\'' +
+                ", openstackImageCacheTTL='" + openstackImageCacheTTL + '\'' +
+                ", usePreviousOpenstackImage=" + usePreviousOpenstackImage +
+                ", openstackFlavor='" + openstackFlavor + '\'' +
+                ", openstackNetwork='" + openstackNetwork + '\'' +
+                ", openstackUserdata='" + openstackUserdata + '\'' +
+                ", sslVerificationDisabled=" + sslVerificationDisabled +
+                ", deleteErrorInstances=" + deleteErrorInstances +
+                ", agentRegisterPeriod=" + agentRegisterPeriod +
+                ", agentTTLMinPeriod=" + agentTTLMinPeriod +
+                '}';
     }
 }

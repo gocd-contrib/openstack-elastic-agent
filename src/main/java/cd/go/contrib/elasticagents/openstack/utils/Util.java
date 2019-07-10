@@ -16,7 +16,7 @@
 
 package cd.go.contrib.elasticagents.openstack.utils;
 
-import cd.go.contrib.elasticagents.openstack.executors.GetViewRequestExecutor;
+import cd.go.contrib.elasticagents.openstack.executors.GetClusterProfileViewRequestExecutor;
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
@@ -35,7 +35,7 @@ public class Util {
     public static final Gson GSON = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
     public static String readResource(String resourceFile) {
-        try (InputStreamReader reader = new InputStreamReader(GetViewRequestExecutor.class.getResourceAsStream(resourceFile), Charsets.UTF_8)) {
+        try (InputStreamReader reader = new InputStreamReader(GetClusterProfileViewRequestExecutor.class.getResourceAsStream(resourceFile), Charsets.UTF_8)) {
             return CharStreams.toString(reader);
         } catch (IOException e) {
             throw new RuntimeException("Could not find resource " + resourceFile, e);
@@ -43,7 +43,7 @@ public class Util {
     }
 
     public static byte[] readResourceBytes(String resourceFile) {
-        try (InputStream in = GetViewRequestExecutor.class.getResourceAsStream(resourceFile)) {
+        try (InputStream in = GetClusterProfileViewRequestExecutor.class.getResourceAsStream(resourceFile)) {
             return ByteStreams.toByteArray(in);
         } catch (IOException e) {
             throw new RuntimeException("Could not find resource " + resourceFile, e);
@@ -55,7 +55,7 @@ public class Util {
         try {
             Properties properties = new Properties();
             properties.load(new StringReader(s));
-            return (String) properties.get("pluginId");
+            return (String) properties.get("id");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

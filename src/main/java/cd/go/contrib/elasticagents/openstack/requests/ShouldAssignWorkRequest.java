@@ -18,27 +18,44 @@ package cd.go.contrib.elasticagents.openstack.requests;
 
 import cd.go.contrib.elasticagents.openstack.Agent;
 import cd.go.contrib.elasticagents.openstack.AgentInstances;
-import cd.go.contrib.elasticagents.openstack.PluginRequest;
+import cd.go.contrib.elasticagents.openstack.OpenStackInstance;
 import cd.go.contrib.elasticagents.openstack.RequestExecutor;
 import cd.go.contrib.elasticagents.openstack.executors.ShouldAssignWorkRequestExecutor;
+import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 import java.util.Map;
 
 public class ShouldAssignWorkRequest {
     public static final Gson GSON = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
-    private String environment;
+
+    @Expose
+    @SerializedName("job_identifier")
+    private JobIdentifier jobIdentifier;
+    @Expose
+    @SerializedName("agent")
     private Agent agent;
     @Expose
-    private JobIdentifier jobIdentifier;
-    private Map<String, String> properties;
+    @SerializedName("environment")
+    private String environment;
+    @Expose
+    @SerializedName("elastic_agent_profile_properties")
+    private Map<String, String> elasticAgentProfileProperties;
+    @Expose
+    @SerializedName("cluster_profile_properties")
+    private ClusterProfileProperties clusterProfileProperties;
 
     public static ShouldAssignWorkRequest fromJSON(String json) {
         return GSON.fromJson(json, ShouldAssignWorkRequest.class);
+    }
+
+    public JobIdentifier jobIdentifier() {
+        return jobIdentifier;
     }
 
     public Agent agent() {
@@ -49,12 +66,16 @@ public class ShouldAssignWorkRequest {
         return environment;
     }
 
-    public Map<String, String> properties() {
-        return properties;
+    public Map<String, String> elasticAgentProfileProperties() {
+        return elasticAgentProfileProperties;
     }
 
-    public RequestExecutor executor(AgentInstances agentInstances, PluginRequest pluginRequest) {
-        return new ShouldAssignWorkRequestExecutor(this, agentInstances, pluginRequest);
+    public ClusterProfileProperties clusterProfileProperties() {
+        return clusterProfileProperties;
+    }
+
+    public RequestExecutor executor(AgentInstances<OpenStackInstance> agentInstances) {
+        return new ShouldAssignWorkRequestExecutor(this, agentInstances, clusterProfileProperties);
     }
 
     public String toJson() {
@@ -67,13 +88,13 @@ public class ShouldAssignWorkRequest {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("ShouldAssignWorkRequest{");
-        sb.append("environment='").append(environment).append('\'');
-        sb.append(", jobIdentifier='").append(jobIdentifier.getRepresentation()).append('\'');
-        sb.append(", agent=").append(agent);
-        sb.append(", properties=").append(properties);
-        sb.append('}');
-        return sb.toString();
+        return "ShouldAssignWorkRequest{" +
+                "jobIdentifier=" + jobIdentifier +
+                ", agent=" + agent +
+                ", environment='" + environment + '\'' +
+                ", elasticAgentProfileProperties=" + elasticAgentProfileProperties +
+                ", clusterProfileProperties=" + clusterProfileProperties +
+                '}';
     }
 }
 

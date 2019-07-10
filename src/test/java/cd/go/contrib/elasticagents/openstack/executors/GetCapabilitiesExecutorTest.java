@@ -1,33 +1,24 @@
 package cd.go.contrib.elasticagents.openstack.executors;
 
-import com.google.gson.Gson;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
-import org.junit.Before;
+import org.json.JSONObject;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 public class GetCapabilitiesExecutorTest {
-    private static final Gson GSON = new Gson();
-    private GetCapabilitiesExecutor executor;
-
-    @Before
-    public void SetUp() {
-        executor = new GetCapabilitiesExecutor();
-    }
-
 
     @Test
-    public void getCapabilitiesShouldReturnSupportsFields() throws Exception {
-        GoPluginApiResponse response = executor.execute();
-        Map<String, String> responseJson = (Map<String, String>) GSON.fromJson(response.responseBody(), HashMap.class);
+    public void shouldReturnResponse() throws Exception {
+        GoPluginApiResponse response = new GetCapabilitiesExecutor().execute();
 
-        assertThat(responseJson.containsKey("supports_status_report"), is(true));
-        assertThat(responseJson.containsKey("supports_agent_status_report"), is(true));
+        assertThat(response.responseCode(), is(200));
+        JSONObject expected = new JSONObject().put("supports_plugin_status_report", false);
+        expected.put("supports_agent_status_report", false);
+        expected.put("supports_cluster_status_report", false);
+        JSONAssert.assertEquals(expected, new JSONObject(response.responseBody()), true);
     }
 
 }

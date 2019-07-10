@@ -22,14 +22,13 @@ import cd.go.contrib.elasticagents.openstack.OpenStackInstance;
 import cd.go.contrib.elasticagents.openstack.PluginRequest;
 import cd.go.contrib.elasticagents.openstack.RequestExecutor;
 import cd.go.contrib.elasticagents.openstack.executors.JobCompletionRequestExecutor;
+import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-
-import java.util.Map;
 
 public class JobCompletionRequest {
     public static final Gson GSON = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
@@ -39,12 +38,17 @@ public class JobCompletionRequest {
     @Expose
     private JobIdentifier jobIdentifier;
 
+    @Expose
+    @SerializedName("cluster_profile_properties")
+    private ClusterProfileProperties clusterProfileProperties;
+
     public JobCompletionRequest() {
     }
 
-    public JobCompletionRequest(String elasticAgentId, JobIdentifier jobIdentifier) {
+    public JobCompletionRequest(String elasticAgentId, JobIdentifier jobIdentifier, ClusterProfileProperties clusterProfileProperties) {
         this.elasticAgentId = elasticAgentId;
         this.jobIdentifier = jobIdentifier;
+        this.clusterProfileProperties = clusterProfileProperties;
     }
 
     public static JobCompletionRequest fromJSON(String json) {
@@ -60,6 +64,10 @@ public class JobCompletionRequest {
         return jobIdentifier;
     }
 
+    public ClusterProfileProperties getClusterProfileProperties() {
+        return clusterProfileProperties;
+    }
+
     public RequestExecutor executor(AgentInstances<OpenStackInstance> agentInstances, PluginRequest pluginRequest) {
         return new JobCompletionRequestExecutor(this, agentInstances, pluginRequest);
     }
@@ -69,6 +77,7 @@ public class JobCompletionRequest {
         return "JobCompletionRequest{" +
                 "elasticAgentId='" + elasticAgentId + '\'' +
                 ", jobIdentifier=" + jobIdentifier +
+                ", clusterProfileProperties=" + clusterProfileProperties +
                 '}';
     }
 }

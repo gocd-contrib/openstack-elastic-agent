@@ -8,6 +8,11 @@ import static org.junit.Assert.assertTrue;
 public class UtilTest {
 
     @Test
+    public void shouldGetPluginId() {
+        assertEquals("cd.go.contrib.elastic-agent.openstack", Util.pluginId());
+    }
+
+    @Test
     public void testShouldReturnTimeToLiveBetween10And20Minutes() {
         // Arrange
         int min = 10;

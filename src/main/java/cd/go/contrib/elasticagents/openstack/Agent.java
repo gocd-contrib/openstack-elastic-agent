@@ -66,6 +66,10 @@ public class Agent {
 
     }
 
+    public Agent(String agentId){
+        this(agentId, null, null, null);
+    }
+
     public Agent(String agentId, AgentState agentState, BuildState buildState, ConfigState configState) {
         this.agentId = agentId;
         this.agentState = agentState;

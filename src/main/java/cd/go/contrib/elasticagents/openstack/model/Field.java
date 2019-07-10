@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cd.go.contrib.elasticagents.openstack.executors;
+package cd.go.contrib.elasticagents.openstack.model;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -23,27 +23,27 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Metadata {
+public class Field extends Metadata {
+    protected final String key;
 
     @Expose
-    @SerializedName("key")
-    private String key;
+    @SerializedName("display-name")
+    protected String displayName;
 
     @Expose
-    @SerializedName("metadata")
-    private ProfileMetadata metadata;
+    @SerializedName("default-value")
+    protected String defaultValue;
 
-    public Metadata(String key, boolean required, boolean secure) {
-        this(key, new ProfileMetadata(required, secure));
-    }
+    @Expose
+    @SerializedName("display-order")
+    protected String displayOrder;
 
-    public Metadata(String key) {
-        this(key, new ProfileMetadata(false, false));
-    }
-
-    public Metadata(String key, ProfileMetadata metadata) {
+    public Field(String key, String displayName, String defaultValue, Boolean required, Boolean secure, String displayOrder) {
+        super(key, required, secure);
         this.key = key;
-        this.metadata = metadata;
+        this.displayName = displayName;
+        this.defaultValue = defaultValue;
+        this.displayOrder = displayOrder;
     }
 
     public Map<String, String> validate(String input) {
@@ -57,35 +57,10 @@ public class Metadata {
     }
 
     protected String doValidate(String input) {
-        if (isRequired()) {
-            if (StringUtils.isBlank(input)) {
-                return this.key + " must not be blank.";
-            }
-        }
         return null;
     }
 
-
-    public String getKey() {
+    public String key() {
         return key;
-    }
-
-    public boolean isRequired() {
-        return metadata.required;
-    }
-
-    public static class ProfileMetadata {
-        @Expose
-        @SerializedName("required")
-        private Boolean required;
-
-        @Expose
-        @SerializedName("secure")
-        private Boolean secure;
-
-        public ProfileMetadata(boolean required, boolean secure) {
-            this.required = required;
-            this.secure = secure;
-        }
     }
 }

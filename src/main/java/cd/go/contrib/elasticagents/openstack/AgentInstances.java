@@ -17,6 +17,7 @@
 package cd.go.contrib.elasticagents.openstack;
 
 import cd.go.contrib.elasticagents.openstack.executors.AgentNotFoundException;
+import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
 
@@ -34,11 +35,11 @@ public interface AgentInstances<T> {
      * So that instances created are auto-registered with the server, the agent instance should have an
      * <code>autoregister.properties</code>.
      *
-     * @param request       the request object
-     * @param settings        the plugin settings object
+     * @param request        the request object
+     * @param pluginRequest  the plugin request object
      * @param transactionId
      */
-    T create(CreateAgentRequest request, PluginSettings settings, String transactionId) throws Exception;
+    T create(CreateAgentRequest request, PluginRequest pluginRequest, String transactionId) throws Exception;
 
     /**
      * This message is sent to assist the plugin to refresh any metadata about the agent.
@@ -90,12 +91,13 @@ public interface AgentInstances<T> {
     /**
      * This message is sent after plugin initialization time so that the plugin may connect to the cloud provider
      * and fetch a list of all instances that have been spun up by this plugin (before the server was shut down).
-     * This call should be should ideally remember if the agent instances are refreshed, and do nothing if instances
-     * were previously refreshed.
+     * This call should be should ideally remember if the agent instances are refreshed from the cluster,
+     * and do nothing if instances were previously refreshed.
      *
      * @param pluginRequest the plugin request object
+     * @param clusterProfileProperties the list of cluster profile properties
      */
-    void refreshAll(PluginRequest pluginRequest) throws Exception;
+    void refreshAll(PluginRequest pluginRequest, ClusterProfileProperties clusterProfileProperties) throws Exception;
 
     /**
      * This

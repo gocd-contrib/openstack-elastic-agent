@@ -16,6 +16,7 @@
 
 package cd.go.contrib.elasticagents.openstack;
 
+import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 import cd.go.contrib.elasticagents.openstack.utils.ImageNotFoundException;
 import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
@@ -30,6 +31,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.text.MessageFormat.format;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.stripToEmpty;
 
 public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
@@ -40,10 +42,12 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
     private boolean refreshed;
 
     @Override
-    public OpenStackInstance create(CreateAgentRequest request, PluginSettings settings, String transactionId) throws Exception {
+    public OpenStackInstance create(CreateAgentRequest request, PluginRequest pluginRequest, String transactionId) throws Exception {
+        LOG.info(String.format("[create Agent] Processing request for %s", request.job().represent()));
+        ClusterProfileProperties settings = request.clusterProfileProperties();
         OpenStackInstance op_instance = OpenStackInstance.create(request, settings, os_client(settings), transactionId);
         op_instance.setMaxCompletedJobs(request.properties().get(Constants.AGENT_JOB_LIMIT_MAX));
-        LOG.info(format("[create agent] properties: .", request.properties()));
+        LOG.info(format("[create agent] properties: {0}", request.properties()));
 
         register(op_instance);
         return op_instance;
@@ -76,27 +80,27 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
     }
 
     @Override
-    public void refreshAll(PluginRequest pluginRequest) throws Exception {
+    public void refreshAll(PluginRequest pluginRequest, ClusterProfileProperties clusterProfileProperties) throws Exception {
+        LOG.debug("refreshAll: clusterProfileProperties={}", clusterProfileProperties);
         final long startTimeMillis = System.currentTimeMillis();
         LOG.info(format("[refreshAll] refreshed=[{0}]", refreshed));
         if (!refreshed) {
-            PluginSettings pluginSettings = pluginRequest.getPluginSettings();
-            if (pluginSettings == null) {
+            if (isEmpty(clusterProfileProperties.toString())) {
                 LOG.warn("OpenStack elastic agents plugin settings are empty");
                 return;
             }
             Agents agents = pluginRequest.listAgents();
             Map<String, String> op_instance_prefix = new HashMap<>();
-            op_instance_prefix.put("name", pluginSettings.getOpenstackVmPrefix());
-            List<Server> allInstances = (List<Server>) os_client(pluginSettings).compute().servers().list(op_instance_prefix);
+            op_instance_prefix.put("name", clusterProfileProperties.getOpenstackVmPrefix());
+            List<Server> allInstances = (List<Server>) os_client(clusterProfileProperties).compute().servers().list(op_instance_prefix);
             for (Server server : allInstances) {
                 if (agents.containsAgentWithId(server.getId())) {
                     register(new OpenStackInstance(server.getId(),
                             server.getCreated(),
                             server.getMetadata().get(Constants.GOSERVER_PROPERTIES_PREFIX + Constants.ENVIRONMENT_KEY),
-                            os_client(pluginSettings)));
+                            os_client(clusterProfileProperties)));
                 } else {
-                    os_client(pluginSettings).compute().servers().delete(server.getId());
+                    os_client(clusterProfileProperties).compute().servers().delete(server.getId());
                 }
             }
             refreshed = true;
@@ -127,7 +131,7 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         LOG.debug(format("[{0}] [matchInstance] Instance: {1}", transactionId, id));
         OpenStackInstance instance = this.find(id);
         if (instance == null) {
-            LOG.warn(format("[{0}] [matchInstance] Instance NOT found in Openstack: {1}", transactionId, id));
+            LOG.warn(format("[{0}] [matchInstance] Instance NOT found in OpenStack: {1}", transactionId, id));
             return false;
         }
         LOG.info(format("[{0}] [matchInstance] Found instance: {1}", transactionId, instance));
@@ -228,6 +232,8 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
 
     @Override
     public Agents instancesCreatedAfterTTL(PluginSettings settings, Agents agents) {
+        LOG.debug(format("[instancesCreatedAfterTTL] agentTTLMin: [{0}] agentTTLMax: [{1}] agents.agents().size(): [{2}]",
+                settings.getAgentTTLMinPeriod().getMinutes(), settings.getAgentTTLMax(), agents.agents().size()));
         List<Agent> oldAgents = new ArrayList<>();
         for (Agent agent : agents.agents()) {
 
@@ -251,6 +257,10 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
     @Override
     public OpenStackInstance find(String agentId) {
         return instances.get(agentId);
+    }
+
+    public boolean hasInstance(String elasticAgentId) {
+        return find(elasticAgentId) != null;
     }
 
     @Override

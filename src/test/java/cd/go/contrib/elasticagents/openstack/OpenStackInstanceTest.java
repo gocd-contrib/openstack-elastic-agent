@@ -18,14 +18,15 @@ public class OpenStackInstanceTest {
     private OpenStackInstance instance;
     private CreateAgentRequest request;
     private PluginSettings settings;
-    private HashMap<String, String> properties;
+    private HashMap<String, String> elasticAgentProfileProperties;
+    private HashMap<String, String> clusterProfileProperties;
 
     @Before
     public void SetUpMocks() {
-        properties = new HashMap<>();
+        elasticAgentProfileProperties = new HashMap<>();
         JobIdentifier job1 = mock(JobIdentifier.class);
         settings = new PluginSettings();
-        request = new CreateAgentRequest("abc-key", properties, job1, "testing");
+        request = new CreateAgentRequest("abc-key", elasticAgentProfileProperties, job1, "testing", clusterProfileProperties);
     }
 
     @Test

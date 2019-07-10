@@ -17,75 +17,86 @@
 package cd.go.contrib.elasticagents.openstack.executors;
 
 import cd.go.contrib.elasticagents.openstack.*;
+import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
+import cd.go.contrib.elasticagents.openstack.requests.ServerPingRequest;
 import com.thoughtworks.go.plugin.api.logging.Logger;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ServerPingRequestExecutor implements RequestExecutor {
 
     private static final Logger LOG = Logger.getLoggerFor(ServerPingRequestExecutor.class);
-    private final AgentInstances agentInstances;
+    private final ServerPingRequest serverPingRequest;
+    private Map<String, OpenStackInstances> clusterSpecificAgentInstances;
     private final PluginRequest pluginRequest;
 
-    public ServerPingRequestExecutor(AgentInstances agentInstances, PluginRequest pluginRequest) {
-        this.agentInstances = agentInstances;
+    public ServerPingRequestExecutor(ServerPingRequest serverPingRequest, Map<String, OpenStackInstances> clusterSpecificAgentInstances, PluginRequest pluginRequest) {
+        this.serverPingRequest = serverPingRequest;
+        this.clusterSpecificAgentInstances = clusterSpecificAgentInstances;
         this.pluginRequest = pluginRequest;
     }
 
     @Override
     public GoPluginApiResponse execute() throws Exception {
-        PluginSettings pluginSettings = pluginRequest.getPluginSettings();
-        if (pluginSettings == null) {
-            LOG.warn("Openstack elastic agents plugin settings are empty");
-            return DefaultGoPluginApiResponse.success("");
+        List<ClusterProfileProperties> allClusterProfileProperties = serverPingRequest.allClusterProfileProperties();
+        LOG.debug("[Server Ping] execute() serverPingRequest.allClusterProfileProperties.size()={}", serverPingRequest.allClusterProfileProperties().size());
+
+        for (ClusterProfileProperties clusterProfileProperties : allClusterProfileProperties) {
+            performCleanupForACluster(clusterProfileProperties, clusterSpecificAgentInstances.get(clusterProfileProperties.uuid()));
         }
 
-        Agents agents = pluginRequest.listAgents();
-        Agents missingAgents = new Agents();
-
-        for (Agent agent : agents.agents()) {
-            if (agentInstances.find(agent.elasticAgentId()) == null) {
-                missingAgents.add(agent);
-            } else {
-                if (agent.agentState() == Agent.AgentState.LostContact) {
-                    if (!agentInstances.doesInstanceExist(pluginSettings, agent.elasticAgentId())) {
-                        missingAgents.add(agent);
-                    }
-                }
-            }
-        }
-        disableIdleAgents(missingAgents);
-
-        Agents idleAgents = agentInstances.instancesCreatedAfterTTL(pluginSettings, agents);
-        disableIdleAgents(idleAgents);
-        terminateDisabledAgents(idleAgents, pluginSettings);
-
-        idleAgents.addAll(missingAgents);
-        deleteDisabledAgents(idleAgents);
-
-        agents = pluginRequest.listAgents();
-        agentInstances.terminateUnregisteredInstances(pluginSettings, agents);
-
+        checkForPossiblyMissingAgents();
         return DefaultGoPluginApiResponse.success("");
     }
 
+    private void performCleanupForACluster(ClusterProfileProperties clusterProfileProperties, OpenStackInstances instances) throws Exception {
+        LOG.debug("[Server Ping] performCleanupForACluster clusterProfileProperties={}", clusterProfileProperties);
+        Agents allAgents = pluginRequest.listAgents();
+        Agents agentsToDisable = instances.instancesCreatedAfterTTL(clusterProfileProperties, allAgents);
+        disableIdleAgents(agentsToDisable);
+
+        allAgents = pluginRequest.listAgents();
+        terminateDisabledAgents(allAgents, clusterProfileProperties, instances);
+
+        instances.terminateUnregisteredInstances(clusterProfileProperties, allAgents);
+    }
+
+    private void checkForPossiblyMissingAgents() throws Exception {
+        Collection<Agent> allAgents = pluginRequest.listAgents().agents();
+        LOG.debug("[Server Ping] checkForPossiblyMissingAgents allAgents.size()={}", allAgents.size());
+
+        List<Agent> missingAgents = allAgents.stream().filter(agent -> clusterSpecificAgentInstances.values().stream()
+                .noneMatch(instances -> instances.hasInstance(agent.elasticAgentId()))).collect(Collectors.toList());
+        LOG.debug("[Server Ping] checkForPossiblyMissingAgents missingAgents.size()={}", missingAgents.size());
+
+        if (!missingAgents.isEmpty()) {
+            List<String> missingAgentIds = missingAgents.stream().map(Agent::elasticAgentId).collect(Collectors.toList());
+            LOG.warn("[Server Ping] Was expecting an instance with IDs " + missingAgentIds + ", but it was missing! Removing missing agents from config.");
+            pluginRequest.disableAgents(missingAgents);
+            pluginRequest.deleteAgents(missingAgents);
+        }
+    }
+
     private void disableIdleAgents(Agents agents) throws ServerRequestFailedException {
-        this.pluginRequest.disableAgents(agents.findInstancesToDisable());
+        Collection<Agent> instancesToDisable = agents.findInstancesToDisable();
+        if (!instancesToDisable.isEmpty()) {
+            pluginRequest.disableAgents(instancesToDisable);
+        }
     }
 
-    private void deleteDisabledAgents(Agents agents) throws ServerRequestFailedException {
-        this.pluginRequest.deleteAgents(agents.findInstancesToTerminate());
-    }
-
-    private void terminateDisabledAgents(Agents agents, PluginSettings pluginSettings) throws Exception {
+    private void terminateDisabledAgents(Agents agents, ClusterProfileProperties clusterProfileProperties, OpenStackInstances instances) throws Exception {
         Collection<Agent> toBeDeleted = agents.findInstancesToTerminate();
 
         for (Agent agent : toBeDeleted) {
-            agentInstances.terminate(agent.elasticAgentId(), pluginSettings);
+            instances.terminate(agent.elasticAgentId(), clusterProfileProperties);
         }
 
+        pluginRequest.deleteAgents(toBeDeleted);
     }
 
 }

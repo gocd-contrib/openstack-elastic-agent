@@ -18,8 +18,8 @@ package cd.go.contrib.elasticagents.openstack.executors;
 
 import cd.go.contrib.elasticagents.openstack.AgentInstances;
 import cd.go.contrib.elasticagents.openstack.OpenStackInstance;
-import cd.go.contrib.elasticagents.openstack.PluginRequest;
 import cd.go.contrib.elasticagents.openstack.RequestExecutor;
+import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.requests.ShouldAssignWorkRequest;
 import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
 import com.thoughtworks.go.plugin.api.logging.Logger;
@@ -33,13 +33,13 @@ import static java.text.MessageFormat.format;
 public class ShouldAssignWorkRequestExecutor implements RequestExecutor {
     private static final Logger LOG = Logger.getLoggerFor(ShouldAssignWorkRequestExecutor.class);
     private final AgentInstances agentInstances;
-    private final PluginRequest pluginRequest;
+    private final ClusterProfileProperties clusterProfileProperties;
     private final ShouldAssignWorkRequest request;
 
-    public ShouldAssignWorkRequestExecutor(ShouldAssignWorkRequest request, AgentInstances agentInstances, PluginRequest pluginRequest) {
+    public ShouldAssignWorkRequestExecutor(ShouldAssignWorkRequest request, AgentInstances agentInstances, ClusterProfileProperties clusterProfileProperties) {
         this.request = request;
         this.agentInstances = agentInstances;
-        this.pluginRequest = pluginRequest;
+        this.clusterProfileProperties = clusterProfileProperties;
     }
 
     @Override
@@ -53,8 +53,11 @@ public class ShouldAssignWorkRequestExecutor implements RequestExecutor {
             return DefaultGoPluginApiResponse.success("false");
         }
 
-        OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(pluginRequest.getPluginSettings());
-        if ((agentInstances.matchInstance(request.agent().elasticAgentId(), request.properties(), request.environment(), pluginRequest.getPluginSettings(), clientWrapper, transactionId, pluginRequest.getPluginSettings().getUsePreviousOpenstackImage()))) {
+        OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(clusterProfileProperties);
+        LOG.debug(format("[{0}] [should-assign-work] {1} {2}", transactionId, request.elasticAgentProfileProperties(), clusterProfileProperties));
+
+        if ((agentInstances.matchInstance(request.agent().elasticAgentId(), request.elasticAgentProfileProperties(), request.environment(),
+                clusterProfileProperties, clientWrapper, transactionId, clusterProfileProperties.getUsePreviousOpenstackImage()))) {
             LOG.info(format("[{0}] [should-assign-work] Work can be assigned to Agent {1}", transactionId, request.agent().elasticAgentId()));
             return DefaultGoPluginApiResponse.success("true");
         } else {

@@ -17,18 +17,19 @@
 package cd.go.contrib.elasticagents.openstack.executors;
 
 import cd.go.contrib.elasticagents.openstack.RequestExecutor;
+import cd.go.contrib.elasticagents.openstack.model.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
-public class GetPluginConfigurationExecutor implements RequestExecutor {
+public class GetClusterProfileMetadataExecutor implements RequestExecutor {
     public static final Gson GSON = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
-    public static final Field GO_SERVER_URL = new NonBlankField("go_server_url", "Go Server URL", null, true, false, "0");
+    public static final Metadata GO_SERVER_URL = new GoServerURLMetadata();
     public static final Field AGENT_TTL_MIN = new PositiveNumberField("auto_register_timeout", "Agent TTL minimum (in minutes)", "10", true, false, "1");
     public static final Field AGENT_TTL_MAX = new PositiveNumberField("agent_ttl_max", "Agent TTL maximum (in minutes)", "0", true,
             false, "2");
@@ -56,34 +57,34 @@ public class GetPluginConfigurationExecutor implements RequestExecutor {
     //public static final Field AGENT_RESOURCES = new Field("resources", "Agent Resources", null, false, false, "11");
     //public static final Field AGENT_ENVIRONMENTS = new Field("environments", "Environments", null, false, false, "12");
 
-    public static final Map<String, Field> FIELDS = new HashMap<>();
+    public static final List<Metadata> FIELDS = new ArrayList<>();
 
     static {
-        FIELDS.put(GO_SERVER_URL.key(), GO_SERVER_URL);
-        FIELDS.put(AGENT_TTL_MIN.key(), AGENT_TTL_MIN);
-        FIELDS.put(AGENT_TTL_MAX.key(), AGENT_TTL_MAX);
-        FIELDS.put(DEFAULT_MIN_INSTANCE_LIMIT.key(), DEFAULT_MIN_INSTANCE_LIMIT);
-        FIELDS.put(DEFAULT_MAX_INSTANCE_LIMIT.key(), DEFAULT_MAX_INSTANCE_LIMIT);
-        FIELDS.put(OPENSTACK_ENDPOINT.key(), OPENSTACK_ENDPOINT);
-        FIELDS.put(OPENSTACK_KEYSTONE_VERSION.key(), OPENSTACK_KEYSTONE_VERSION);
-        FIELDS.put(OPENSTACK_DOMAIN.key(), OPENSTACK_DOMAIN);
-        FIELDS.put(OPENSTACK_TENANT.key(), OPENSTACK_TENANT);
-        FIELDS.put(OPENSTACK_USER.key(), OPENSTACK_USER);
-        FIELDS.put(OPENSTACK_PASSWORD.key(), OPENSTACK_PASSWORD);
-        FIELDS.put(OPENSTACK_VM_PREFIX.key(), OPENSTACK_VM_PREFIX);
-        FIELDS.put(OPENSTACK_IMAGE.key(), OPENSTACK_IMAGE);
-        FIELDS.put(OPENSTACK_IMAGE_CACHE_TTL.key(), OPENSTACK_IMAGE_CACHE_TTL);
-        FIELDS.put(USE_PREVIOUS_OPENSTACK_IMAGE.key(), USE_PREVIOUS_OPENSTACK_IMAGE);
-        FIELDS.put(OPENSTACK_FLAVOR.key(), OPENSTACK_FLAVOR);
-        FIELDS.put(OPENSTACK_NETWORK.key(), OPENSTACK_NETWORK);
-        FIELDS.put(OPENSTACK_USERDATA.key(), OPENSTACK_USERDATA);
-        FIELDS.put(SSL_VERIFICATION_DISABLED.key(), SSL_VERIFICATION_DISABLED);
-        FIELDS.put(DELETE_ERROR_INSTANCES.key(), DELETE_ERROR_INSTANCES);
-        FIELDS.put(AGENT_PENDING_REGISTER_TIMEOUT.key(), AGENT_PENDING_REGISTER_TIMEOUT);
+        FIELDS.add(GO_SERVER_URL);
+        FIELDS.add(AGENT_TTL_MIN);
+        FIELDS.add(AGENT_TTL_MAX);
+        FIELDS.add(DEFAULT_MIN_INSTANCE_LIMIT);
+        FIELDS.add(DEFAULT_MAX_INSTANCE_LIMIT);
+        FIELDS.add(OPENSTACK_ENDPOINT);
+        FIELDS.add(OPENSTACK_KEYSTONE_VERSION);
+        FIELDS.add(OPENSTACK_DOMAIN);
+        FIELDS.add(OPENSTACK_TENANT);
+        FIELDS.add(OPENSTACK_USER);
+        FIELDS.add(OPENSTACK_PASSWORD);
+        FIELDS.add(OPENSTACK_VM_PREFIX);
+        FIELDS.add(OPENSTACK_IMAGE);
+        FIELDS.add(OPENSTACK_IMAGE_CACHE_TTL);
+        FIELDS.add(USE_PREVIOUS_OPENSTACK_IMAGE);
+        FIELDS.add(OPENSTACK_FLAVOR);
+        FIELDS.add(OPENSTACK_NETWORK);
+        FIELDS.add(OPENSTACK_USERDATA);
+        FIELDS.add(SSL_VERIFICATION_DISABLED);
+        FIELDS.add(DELETE_ERROR_INSTANCES);
+        FIELDS.add(AGENT_PENDING_REGISTER_TIMEOUT);
 
         // agent spec
-        //FIELDS.put(AGENT_RESOURCES.key(), AGENT_RESOURCES);
-        //FIELDS.put(AGENT_ENVIRONMENTS.key(), AGENT_ENVIRONMENTS);
+        //FIELDS.add( AGENT_RESOURCES);
+        //FIELDS.add( AGENT_ENVIRONMENTS);
     }
 
     public GoPluginApiResponse execute() {

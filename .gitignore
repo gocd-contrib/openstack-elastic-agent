@@ -4,6 +4,7 @@
 # gradle's output dir
 build/
 out/
+src/main/resources-generated/
 
 # the gradle temp dir
 .gradle
