@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cd.go.contrib.elasticagents.openstack.executors;
+package cd.go.contrib.elasticagents.openstack.model;
 
 public class PositiveNumberField extends Field {
     public PositiveNumberField(String key, String displayName, String defaultValue, Boolean required, Boolean secure, String displayOrder) {

@@ -18,6 +18,7 @@ package cd.go.contrib.elasticagents.openstack.executors;
 
 import cd.go.contrib.elasticagents.openstack.Constants;
 import cd.go.contrib.elasticagents.openstack.RequestExecutor;
+import cd.go.contrib.elasticagents.openstack.model.Metadata;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
@@ -27,8 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GetProfileMetadataExecutor implements RequestExecutor {
-    private static final Gson GSON = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-
     public static final Metadata OPENSTACK_IMAGE_ID = new Metadata(Constants.OPENSTACK_IMAGE_ID_ARGS, false, false);
     public static final Metadata OPENSTACK_FLAVOR_ID = new Metadata(Constants.OPENSTACK_FLAVOR_ID_ARGS, false, false);
     public static final Metadata OPENSTACK_NETWORK_ID = new Metadata(Constants.OPENSTACK_NETWORK_ID_ARGS, false, false);
@@ -38,8 +37,8 @@ public class GetProfileMetadataExecutor implements RequestExecutor {
     public static final Metadata OPENSTACK_MAX_INSTANCE_LIMIT = new Metadata(Constants.OPENSTACK_MAX_INSTANCE_LIMIT, false, false);
     public static final Metadata OPENSTACK_USERDATA = new Metadata(Constants.OPENSTACK_USERDATA_ARGS, false, false);
     public static final Metadata AGENT_JOB_LIMIT_MAX = new Metadata(Constants.AGENT_JOB_LIMIT_MAX, false, false);
-
     public static final List<Metadata> FIELDS = new ArrayList<>();
+    private static final Gson GSON = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
     static {
         FIELDS.add(OPENSTACK_IMAGE_ID);
@@ -55,7 +54,7 @@ public class GetProfileMetadataExecutor implements RequestExecutor {
 
     @Override
 
-    public GoPluginApiResponse execute() throws Exception {
-        return new DefaultGoPluginApiResponse(200, GSON.toJson(FIELDS));
+    public GoPluginApiResponse execute() {
+        return DefaultGoPluginApiResponse.success(GSON.toJson(FIELDS));
     }
 }

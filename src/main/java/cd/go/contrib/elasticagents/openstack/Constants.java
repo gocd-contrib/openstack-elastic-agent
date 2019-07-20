@@ -28,9 +28,8 @@ public interface Constants {
     String EXTENSION_TYPE = "elastic-agent";
 
     // The extension point API version that this plugin understands
-    String EXTENSION_API_VERSION = "4.0";
-    String PLUGIN_SETTINGS_PROCESSOR_API_VERSION = "1.0";
-    String ELASTIC_AGENT_PROCESSOR_API_VERSION = "1.0";
+    String EXTENSION_API_VERSION = "5.0";
+    String PROCESSOR_API_VERSION = "1.0";
 
     // the identifier of this plugin
     GoPluginIdentifier PLUGIN_IDENTIFIER = new GoPluginIdentifier(EXTENSION_TYPE, Collections.singletonList(EXTENSION_API_VERSION));
@@ -39,8 +38,8 @@ public interface Constants {
     String REQUEST_SERVER_PREFIX = "go.processor";
     String PROCESS_DISABLE_AGENTS = REQUEST_SERVER_PREFIX + ".elastic-agents.disable-agents";
     String PROCESS_DELETE_AGENTS = REQUEST_SERVER_PREFIX + ".elastic-agents.delete-agents";
-    String REQUEST_SERVER_GET_PLUGIN_SETTINGS = REQUEST_SERVER_PREFIX + ".plugin-settings.get";
     String REQUEST_SERVER_LIST_AGENTS = REQUEST_SERVER_PREFIX + ".elastic-agents.list-agents";
+    String REQUEST_SERVER_SERVER_HEALTH_ADD_MESSAGES = REQUEST_SERVER_PREFIX + ".server-health.add-messages";
 
     // internal use only
     String GOAGENT_PROPERTIES_PREFIX = "goagent_";

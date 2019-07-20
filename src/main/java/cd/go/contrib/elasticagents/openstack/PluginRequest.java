@@ -16,37 +16,28 @@
 
 package cd.go.contrib.elasticagents.openstack;
 
+import com.google.gson.Gson;
 import com.thoughtworks.go.plugin.api.GoApplicationAccessor;
 import com.thoughtworks.go.plugin.api.logging.Logger;
 import com.thoughtworks.go.plugin.api.request.DefaultGoApiRequest;
 import com.thoughtworks.go.plugin.api.response.GoApiResponse;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import static cd.go.contrib.elasticagents.openstack.Constants.*;
 
 public class PluginRequest {
+    public static final Logger LOG = Logger.getLoggerFor(PluginRequest.class);
     private final GoApplicationAccessor accessor;
-
-    public static final Logger LOG = Logger.getLoggerFor(OpenStackPlugin.class);
 
     public PluginRequest(GoApplicationAccessor accessor) {
         this.accessor = accessor;
     }
 
-    public PluginSettings getPluginSettings() throws ServerRequestFailedException {
-        DefaultGoApiRequest request = new DefaultGoApiRequest(REQUEST_SERVER_GET_PLUGIN_SETTINGS, PLUGIN_SETTINGS_PROCESSOR_API_VERSION, PLUGIN_IDENTIFIER);
-        GoApiResponse response = accessor.submit(request);
-
-        if (response.responseCode() != 200) {
-            throw ServerRequestFailedException.getPluginSettings(response);
-        }
-
-        return PluginSettings.fromJSON(response.responseBody());
-    }
-
     public Agents listAgents() throws ServerRequestFailedException {
-        DefaultGoApiRequest request = new DefaultGoApiRequest(REQUEST_SERVER_LIST_AGENTS, ELASTIC_AGENT_PROCESSOR_API_VERSION, PLUGIN_IDENTIFIER);
+        DefaultGoApiRequest request = new DefaultGoApiRequest(REQUEST_SERVER_LIST_AGENTS, PROCESSOR_API_VERSION, PLUGIN_IDENTIFIER);
         GoApiResponse response = accessor.submit(request);
 
         if (response.responseCode() != 200) {
@@ -62,7 +53,7 @@ public class PluginRequest {
             return;
         }
 
-        DefaultGoApiRequest request = new DefaultGoApiRequest(PROCESS_DISABLE_AGENTS, ELASTIC_AGENT_PROCESSOR_API_VERSION, PLUGIN_IDENTIFIER);
+        DefaultGoApiRequest request = new DefaultGoApiRequest(PROCESS_DISABLE_AGENTS, PROCESSOR_API_VERSION, PLUGIN_IDENTIFIER);
 
         request.setRequestBody(Agent.toJSONArray(toBeDisabled));
 
@@ -78,12 +69,41 @@ public class PluginRequest {
             return;
         }
 
-        DefaultGoApiRequest request = new DefaultGoApiRequest(PROCESS_DELETE_AGENTS, ELASTIC_AGENT_PROCESSOR_API_VERSION, PLUGIN_IDENTIFIER);
+        DefaultGoApiRequest request = new DefaultGoApiRequest(PROCESS_DELETE_AGENTS, PROCESSOR_API_VERSION, PLUGIN_IDENTIFIER);
         request.setRequestBody(Agent.toJSONArray(toBeDeleted));
         GoApiResponse response = accessor.submit(request);
 
         if (response.responseCode() != 200) {
             throw ServerRequestFailedException.deleteAgents(response);
+        }
+    }
+
+    public void addServerHealthMessage(List<Map<String, String>> messages) {
+        Gson gson = new Gson();
+
+        DefaultGoApiRequest request = new DefaultGoApiRequest(REQUEST_SERVER_SERVER_HEALTH_ADD_MESSAGES, PROCESSOR_API_VERSION, PLUGIN_IDENTIFIER);
+
+        request.setRequestBody(gson.toJson(messages));
+
+        // submit the request
+        GoApiResponse response = accessor.submit(request);
+
+        // check status
+        if (response.responseCode() != 200) {
+            LOG.error("The server sent an unexpected status code " + response.responseCode() + " with the response body " + response.responseBody());
+        }
+    }
+
+    public void removeServerHealthMessage() {
+
+        DefaultGoApiRequest request = new DefaultGoApiRequest(REQUEST_SERVER_SERVER_HEALTH_ADD_MESSAGES, PROCESSOR_API_VERSION, PLUGIN_IDENTIFIER);
+
+        // submit the request
+        GoApiResponse response = accessor.submit(request);
+
+        // check status
+        if (response.responseCode() != 200) {
+            LOG.error("The server sent an unexpected status code " + response.responseCode() + " with the response body " + response.responseBody());
         }
     }
 }

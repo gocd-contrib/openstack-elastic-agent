@@ -1,5 +1,6 @@
 package cd.go.contrib.elasticagents.openstack;
 
+import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 import org.junit.Test;
@@ -11,18 +12,16 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class PendingAgentsServiceTest {
+    private static final String IMAGE_ID = "7637f039-027d-471f-8d6c-4177635f84f8";
+    private static final String FLAVOR_ID = "5";
     private final AgentInstances agentInstances;
     private final PendingAgentsService service;
     private final OpenStackInstance osInstance;
     private final JobIdentifier job1;
-    private final PluginSettings pluginSettings;
-    private PluginRequest pluginRequest;
+    private final ClusterProfileProperties clusterProfileProperties;
     Map<String, String> props = new HashMap<>();
-
-    private static final String IMAGE_ID = "7637f039-027d-471f-8d6c-4177635f84f8";
-    private static final String FLAVOR_ID = "5";
-
     String instanceId = "84ea0a14-008b-48bb-a995-22f700282221";
+    private PluginRequest pluginRequest;
 
     public PendingAgentsServiceTest() throws ServerRequestFailedException {
         agentInstances = mock(AgentInstances.class);
@@ -33,43 +32,43 @@ public class PendingAgentsServiceTest {
         when(osInstance.getImageIdOrName()).thenReturn(IMAGE_ID);
         when(osInstance.getFlavorIdOrName()).thenReturn(FLAVOR_ID);
         job1 = mock(JobIdentifier.class);
-        pluginSettings = new PluginSettings();
-        when(pluginRequest.getPluginSettings()).thenReturn(pluginSettings);
+        clusterProfileProperties = new ClusterProfileProperties();
+//        when(pluginRequest.getPluginSettings()).thenReturn(pluginSettings);
     }
 
     @Test
     public void refreshAllShouldNotRemoveOkInstancesWhenDeleteEnabled() throws Exception {
-        pluginSettings.setDeleteErrorInstances(true);
+        clusterProfileProperties.setDeleteErrorInstances(true);
         when(osInstance.id()).thenReturn(instanceId);
-        CreateAgentRequest originalRequest = new CreateAgentRequest("123", props, job1, null);
+        CreateAgentRequest originalRequest = new CreateAgentRequest("123", props, job1, null, clusterProfileProperties );
         service.addPending(osInstance, originalRequest);
-        when(agentInstances.doesInstanceExist(anyObject(), eq(instanceId))).thenReturn(true);
-        when(agentInstances.isInstanceInErrorState(anyObject(), eq(instanceId))).thenReturn(false);
-        service.refreshAll(pluginRequest);
+        when(agentInstances.doesInstanceExist(any(), eq(instanceId))).thenReturn(true);
+        when(agentInstances.isInstanceInErrorState(any(), eq(instanceId))).thenReturn(false);
+        service.refreshAll(pluginRequest, clusterProfileProperties);
         verify(agentInstances, times(0)).terminate(eq(instanceId), any(PluginSettings.class));
     }
 
     @Test
     public void refreshAllShouldRemoveInstancesInErrorStateWhenDeleteEnabled() throws Exception {
-        pluginSettings.setDeleteErrorInstances(true);
+        clusterProfileProperties.setDeleteErrorInstances(true);
         when(osInstance.id()).thenReturn(instanceId);
-        CreateAgentRequest originalRequest = new CreateAgentRequest("123", props, job1, null);
+        CreateAgentRequest originalRequest = new CreateAgentRequest("123", props, job1, null, clusterProfileProperties );
         service.addPending(osInstance, originalRequest);
-        when(agentInstances.doesInstanceExist(anyObject(), eq(instanceId))).thenReturn(true);
-        when(agentInstances.isInstanceInErrorState(anyObject(), eq(instanceId))).thenReturn(true);
-        service.refreshAll(pluginRequest);
+        when(agentInstances.doesInstanceExist(any(), eq(instanceId))).thenReturn(true);
+        when(agentInstances.isInstanceInErrorState(any(), eq(instanceId))).thenReturn(true);
+        service.refreshAll(pluginRequest, clusterProfileProperties);
         verify(agentInstances, times(1)).terminate(eq(instanceId), any(PluginSettings.class));
     }
 
     @Test
     public void refreshAllShouldNotRemoveInstancesInErrorStateWhenDeleteDisabled() throws Exception {
-        pluginSettings.setDeleteErrorInstances(false);
+        clusterProfileProperties.setDeleteErrorInstances(false);
         when(osInstance.id()).thenReturn(instanceId);
-        CreateAgentRequest originalRequest = new CreateAgentRequest("123", props, job1, null);
+        CreateAgentRequest originalRequest = new CreateAgentRequest("123", props, job1, null, clusterProfileProperties );
         service.addPending(osInstance, originalRequest);
-        when(agentInstances.doesInstanceExist(anyObject(), eq(instanceId))).thenReturn(true);
-        when(agentInstances.isInstanceInErrorState(anyObject(), eq(instanceId))).thenReturn(true);
-        service.refreshAll(pluginRequest);
+        when(agentInstances.doesInstanceExist(any(), eq(instanceId))).thenReturn(true);
+        when(agentInstances.isInstanceInErrorState(any(), eq(instanceId))).thenReturn(true);
+        service.refreshAll(pluginRequest, clusterProfileProperties);
         verify(agentInstances, times(0)).terminate(eq(instanceId), any(PluginSettings.class));
     }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cd.go.contrib.elasticagents.openstack.executors;
+package cd.go.contrib.elasticagents.openstack.model;
 
 import org.apache.commons.lang3.StringUtils;
 

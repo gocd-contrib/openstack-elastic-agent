@@ -1,6 +1,7 @@
 package cd.go.contrib.elasticagents.openstack.executors;
 
 import cd.go.contrib.elasticagents.openstack.*;
+import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 import cd.go.contrib.elasticagents.openstack.utils.ImageNotFoundException;
@@ -23,7 +24,7 @@ public class CreateAgentRequestExecutorTest {
     private AgentInstances<OpenStackInstance> agentInstances;
     private PluginRequest pluginRequest;
     private Agents agents;
-    private PluginSettings pluginSettings;
+    private ClusterProfileProperties clusterProfileProperties;
     private OpenstackClientWrapper openstackClientWrapper;
     private PendingAgentsService pendingAgents;
     private OpenStackInstance osInstance;
@@ -39,15 +40,15 @@ public class CreateAgentRequestExecutorTest {
         when(pendingAgents.getAgents()).thenReturn(new PendingAgent[0]);
         agents = new Agents();
         openstackClientWrapper = mock(OpenstackClientWrapper.class);
-        pluginSettings = new PluginSettings();
-        pluginSettings.setOpenstackEndpoint("http://some/url");
-        pluginSettings.setOpenstackFlavor("default-flavor");
-        pluginSettings.setOpenstackImage(IMAGE_ID);
-        pluginSettings.setOpenstackNetwork("780f2cfc-389b-4cc5-9b85-ed03a73975ee");
-        pluginSettings.setOpenstackPassword("secret");
-        pluginSettings.setOpenstackUser("user");
-        pluginSettings.setOpenstackTenant("tenant");
-        pluginSettings.setOpenstackVmPrefix("prefix-");
+        clusterProfileProperties = new ClusterProfileProperties();
+        clusterProfileProperties.setOpenstackEndpoint("http://some/url");
+        clusterProfileProperties.setOpenstackFlavor("default-flavor");
+        clusterProfileProperties.setOpenstackImage(IMAGE_ID);
+        clusterProfileProperties.setOpenstackNetwork("780f2cfc-389b-4cc5-9b85-ed03a73975ee");
+        clusterProfileProperties.setOpenstackPassword("secret");
+        clusterProfileProperties.setOpenstackUser("user");
+        clusterProfileProperties.setOpenstackTenant("tenant");
+        clusterProfileProperties.setOpenstackVmPrefix("prefix-");
         osInstance = mock(OpenStackInstance.class);
         when(osInstance.getImageIdOrName()).thenReturn(IMAGE_ID);
         when(osInstance.getFlavorIdOrName()).thenReturn(FLAVOR_ID);
@@ -75,8 +76,8 @@ public class CreateAgentRequestExecutorTest {
         // Arrange
         when(pendingAgents.getAgents()).thenReturn(new PendingAgent[0]);
         when(pluginRequest.listAgents()).thenReturn(agents);
-        when(pluginRequest.getPluginSettings()).thenReturn(pluginSettings);
-        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.<String, String>anyMap(), anyString(), any(PluginSettings.class),
+        when(createAgentRequest.clusterProfileProperties()).thenReturn(clusterProfileProperties);
+        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.anyMap(), anyString(), any(PluginSettings.class),
                 any(OpenstackClientWrapper.class), anyString(), anyBoolean())).thenReturn(true);
         CreateAgentRequestExecutor executor = new CreateAgentRequestExecutor(createAgentRequest, agentInstances, pluginRequest, openstackClientWrapper, pendingAgents);
 
@@ -84,7 +85,7 @@ public class CreateAgentRequestExecutorTest {
         executor.execute();
 
         // Assert
-        verify(agentInstances, times(1)).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
+        verify(agentInstances, times(1)).create(any(CreateAgentRequest.class), any(PluginRequest.class), anyString());
     }
 
     @Test
@@ -92,12 +93,12 @@ public class CreateAgentRequestExecutorTest {
         // Arrange
         PendingAgent[] pending = new PendingAgent[1];
         Map<String, String> props = new HashMap<>();
-        CreateAgentRequest originalRequest = new CreateAgentRequest("123", props, job1, null);
+        CreateAgentRequest originalRequest = new CreateAgentRequest("123", props, job1, null, clusterProfileProperties);
         pending[0] = new PendingAgent(osInstance, originalRequest);
         when(pendingAgents.getAgents()).thenReturn(pending);
         when(pluginRequest.listAgents()).thenReturn(agents);
-        when(pluginRequest.getPluginSettings()).thenReturn(pluginSettings);
-        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.<String, String>anyMap(), anyString(), any(PluginSettings.class),
+        when(createAgentRequest.clusterProfileProperties()).thenReturn(clusterProfileProperties);
+        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.anyMap(), anyString(), any(PluginSettings.class),
                 any(OpenstackClientWrapper.class), anyString(), anyBoolean())).thenReturn(false);
         when(createAgentRequest.job()).thenReturn(job1);
         CreateAgentRequestExecutor executor = new CreateAgentRequestExecutor(createAgentRequest, agentInstances, pluginRequest, openstackClientWrapper, pendingAgents);
@@ -106,7 +107,7 @@ public class CreateAgentRequestExecutorTest {
         executor.execute();
 
         // Assert
-        verify(agentInstances, never()).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
+        verify(agentInstances, never()).create(any(CreateAgentRequest.class), any(PluginRequest.class), anyString());
     }
 
     @Test
@@ -114,12 +115,12 @@ public class CreateAgentRequestExecutorTest {
         // Arrange
         PendingAgent[] pending = new PendingAgent[1];
         Map<String, String> props = new HashMap<>();
-        CreateAgentRequest originalRequest = new CreateAgentRequest("123", props, job1, null);
+        CreateAgentRequest originalRequest = new CreateAgentRequest("123", props, job1, null, clusterProfileProperties);
         pending[0] = new PendingAgent(osInstance, originalRequest);
         when(pendingAgents.getAgents()).thenReturn(pending);
         when(pluginRequest.listAgents()).thenReturn(agents);
-        when(pluginRequest.getPluginSettings()).thenReturn(pluginSettings);
-        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.<String, String>anyMap(), anyString(), any(PluginSettings.class),
+        when(createAgentRequest.clusterProfileProperties()).thenReturn(clusterProfileProperties);
+        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.anyMap(), anyString(), any(PluginSettings.class),
                 any(OpenstackClientWrapper.class), anyString(), anyBoolean())).thenReturn(false);
         when(createAgentRequest.job()).thenReturn(job2);
         CreateAgentRequestExecutor executor = new CreateAgentRequestExecutor(createAgentRequest, agentInstances, pluginRequest, openstackClientWrapper, pendingAgents);
@@ -128,7 +129,7 @@ public class CreateAgentRequestExecutorTest {
         executor.execute();
 
         // Assert
-        verify(agentInstances, times(1)).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
+        verify(agentInstances, times(1)).create(any(CreateAgentRequest.class), any(PluginRequest.class), anyString());
     }
 
     @Test
@@ -136,8 +137,11 @@ public class CreateAgentRequestExecutorTest {
         // Arrange
         agents.add(new Agent("id1", Agent.AgentState.Building, Agent.BuildState.Building, Agent.ConfigState.Enabled));
         when(pluginRequest.listAgents()).thenReturn(agents);
-        when(pluginRequest.getPluginSettings()).thenReturn(pluginSettings);
-        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.<String, String>anyMap(), anyString(), any(PluginSettings.class),
+        JobIdentifier job = mock(JobIdentifier.class);
+        when(job.represent()).thenReturn("mock/job");
+        when(createAgentRequest.job()).thenReturn(job);
+        when(createAgentRequest.clusterProfileProperties()).thenReturn(clusterProfileProperties);
+        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.anyMap(), anyString(), any(PluginSettings.class),
                 any(OpenstackClientWrapper.class), anyString(), anyBoolean())).thenReturn(true);
         CreateAgentRequestExecutor executor = new CreateAgentRequestExecutor(createAgentRequest, agentInstances, pluginRequest, openstackClientWrapper, pendingAgents);
 
@@ -145,7 +149,7 @@ public class CreateAgentRequestExecutorTest {
         executor.execute();
 
         // Assert
-        verify(agentInstances, times(1)).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
+        verify(agentInstances, times(1)).create(any(CreateAgentRequest.class), any(PluginRequest.class), anyString());
     }
 
     @Test
@@ -153,19 +157,19 @@ public class CreateAgentRequestExecutorTest {
         // Arrange
         agents.add(new Agent("id1", Agent.AgentState.Building, Agent.BuildState.Building, Agent.ConfigState.Enabled));
         when(pluginRequest.listAgents()).thenReturn(agents);
-        when(pluginRequest.getPluginSettings()).thenReturn(pluginSettings);
-        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.<String, String>anyMap(), anyString(), any(PluginSettings.class),
+        when(createAgentRequest.clusterProfileProperties()).thenReturn(clusterProfileProperties);
+        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.anyMap(), anyString(), any(PluginSettings.class),
                 any(OpenstackClientWrapper.class), anyString(), anyBoolean())).thenReturn(true);
         Map<String, String> properties = new HashMap<>();
         properties.put(Constants.OPENSTACK_MAX_INSTANCE_LIMIT, "3");
-        createAgentRequest = new CreateAgentRequest("abc-key", properties, job1, "testing");
+        createAgentRequest = new CreateAgentRequest("abc-key", properties, job1, "testing", clusterProfileProperties);
         CreateAgentRequestExecutor executor = new CreateAgentRequestExecutor(createAgentRequest, agentInstances, pluginRequest, openstackClientWrapper, pendingAgents);
 
         // Act
         executor.execute();
 
         // Assert
-        verify(agentInstances, times(1)).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
+        verify(agentInstances, times(1)).create(any(CreateAgentRequest.class), any(PluginRequest.class), anyString());
     }
 
     @Test
@@ -174,20 +178,20 @@ public class CreateAgentRequestExecutorTest {
         agents.add(new Agent("id1", Agent.AgentState.Idle, Agent.BuildState.Idle, Agent.ConfigState.Enabled));
         agents.add(new Agent("id2", Agent.AgentState.Idle, Agent.BuildState.Idle, Agent.ConfigState.Enabled));
         when(pluginRequest.listAgents()).thenReturn(agents);
-        when(pluginRequest.getPluginSettings()).thenReturn(pluginSettings);
-        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.<String, String>anyMap(), anyString(), any(PluginSettings.class),
+        when(createAgentRequest.clusterProfileProperties()).thenReturn(clusterProfileProperties);
+        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.anyMap(), anyString(), any(PluginSettings.class),
                 any(OpenstackClientWrapper.class), anyString(), anyBoolean())).thenReturn(true);
         Map<String, String> properties = new HashMap<>();
         properties.put(Constants.OPENSTACK_MIN_INSTANCE_LIMIT, "3");
         properties.put(Constants.OPENSTACK_MAX_INSTANCE_LIMIT, "");
-        createAgentRequest = new CreateAgentRequest("abc-key", properties, job1, "");
+        createAgentRequest = new CreateAgentRequest("abc-key", properties, job1, "", clusterProfileProperties);
         CreateAgentRequestExecutor executor = new CreateAgentRequestExecutor(createAgentRequest, agentInstances, pluginRequest, openstackClientWrapper, pendingAgents);
 
         // Act
         executor.execute();
 
         // Assert
-        verify(agentInstances, atLeastOnce()).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
+        verify(agentInstances, atLeastOnce()).create(any(CreateAgentRequest.class), any(PluginRequest.class), anyString());
     }
 
     @Test
@@ -197,19 +201,19 @@ public class CreateAgentRequestExecutorTest {
         agents.add(new Agent("id2", Agent.AgentState.Idle, Agent.BuildState.Idle, Agent.ConfigState.Enabled));
         agents.add(new Agent("id3", Agent.AgentState.Idle, Agent.BuildState.Idle, Agent.ConfigState.Enabled));
         when(pluginRequest.listAgents()).thenReturn(agents);
-        when(pluginRequest.getPluginSettings()).thenReturn(pluginSettings);
-        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.<String, String>anyMap(), anyString(), any(PluginSettings.class),
+        when(createAgentRequest.clusterProfileProperties()).thenReturn(clusterProfileProperties);
+        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.anyMap(), anyString(), any(PluginSettings.class),
                 any(OpenstackClientWrapper.class), anyString(), anyBoolean())).thenReturn(true);
         Map<String, String> properties = new HashMap<>();
         properties.put(Constants.OPENSTACK_MAX_INSTANCE_LIMIT, "");
-        createAgentRequest = new CreateAgentRequest("abc-key", properties, job1, "");
+        createAgentRequest = new CreateAgentRequest("abc-key", properties, job1, "", clusterProfileProperties);
         CreateAgentRequestExecutor executor = new CreateAgentRequestExecutor(createAgentRequest, agentInstances, pluginRequest, openstackClientWrapper, pendingAgents);
 
         // Act
         executor.execute();
 
         // Assert
-        verify(agentInstances, never()).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
+        verify(agentInstances, never()).create(any(CreateAgentRequest.class), any(PluginRequest.class), anyString());
     }
 
     @Test
@@ -220,11 +224,11 @@ public class CreateAgentRequestExecutorTest {
         agents.add(new Agent("id3", Agent.AgentState.Idle, Agent.BuildState.Idle, Agent.ConfigState.Enabled));
         agents.add(new Agent("id4", Agent.AgentState.Building, Agent.BuildState.Building, Agent.ConfigState.Enabled));
         when(pluginRequest.listAgents()).thenReturn(agents);
-        when(pluginRequest.getPluginSettings()).thenReturn(pluginSettings);
+        when(createAgentRequest.clusterProfileProperties()).thenReturn(clusterProfileProperties);
         Map<String, String> properties = new HashMap<>();
         properties.put(Constants.OPENSTACK_MIN_INSTANCE_LIMIT, "3");
-        createAgentRequest = new CreateAgentRequest("abc-key", properties, job1, "");
-        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.<String, String>anyMap(), anyString(), any(PluginSettings.class),
+        createAgentRequest = new CreateAgentRequest("abc-key", properties, job1, "", clusterProfileProperties);
+        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.anyMap(), anyString(), any(PluginSettings.class),
                 any(OpenstackClientWrapper.class), anyString(), anyBoolean())).thenReturn(true);
         CreateAgentRequestExecutor executor = new CreateAgentRequestExecutor(createAgentRequest, agentInstances, pluginRequest, openstackClientWrapper, pendingAgents);
 
@@ -232,7 +236,7 @@ public class CreateAgentRequestExecutorTest {
         executor.execute();
 
         // Assert
-        verify(agentInstances, never()).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
+        verify(agentInstances, never()).create(any(CreateAgentRequest.class), any(PluginRequest.class), anyString());
     }
 
     @Test
@@ -244,9 +248,9 @@ public class CreateAgentRequestExecutorTest {
         when(pluginRequest.listAgents()).thenReturn(agents);
         Map<String, String> properties = new HashMap<>();
         properties.put(Constants.OPENSTACK_MAX_INSTANCE_LIMIT, "3");
-        createAgentRequest = new CreateAgentRequest("abc-key", properties, job1, "");
-        when(pluginRequest.getPluginSettings()).thenReturn(pluginSettings);
-        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.<String, String>anyMap(), anyString(), any(PluginSettings.class),
+        createAgentRequest = new CreateAgentRequest("abc-key", properties, job1, "", clusterProfileProperties);
+//        when(createAgentRequest.clusterProfileProperties()).thenReturn(clusterProfileProperties);
+        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.anyMap(), anyString(), any(PluginSettings.class),
                 any(OpenstackClientWrapper.class), anyString(), anyBoolean())).thenReturn(true);
         CreateAgentRequestExecutor executor = new CreateAgentRequestExecutor(createAgentRequest, agentInstances, pluginRequest, openstackClientWrapper, pendingAgents);
 
@@ -254,7 +258,7 @@ public class CreateAgentRequestExecutorTest {
         executor.execute();
 
         // Assert
-        verify(agentInstances, never()).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
+        verify(agentInstances, never()).create(any(CreateAgentRequest.class), any(PluginRequest.class), anyString());
     }
 
     @Test
@@ -263,9 +267,9 @@ public class CreateAgentRequestExecutorTest {
         when(pluginRequest.listAgents()).thenReturn(agents);
         Map<String, String> properties = new HashMap<>();
         properties.put(Constants.OPENSTACK_MAX_INSTANCE_LIMIT, "");
-        createAgentRequest = new CreateAgentRequest("abc-key", properties, job1, "testing");
-        when(pluginRequest.getPluginSettings()).thenReturn(pluginSettings);
-        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.<String, String>anyMap(), anyString(), any(PluginSettings.class),
+        createAgentRequest = new CreateAgentRequest("abc-key", properties, job1, "testing", clusterProfileProperties);
+//        when(createAgentRequest.clusterProfileProperties()).thenReturn(clusterProfileProperties);
+        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.anyMap(), anyString(), any(PluginSettings.class),
                 any(OpenstackClientWrapper.class), anyString(), anyBoolean())).thenReturn(true);
         CreateAgentRequestExecutor executor = new CreateAgentRequestExecutor(createAgentRequest, agentInstances, pluginRequest, openstackClientWrapper, pendingAgents);
 
@@ -273,7 +277,7 @@ public class CreateAgentRequestExecutorTest {
         executor.execute();
 
         // Assert
-        verify(agentInstances, times(1)).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
+        verify(agentInstances, times(1)).create(any(CreateAgentRequest.class), any(PluginRequest.class), anyString());
     }
 
     @Test
@@ -288,9 +292,9 @@ public class CreateAgentRequestExecutorTest {
         when(pluginRequest.listAgents()).thenReturn(agents);
         Map<String, String> properties = new HashMap<>();
         properties.put(Constants.OPENSTACK_MAX_INSTANCE_LIMIT, "3");
-        createAgentRequest = new CreateAgentRequest("abc-key", properties, job1, "testing");
-        when(pluginRequest.getPluginSettings()).thenReturn(pluginSettings);
-        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.<String, String>anyMap(), anyString(), any(PluginSettings.class),
+        createAgentRequest = new CreateAgentRequest("abc-key", properties, job1, "testing", clusterProfileProperties);
+//        when(createAgentRequest.clusterProfileProperties()).thenReturn(clusterProfileProperties);
+        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.anyMap(), anyString(), any(PluginSettings.class),
                 any(OpenstackClientWrapper.class), anyString(), anyBoolean())).thenReturn(true);
         CreateAgentRequestExecutor executor = new CreateAgentRequestExecutor(createAgentRequest, agentInstances, pluginRequest, openstackClientWrapper, pendingAgents);
 
@@ -298,7 +302,7 @@ public class CreateAgentRequestExecutorTest {
         executor.execute();
 
         // Assert
-        verify(agentInstances, never()).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
+        verify(agentInstances, never()).create(any(CreateAgentRequest.class), any(PluginRequest.class), anyString());
     }
 
     @Test
@@ -317,9 +321,8 @@ public class CreateAgentRequestExecutorTest {
         agents.add(new Agent("id11", Agent.AgentState.Building, Agent.BuildState.Building, Agent.ConfigState.Enabled));
         when(pluginRequest.listAgents()).thenReturn(agents);
         Map<String, String> properties = new HashMap<>();
-        createAgentRequest = new CreateAgentRequest("abc-key", properties, job1, "testing");
-        when(pluginRequest.getPluginSettings()).thenReturn(pluginSettings);
-        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.<String, String>anyMap(), anyString(), any(PluginSettings.class),
+        createAgentRequest = new CreateAgentRequest("abc-key", properties, job1, "testing", clusterProfileProperties);
+        when(agentInstances.matchInstance(anyString(), ArgumentMatchers.anyMap(), anyString(), any(PluginSettings.class),
                 any(OpenstackClientWrapper.class), anyString(), anyBoolean())).thenReturn(true);
         CreateAgentRequestExecutor executor = new CreateAgentRequestExecutor(createAgentRequest, agentInstances, pluginRequest, openstackClientWrapper, pendingAgents);
 
@@ -327,6 +330,6 @@ public class CreateAgentRequestExecutorTest {
         executor.execute();
 
         // Assert
-        verify(agentInstances, never()).create(any(CreateAgentRequest.class), any(PluginSettings.class), anyString());
+        verify(agentInstances, never()).create(any(CreateAgentRequest.class), any(PluginRequest.class), anyString());
     }
 }

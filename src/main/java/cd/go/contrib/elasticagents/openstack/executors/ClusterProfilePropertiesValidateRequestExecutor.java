@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 ThoughtWorks, Inc.
+ * Copyright 2019 ThoughtWorks, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,20 +18,21 @@ package cd.go.contrib.elasticagents.openstack.executors;
 
 import cd.go.contrib.elasticagents.openstack.RequestExecutor;
 import cd.go.contrib.elasticagents.openstack.model.Metadata;
-import cd.go.contrib.elasticagents.openstack.requests.ProfileValidateRequest;
+import cd.go.contrib.elasticagents.openstack.requests.ClusterProfileValidateRequest;
 import com.google.gson.Gson;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
 import java.util.*;
 
-import static cd.go.contrib.elasticagents.openstack.executors.GetProfileMetadataExecutor.FIELDS;
+import static cd.go.contrib.elasticagents.openstack.executors.GetClusterProfileMetadataExecutor.FIELDS;
 
-public class ProfileValidateRequestExecutor implements RequestExecutor {
-    private final ProfileValidateRequest request;
+
+public class ClusterProfilePropertiesValidateRequestExecutor implements RequestExecutor {
     private static final Gson GSON = new Gson();
+    private final ClusterProfileValidateRequest request;
 
-    public ProfileValidateRequestExecutor(ProfileValidateRequest request) {
+    public ClusterProfilePropertiesValidateRequestExecutor(ClusterProfileValidateRequest request) {
         this.request = request;
     }
 
@@ -43,7 +44,6 @@ public class ProfileValidateRequestExecutor implements RequestExecutor {
 
         for (Metadata field : FIELDS) {
             knownFields.add(field.getKey());
-
             Map<String, String> validationError = field.validate(request.getProperties().get(field.getKey()));
 
             if (!validationError.isEmpty()) {

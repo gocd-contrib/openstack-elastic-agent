@@ -1,5 +1,6 @@
 package cd.go.contrib.elasticagents.openstack;
 
+import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 import com.thoughtworks.go.plugin.api.logging.Logger;
 
@@ -33,7 +34,7 @@ public class PendingAgentsService {
         return values.toArray(new PendingAgent[values.size()]);
     }
 
-    public void refreshAll(PluginRequest pluginRequest) throws ServerRequestFailedException {
+    public void refreshAll(PluginRequest pluginRequest, ClusterProfileProperties clusterProfileProperties) throws ServerRequestFailedException {
         if (REFRESH_RUNNING) {
             LOG.info(format("[refresh-pending] Refresh skipped already running in other thread, total pending agent count = {0}", pendingAgents.size()));
             return;
@@ -50,19 +51,19 @@ public class PendingAgentsService {
             Map.Entry<String, PendingAgent> entry = iter.next();
             try {
                 String instanceId = entry.getKey();
-                if (!agentInstances.doesInstanceExist(pluginRequest.getPluginSettings(), instanceId)) {
+                if (!agentInstances.doesInstanceExist(clusterProfileProperties, instanceId)) {
                     LOG.warn(format("[refresh-pending] Pending agent {0} has disappeared from OpenStack", instanceId));
                     iter.remove();
-                } else if (agentInstances.isInstanceInErrorState(pluginRequest.getPluginSettings(), instanceId)) {
+                } else if (agentInstances.isInstanceInErrorState(clusterProfileProperties, instanceId)) {
                     LOG.error(format("[refresh-pending] Pending agent instance {0} is in ERROR state on OpenStack", instanceId));
                     iter.remove();
-                    if (pluginRequest.getPluginSettings().getOpenstackDeleteErrorInstances()) {
+                    if (clusterProfileProperties.getOpenstackDeleteErrorInstances()) {
                         LOG.error(format("[refresh-pending] Deleting pending agent ERROR instance {0}", instanceId));
-                        agentInstances.terminate(instanceId, pluginRequest.getPluginSettings());
+                        agentInstances.terminate(instanceId, clusterProfileProperties);
                     }
-                } else if (agentInstances.hasAgentRegisterTimedOut(pluginRequest.getPluginSettings(), instanceId)) {
+                } else if (agentInstances.hasAgentRegisterTimedOut(clusterProfileProperties, instanceId)) {
                     LOG.warn(format("[refresh-pending] Pending agent {0} has been pending for too long, terminating instance", instanceId));
-                    agentInstances.terminate(instanceId, pluginRequest.getPluginSettings());
+                    agentInstances.terminate(instanceId, clusterProfileProperties);
                 } else {
                     LOG.debug(format("[refresh-pending] Pending agent {0} is still pending", instanceId));
                 }

@@ -156,7 +156,7 @@ public class OpenStackInstance {
         if (StringUtils.isNotBlank(request.autoRegisterKey())) {
             mdata.put(Constants.GOSERVER_PROPERTIES_PREFIX + Constants.REGISTER_KEY, request.autoRegisterKey());
         }
-        if (!StringUtils.isBlank(request.environment())) {
+        if (StringUtils.isNotBlank(request.environment())) {
             mdata.put(Constants.GOSERVER_PROPERTIES_PREFIX + Constants.ENVIRONMENT_KEY, request.environment());
         }
         mdata.put(Constants.GOSERVER_PROPERTIES_PREFIX + Constants.PLUGIN_ID_KEY, Constants.PLUGIN_ID);
@@ -179,7 +179,7 @@ public class OpenStackInstance {
             newInstance.put("name", instance_name);
         }
 
-        LOG.debug(mdata.toString());
+        LOG.debug("mdata.toString()={}", mdata.toString());
         LOG.debug(request.properties().toString());
 
         final String encodedUserData = getEncodedUserData(request, settings);
@@ -188,6 +188,7 @@ public class OpenStackInstance {
         imageNameOrId = client.getImageId(imageNameOrId, transactionId);
         String flavorNameOrId = getFlavorIdOrName(request.properties(), settings);
         String networkId = StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_NETWORK_ID_ARGS)) ? request.properties().get(Constants.OPENSTACK_NETWORK_ID_ARGS) : settings.getOpenstackNetwork();
+        LOG.debug("create before ServerCreateBuilder : PluginSettings={}", settings);
         ServerCreateBuilder scb = Builders.server()
                 .image(imageNameOrId)
                 .name(instance_name)
@@ -196,6 +197,7 @@ public class OpenStackInstance {
                 .addMetadata(mdata);
         if (encodedUserData != null)
             scb = scb.userData(encodedUserData);
+        LOG.debug("create after ServerCreateBuilder : PluginSettings={}", settings);
 
         if (StringUtils.isNotBlank(request.properties().get(Constants.OPENSTACK_SECURITY_GROUP))) {
             scb.addSecurityGroup(request.properties().get(Constants.OPENSTACK_SECURITY_GROUP));
@@ -205,7 +207,9 @@ public class OpenStackInstance {
             scb.keypairName(request.properties().get(Constants.OPENSTACK_KEYPAIR));
         }
 
+        LOG.debug("create before osclient.compute().servers().boot(scb.build()) : scb.build()={}", scb.build());
         Server server = osclient.compute().servers().boot(scb.build());
+        LOG.debug("create after osclient.compute().servers().boot(scb.build()) : server.getPowerState()={}", server.getPowerState());
 
         // create instance properties ( image id, network id, etc... ) and pass to OpenstackInstance()
 
@@ -218,6 +222,7 @@ public class OpenStackInstance {
     }
 
     public static String getImageIdOrName(Map<String, String> properties, PluginSettings settings) {
+        LOG.debug("getImageIdOrName properties={}, settings={}", properties, settings);
         return StringUtils.isNotBlank(properties.get(Constants.OPENSTACK_IMAGE_ID_ARGS)) ? properties.get(Constants.OPENSTACK_IMAGE_ID_ARGS) : settings.getOpenstackImage();
     }
 
