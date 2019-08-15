@@ -24,6 +24,8 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import org.joda.time.Period;
 
+import java.util.Objects;
+
 public class PluginSettings {
     public static final Gson GSON = new GsonBuilder()
             .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
@@ -299,6 +301,7 @@ public class PluginSettings {
     }
 
     public Boolean getUsePreviousOpenstackImage() {
+        usePreviousOpenstackImage = (usePreviousOpenstackImage == null) ? Boolean.FALSE : usePreviousOpenstackImage;
         return usePreviousOpenstackImage;
     }
 
@@ -315,6 +318,7 @@ public class PluginSettings {
     }
 
     public Boolean getSSLVerificationDisabled() {
+        sslVerificationDisabled = (sslVerificationDisabled == null) ? Boolean.FALSE : sslVerificationDisabled;
         return sslVerificationDisabled;
     }
     
@@ -382,6 +386,10 @@ public class PluginSettings {
 
     public void setDeleteErrorInstances(boolean deleteErrorInstances) {
         this.deleteErrorInstances = deleteErrorInstances;
+    }
+
+    public String uuid() {
+        return Integer.toHexString(Objects.hash(this));
     }
 
     @Override

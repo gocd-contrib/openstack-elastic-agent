@@ -16,24 +16,27 @@
 
 package cd.go.contrib.elasticagents.openstack;
 
-import com.google.gson.Gson;
+import cd.go.contrib.elasticagents.openstack.utils.ServerHealthMessages;
 import com.thoughtworks.go.plugin.api.GoApplicationAccessor;
 import com.thoughtworks.go.plugin.api.logging.Logger;
 import com.thoughtworks.go.plugin.api.request.DefaultGoApiRequest;
 import com.thoughtworks.go.plugin.api.response.GoApiResponse;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 import static cd.go.contrib.elasticagents.openstack.Constants.*;
 
+/**
+ * Instances of this class know how to send messages to the GoCD Server.
+ */
 public class PluginRequest {
     public static final Logger LOG = Logger.getLoggerFor(PluginRequest.class);
     private final GoApplicationAccessor accessor;
+    private final ServerHealthMessages serverHealthMessages;
 
-    public PluginRequest(GoApplicationAccessor accessor) {
+    public PluginRequest(GoApplicationAccessor accessor, ServerHealthMessages serverHealthMessages) {
         this.accessor = accessor;
+        this.serverHealthMessages = serverHealthMessages;
     }
 
     public Agents listAgents() throws ServerRequestFailedException {
@@ -48,6 +51,7 @@ public class PluginRequest {
     }
 
     public void disableAgents(Collection<Agent> toBeDisabled) throws ServerRequestFailedException {
+        LOG.debug("[Server Ping] disableAgents toBeDisabled={}", toBeDisabled);
 
         if (toBeDisabled.isEmpty()) {
             return;
@@ -78,26 +82,21 @@ public class PluginRequest {
         }
     }
 
-    public void addServerHealthMessage(List<Map<String, String>> messages) {
-        Gson gson = new Gson();
-
-        DefaultGoApiRequest request = new DefaultGoApiRequest(REQUEST_SERVER_SERVER_HEALTH_ADD_MESSAGES, PROCESSOR_API_VERSION, PLUGIN_IDENTIFIER);
-
-        request.setRequestBody(gson.toJson(messages));
-
-        // submit the request
-        GoApiResponse response = accessor.submit(request);
-
-        // check status
-        if (response.responseCode() != 200) {
-            LOG.error("The server sent an unexpected status code " + response.responseCode() + " with the response body " + response.responseBody());
-        }
+    public void addServerHealthMessage(String id, ServerHealthMessages.Type type, String message) {
+        serverHealthMessages.add(id, type, message);
     }
 
-    public void removeServerHealthMessage() {
+    public void removeServerHealthMessage(String id) {
+        serverHealthMessages.remove(id);
+    }
 
+    public void sendServerHealthMessage() {
         DefaultGoApiRequest request = new DefaultGoApiRequest(REQUEST_SERVER_SERVER_HEALTH_ADD_MESSAGES, PROCESSOR_API_VERSION, PLUGIN_IDENTIFIER);
 
+        final String requestBody = serverHealthMessages.getJSON();
+        LOG.debug("[sendServerHealthMessage] requestBody: {}", requestBody);
+
+        request.setRequestBody(requestBody);
         // submit the request
         GoApiResponse response = accessor.submit(request);
 

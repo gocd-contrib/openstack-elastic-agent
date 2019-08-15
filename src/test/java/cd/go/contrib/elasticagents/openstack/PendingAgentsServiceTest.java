@@ -1,5 +1,7 @@
 package cd.go.contrib.elasticagents.openstack;
 
+import cd.go.contrib.elasticagents.openstack.client.AgentInstances;
+import cd.go.contrib.elasticagents.openstack.client.OpenStackInstance;
 import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
@@ -8,7 +10,6 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class PendingAgentsServiceTest {
@@ -42,10 +43,10 @@ public class PendingAgentsServiceTest {
         when(osInstance.id()).thenReturn(instanceId);
         CreateAgentRequest originalRequest = new CreateAgentRequest("123", props, job1, null, clusterProfileProperties );
         service.addPending(osInstance, originalRequest);
-        when(agentInstances.doesInstanceExist(any(), eq(instanceId))).thenReturn(true);
-        when(agentInstances.isInstanceInErrorState(any(), eq(instanceId))).thenReturn(false);
+        when(agentInstances.doesInstanceExist(eq(instanceId))).thenReturn(true);
+        when(agentInstances.isInstanceInErrorState(eq(instanceId))).thenReturn(false);
         service.refreshAll(pluginRequest, clusterProfileProperties);
-        verify(agentInstances, times(0)).terminate(eq(instanceId), any(PluginSettings.class));
+        verify(agentInstances, times(0)).terminate(eq(instanceId));
     }
 
     @Test
@@ -54,10 +55,10 @@ public class PendingAgentsServiceTest {
         when(osInstance.id()).thenReturn(instanceId);
         CreateAgentRequest originalRequest = new CreateAgentRequest("123", props, job1, null, clusterProfileProperties );
         service.addPending(osInstance, originalRequest);
-        when(agentInstances.doesInstanceExist(any(), eq(instanceId))).thenReturn(true);
-        when(agentInstances.isInstanceInErrorState(any(), eq(instanceId))).thenReturn(true);
+        when(agentInstances.doesInstanceExist(eq(instanceId))).thenReturn(true);
+        when(agentInstances.isInstanceInErrorState(eq(instanceId))).thenReturn(true);
         service.refreshAll(pluginRequest, clusterProfileProperties);
-        verify(agentInstances, times(1)).terminate(eq(instanceId), any(PluginSettings.class));
+        verify(agentInstances, times(1)).terminate(eq(instanceId));
     }
 
     @Test
@@ -66,9 +67,9 @@ public class PendingAgentsServiceTest {
         when(osInstance.id()).thenReturn(instanceId);
         CreateAgentRequest originalRequest = new CreateAgentRequest("123", props, job1, null, clusterProfileProperties );
         service.addPending(osInstance, originalRequest);
-        when(agentInstances.doesInstanceExist(any(), eq(instanceId))).thenReturn(true);
-        when(agentInstances.isInstanceInErrorState(any(), eq(instanceId))).thenReturn(true);
+        when(agentInstances.doesInstanceExist(eq(instanceId))).thenReturn(true);
+        when(agentInstances.isInstanceInErrorState(eq(instanceId))).thenReturn(true);
         service.refreshAll(pluginRequest, clusterProfileProperties);
-        verify(agentInstances, times(0)).terminate(eq(instanceId), any(PluginSettings.class));
+        verify(agentInstances, times(0)).terminate(eq(instanceId));
     }
 }

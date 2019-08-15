@@ -17,9 +17,9 @@
 package cd.go.contrib.elasticagents.openstack.requests;
 
 import cd.go.contrib.elasticagents.openstack.Agent;
-import cd.go.contrib.elasticagents.openstack.AgentInstances;
-import cd.go.contrib.elasticagents.openstack.OpenStackInstance;
 import cd.go.contrib.elasticagents.openstack.RequestExecutor;
+import cd.go.contrib.elasticagents.openstack.client.AgentInstances;
+import cd.go.contrib.elasticagents.openstack.client.OpenStackInstance;
 import cd.go.contrib.elasticagents.openstack.executors.ShouldAssignWorkRequestExecutor;
 import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;

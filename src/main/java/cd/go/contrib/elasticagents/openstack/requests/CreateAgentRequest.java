@@ -16,11 +16,14 @@
 
 package cd.go.contrib.elasticagents.openstack.requests;
 
-import cd.go.contrib.elasticagents.openstack.*;
+import cd.go.contrib.elasticagents.openstack.PendingAgentsService;
+import cd.go.contrib.elasticagents.openstack.PluginRequest;
+import cd.go.contrib.elasticagents.openstack.RequestExecutor;
+import cd.go.contrib.elasticagents.openstack.client.AgentInstances;
+import cd.go.contrib.elasticagents.openstack.client.OpenStackInstance;
 import cd.go.contrib.elasticagents.openstack.executors.CreateAgentRequestExecutor;
 import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
-import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -83,7 +86,7 @@ public class CreateAgentRequest {
     }
 
     public RequestExecutor executor(PendingAgentsService pendingAgents, AgentInstances<OpenStackInstance> agentInstances, PluginRequest pluginRequest) throws Exception {
-        return new CreateAgentRequestExecutor(this, agentInstances, pluginRequest, new OpenstackClientWrapper(clusterProfileProperties), pendingAgents);
+        return new CreateAgentRequestExecutor(this, agentInstances, pluginRequest, pendingAgents);
     }
 
     @Override

@@ -16,9 +16,9 @@
 
 package cd.go.contrib.elasticagents.openstack.executors;
 
-import cd.go.contrib.elasticagents.openstack.AgentInstances;
-import cd.go.contrib.elasticagents.openstack.OpenStackInstance;
 import cd.go.contrib.elasticagents.openstack.PluginRequest;
+import cd.go.contrib.elasticagents.openstack.client.AgentInstances;
+import cd.go.contrib.elasticagents.openstack.client.OpenStackInstance;
 import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
 import cd.go.contrib.elasticagents.openstack.requests.JobCompletionRequest;
@@ -39,11 +39,11 @@ public class JobCompletionRequestExecutorTest {
         PluginRequest pluginRequest = mock(PluginRequest.class);
         String instanceId = "b45b5658-b093-4a58-bf22-17d898171c95";
         OpenStackInstance opInstance = new OpenStackInstance(instanceId, new Date(), null,
-                "7637f039-027d-471f-8d6c-4177635f84f8", "c1980bb5-ed59-4573-83c9-8391b53b3a55");
+                "7637f039-027d-471f-8d6c-4177635f84f8", "c1980bb5-ed59-4573-83c9-8391b53b3a55", clusterProfileProperties);
         when(agentInstances.find(anyString())).thenReturn(opInstance);
         new JobCompletionRequestExecutor(request, agentInstances, pluginRequest).execute();
 
-        verify(agentInstances, never()).terminate(elasticAgentId, clusterProfileProperties);
+        verify(agentInstances, never()).terminate(elasticAgentId);
     }
 
     @Test
@@ -54,12 +54,12 @@ public class JobCompletionRequestExecutorTest {
         PluginRequest pluginRequest = mock(PluginRequest.class);
         String instanceId = "b45b5658-b093-4a58-bf22-17d898171c95";
         OpenStackInstance opInstance = new OpenStackInstance(instanceId, new Date(), null,
-                "7637f039-027d-471f-8d6c-4177635f84f8", "c1980bb5-ed59-4573-83c9-8391b53b3a55");
+                "7637f039-027d-471f-8d6c-4177635f84f8", "c1980bb5-ed59-4573-83c9-8391b53b3a55", clusterProfileProperties);
         opInstance.setMaxCompletedJobs("2");
         when(agentInstances.find(anyString())).thenReturn(opInstance);
         new JobCompletionRequestExecutor(request, agentInstances, pluginRequest).execute();
         new JobCompletionRequestExecutor(request, agentInstances, pluginRequest).execute();
 
-        verify(agentInstances).terminate(elasticAgentId, clusterProfileProperties);
+        verify(agentInstances).terminate(elasticAgentId);
     }
 }

@@ -1,7 +1,10 @@
 package cd.go.contrib.elasticagents.openstack;
 
+import cd.go.contrib.elasticagents.openstack.client.AgentInstances;
+import cd.go.contrib.elasticagents.openstack.client.OpenStackInstance;
 import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
+import cd.go.contrib.elasticagents.openstack.utils.ServerHealthMessages;
 import com.thoughtworks.go.plugin.api.logging.Logger;
 
 import java.util.Collection;
@@ -15,13 +18,16 @@ import static java.text.MessageFormat.format;
  * Keeps a record of agent instances which have been requested on OpenStack
  * but not yet registered with GoCD server.
  */
+
 public class PendingAgentsService {
+    // FIXME: 2019-08-19 move this class to client namespace accessed via OpenStackInstances
     private static final Logger LOG = Logger.getLoggerFor(PendingAgentsService.class);
-    private static boolean REFRESH_RUNNING = false;
-    private AgentInstances agentInstances;
     private final ConcurrentHashMap<String, PendingAgent> pendingAgents = new ConcurrentHashMap<>();
+    private boolean refreshRunning = false;
+    private AgentInstances agentInstances;
 
     public PendingAgentsService(AgentInstances agentInstances) {
+        LOG.debug("new PendingAgentsService, AgentInstances:[{}] ", agentInstances);
         this.agentInstances = agentInstances;
     }
 
@@ -35,11 +41,11 @@ public class PendingAgentsService {
     }
 
     public void refreshAll(PluginRequest pluginRequest, ClusterProfileProperties clusterProfileProperties) throws ServerRequestFailedException {
-        if (REFRESH_RUNNING) {
+        if (refreshRunning) {
             LOG.info(format("[refresh-pending] Refresh skipped already running in other thread, total pending agent count = {0}", pendingAgents.size()));
             return;
         }
-        REFRESH_RUNNING = true;
+        refreshRunning = true;
         final long startTimeMillis = System.currentTimeMillis();
         Agents registeredAgents = pluginRequest.listAgents();
         for (Agent agent : registeredAgents.agents()) {
@@ -51,19 +57,22 @@ public class PendingAgentsService {
             Map.Entry<String, PendingAgent> entry = iter.next();
             try {
                 String instanceId = entry.getKey();
-                if (!agentInstances.doesInstanceExist(clusterProfileProperties, instanceId)) {
+                if (!agentInstances.doesInstanceExist(instanceId)) {
                     LOG.warn(format("[refresh-pending] Pending agent {0} has disappeared from OpenStack", instanceId));
                     iter.remove();
-                } else if (agentInstances.isInstanceInErrorState(clusterProfileProperties, instanceId)) {
+                } else if (agentInstances.isInstanceInErrorState(instanceId)) {
                     LOG.error(format("[refresh-pending] Pending agent instance {0} is in ERROR state on OpenStack", instanceId));
                     iter.remove();
                     if (clusterProfileProperties.getOpenstackDeleteErrorInstances()) {
                         LOG.error(format("[refresh-pending] Deleting pending agent ERROR instance {0}", instanceId));
-                        agentInstances.terminate(instanceId, clusterProfileProperties);
+                        agentInstances.terminate(instanceId);
                     }
-                } else if (agentInstances.hasAgentRegisterTimedOut(clusterProfileProperties, instanceId)) {
-                    LOG.warn(format("[refresh-pending] Pending agent {0} has been pending for too long, terminating instance", instanceId));
-                    agentInstances.terminate(instanceId, clusterProfileProperties);
+                } else if (agentInstances.hasPendingAgentTimedOut(instanceId)) {
+                    final String message = format("Pending agent {0} has been pending for too long, terminating instance", instanceId);
+                    LOG.warn("[refresh-pending] " + message);
+                    pluginRequest.addServerHealthMessage("AgentTimedOut-" + instanceId, ServerHealthMessages.Type.WARNING, message);
+                    iter.remove();
+                    agentInstances.terminate(instanceId);
                 } else {
                     LOG.debug(format("[refresh-pending] Pending agent {0} is still pending", instanceId));
                 }
@@ -71,9 +80,11 @@ public class PendingAgentsService {
                 LOG.error("Failed to check instance state", e);
             }
         }
+
+        agentInstances.terminateUnregisteredInstances(pluginRequest.listAgents(), pendingAgents);
         LOG.info(format("[refresh-pending] Total pending agent count = {0}", pendingAgents.size()));
         final long durationInMillis = System.currentTimeMillis() - startTimeMillis;
         LOG.info(format("[refresh-pending] refreshing pending agents took {0} millis", durationInMillis));
-        REFRESH_RUNNING = false;
+        refreshRunning = false;
     }
 }

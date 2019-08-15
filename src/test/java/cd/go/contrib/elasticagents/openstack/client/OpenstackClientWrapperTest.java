@@ -1,7 +1,10 @@
-package cd.go.contrib.elasticagents.openstack.utils;
+package cd.go.contrib.elasticagents.openstack.client;
 
+import cd.go.contrib.elasticagents.openstack.PluginSettings;
 import org.cache2k.Cache;
 import org.cache2k.Cache2kBuilder;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.api.compute.ComputeImageService;
@@ -9,11 +12,13 @@ import org.openstack4j.api.compute.ComputeService;
 import org.openstack4j.api.compute.FlavorService;
 import org.openstack4j.model.compute.Flavor;
 import org.openstack4j.model.compute.Image;
+import org.openstack4j.model.compute.Server;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -22,6 +27,33 @@ import static org.mockito.Mockito.*;
 public class OpenstackClientWrapperTest {
 
     private String transactionId = UUID.randomUUID().toString();
+    private PluginSettings pluginSettings;
+    private OSClient client;
+    private OpenStackClientFactory clientFactory;
+    private ComputeService compute;
+
+    @Before
+    public void setUp() throws Exception {
+        pluginSettings = new PluginSettings();
+        pluginSettings.setOpenstackEndpoint("http://some/url");
+        pluginSettings.setOpenstackFlavor("default-flavor");
+        pluginSettings.setOpenstackImage("7637f039-027d-471f-8d6c-4177635f84f8");
+        pluginSettings.setOpenstackNetwork("780f2cfc-389b-4cc5-9b85-ed03a73975ee");
+        pluginSettings.setOpenstackPassword("secret");
+        pluginSettings.setOpenstackUser("user");
+        pluginSettings.setOpenstackTenant("tenant");
+        pluginSettings.setOpenstackVmPrefix("prefix-");
+        pluginSettings.setOpenstackKeystoneVersion("3");
+        client = mock(OSClient.class);
+        clientFactory = mock(OpenStackClientFactory.class);
+        when(clientFactory.createClient(any())).thenReturn(client);
+        compute = mock(ComputeService.class);
+        when(client.compute()).thenReturn(compute);
+//        final Token token = mock(Token.class);
+//        when(client.getToken()).thenReturn(token);
+//        when(token.getExpires()).thenReturn(new Date());
+//        when(client.getAccess()).thenReturn(mock(Access.class));
+    }
 
     @Test
     public void shouldGetImageIdGivenImageName() throws ImageNotFoundException {
@@ -29,9 +61,6 @@ public class OpenstackClientWrapperTest {
         // Arrange
         String imageName = "ImageName";
         String expectedImageId = "ImageId";
-        OSClient client = mock(OSClient.class);
-        final ComputeService compute = mock(ComputeService.class);
-        when(client.compute()).thenReturn(compute);
         final ComputeImageService imageService = mock(ComputeImageService.class);
         when(compute.images()).thenReturn(imageService);
 
@@ -50,9 +79,10 @@ public class OpenstackClientWrapperTest {
 
         doReturn(images).when(imageService).list();
 
-        Cache<String, String> imageCache = new Cache2kBuilder<String, String>() {}.entryCapacity(100).build();
+        Cache<String, String> imageCache = new Cache2kBuilder<String, String>() {
+        }.entryCapacity(100).build();
 
-        final OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(client, imageCache, null);
+        final OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(pluginSettings, clientFactory, imageCache, null);
 
         // Act
         final String imageId = clientWrapper.getImageId(imageName, transactionId);
@@ -69,9 +99,6 @@ public class OpenstackClientWrapperTest {
         String firstImageId = "firstImageId";
         String secondImageId = "secondImageId";
         String thirdImageId = "thirdImageId";
-        OSClient client = mock(OSClient.class);
-        final ComputeService compute = mock(ComputeService.class);
-        when(client.compute()).thenReturn(compute);
         final ComputeImageService imageService = mock(ComputeImageService.class);
         when(compute.images()).thenReturn(imageService);
 
@@ -95,7 +122,7 @@ public class OpenstackClientWrapperTest {
                 .build();
 
         // Act
-        final OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(client, cache, null);
+        final OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(pluginSettings, clientFactory, cache, null);
         clientWrapper.resetPreviousImages();
 
         // Assert
@@ -118,9 +145,6 @@ public class OpenstackClientWrapperTest {
         // Arrange
         String imageName = "ImageName";
         String expectedImageId = "ImageId";
-        OSClient client = mock(OSClient.class);
-        final ComputeService compute = mock(ComputeService.class);
-        when(client.compute()).thenReturn(compute);
         final ComputeImageService imageService = mock(ComputeImageService.class);
         when(compute.images()).thenReturn(imageService);
 
@@ -146,7 +170,7 @@ public class OpenstackClientWrapperTest {
                 .build();
 
         // Act
-        final OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(client, cache, null);
+        final OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(pluginSettings, clientFactory, cache, null);
 
         // Assert
         verify(imageService, times(0)).list();
@@ -155,8 +179,8 @@ public class OpenstackClientWrapperTest {
         verify(imageService, times(1)).list();
         assertEquals(expectedImageId, clientWrapper.getImageId(imageName, transactionId));
         verify(imageService, times(1)).list();
-        System.out.println("sleep 1000");
-        Thread.sleep(1000);
+        System.out.println("sleep 1100");
+        Thread.sleep(1100);
         assertEquals(expectedImageId, clientWrapper.getImageId(imageName, transactionId));
         verify(imageService, times(2)).list();
         assertEquals(expectedImageId, clientWrapper.getImageId(imageName, transactionId));
@@ -169,9 +193,6 @@ public class OpenstackClientWrapperTest {
         // Arrange
         String flavorName = "m1.medium";
         String expectedFlavorId = "289349234";
-        OSClient client = mock(OSClient.class);
-        final ComputeService compute = mock(ComputeService.class);
-        when(client.compute()).thenReturn(compute);
         final FlavorService flavorService = mock(FlavorService.class);
         when(compute.flavors()).thenReturn(flavorService);
 
@@ -197,7 +218,7 @@ public class OpenstackClientWrapperTest {
                 .build();
 
         // Act
-        final OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(client, null, cache);
+        final OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(pluginSettings, clientFactory, null, cache);
 
         // Assert
         verify(flavorService, times(0)).list();
@@ -206,11 +227,52 @@ public class OpenstackClientWrapperTest {
         verify(flavorService, times(1)).list();
         assertEquals(expectedFlavorId, clientWrapper.getFlavorId(flavorName, transactionId));
         verify(flavorService, times(1)).list();
-        System.out.println("sleep 1000");
-        Thread.sleep(1000);
+        System.out.println("sleep 1100");
+        Thread.sleep(1100);
         assertEquals(expectedFlavorId, clientWrapper.getFlavorId(flavorName, transactionId));
         verify(flavorService, times(2)).list();
         assertEquals(expectedFlavorId, clientWrapper.getFlavorId(flavorName, transactionId));
         verify(flavorService, times(2)).list();
+    }
+
+    @Test
+    @Ignore
+    public void listServersInOSP13() {
+        pluginSettings = new PluginSettings();
+        pluginSettings.setOpenstackEndpoint("https://gotosp13.osp.jeppesensystems.com:13000/v3");
+        pluginSettings.setOpenstackFlavor("m1.small");
+        pluginSettings.setOpenstackImage("7637f039-027d-471f-8d6c-4177635f84f8");
+        pluginSettings.setOpenstackNetwork("780f2cfc-389b-4cc5-9b85-ed03a73975ee");
+        pluginSettings.setOpenstackPassword("jeppesen_gocd");
+        pluginSettings.setOpenstackUser("gocd");
+        pluginSettings.setOpenstackTenant("gocd");
+        pluginSettings.setOpenstackVmPrefix("devel-13-");
+        pluginSettings.setOpenstackKeystoneVersion("3");
+        pluginSettings.setOpenstackDomain("Default");
+        pluginSettings.setOpenstackImageCacheTTL("10");
+        long startTimeMillis = System.currentTimeMillis();
+        OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(pluginSettings);
+        System.out.println("Create Client " + (System.currentTimeMillis() - startTimeMillis));
+
+        startTimeMillis = System.currentTimeMillis();
+        List<Server> allInstances = clientWrapper.listServers(pluginSettings.getOpenstackVmPrefix());
+        System.out.println("listServers " + (System.currentTimeMillis() - startTimeMillis));
+        String allInstancesAsString = allInstances.stream()
+                .map(n -> n.getName())
+                .collect(Collectors.joining(","));
+        System.out.println(System.currentTimeMillis() - startTimeMillis);
+        System.out.println("allInstances.size=[" + allInstances.size() + "] [" + allInstancesAsString + "]");
+
+        for (int i = 0; i < 10; i++) {
+
+            startTimeMillis = System.currentTimeMillis();
+            clientWrapper = new OpenstackClientWrapper(pluginSettings);
+            System.out.println("Create Client " + (System.currentTimeMillis() - startTimeMillis));
+
+            startTimeMillis = System.currentTimeMillis();
+            allInstances = clientWrapper.listServers(pluginSettings.getOpenstackVmPrefix());
+            System.out.println("listServers " + (System.currentTimeMillis() - startTimeMillis));
+        }
+
     }
 }

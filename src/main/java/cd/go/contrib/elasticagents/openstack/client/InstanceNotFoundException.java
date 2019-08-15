@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package cd.go.contrib.elasticagents.openstack.executors;
+package cd.go.contrib.elasticagents.openstack.client;
 
-public class AgentNotFoundException extends Exception {
+public class InstanceNotFoundException extends Exception {
 
-    public AgentNotFoundException(final String message) {
+    public InstanceNotFoundException(final String message) {
         super(message);
     }
 
-    public AgentNotFoundException(final String message, final Throwable cause) {
+    public InstanceNotFoundException(final String message, final Throwable cause) {
         super(message, cause);
     }
 
-    public AgentNotFoundException(final Throwable cause) {
+    public InstanceNotFoundException(final Throwable cause) {
         super(cause);
     }
 }

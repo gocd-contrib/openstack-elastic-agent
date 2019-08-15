@@ -40,6 +40,7 @@ public enum Request {
     REQUEST_AGENT_STATUS_REPORT(Constants.ELASTIC_AGENT_REQUEST_PREFIX + ".agent-status-report"),
 
     REQUEST_CAPABILITIES(Constants.ELASTIC_AGENT_REQUEST_PREFIX + ".get-capabilities"),
+    REQUEST_GET_CONFIG(Constants.GO_PLUGIN_SETTINGS_PREFIX + ".get-configuration"),
 
     REQUEST_MIGRATE_CONFIGURATION(Constants.ELASTIC_AGENT_REQUEST_PREFIX + ".migrate-config"),
 

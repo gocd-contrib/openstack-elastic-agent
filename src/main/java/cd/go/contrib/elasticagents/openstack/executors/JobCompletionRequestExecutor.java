@@ -1,6 +1,10 @@
 package cd.go.contrib.elasticagents.openstack.executors;
 
-import cd.go.contrib.elasticagents.openstack.*;
+import cd.go.contrib.elasticagents.openstack.Agent;
+import cd.go.contrib.elasticagents.openstack.PluginRequest;
+import cd.go.contrib.elasticagents.openstack.RequestExecutor;
+import cd.go.contrib.elasticagents.openstack.client.AgentInstances;
+import cd.go.contrib.elasticagents.openstack.client.OpenStackInstance;
 import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.requests.JobCompletionRequest;
 import com.thoughtworks.go.plugin.api.logging.Logger;
@@ -38,7 +42,7 @@ public class JobCompletionRequestExecutor implements RequestExecutor {
                     elasticAgentId, clusterProfileProperties));
             List<Agent> agents = Arrays.asList(agent);
             pluginRequest.disableAgents(agents);
-            agentInstances.terminate(elasticAgentId, clusterProfileProperties);
+            agentInstances.terminate(elasticAgentId);
             pluginRequest.deleteAgents(agents);
         } else {
             LOG.info(format("[job-completed] Will NOT terminate instance {0} when completed job {1}", elasticAgentId, jobCompletionRequest.jobIdentifier().getRepresentation()));

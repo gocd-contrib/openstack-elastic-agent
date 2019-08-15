@@ -16,12 +16,11 @@
 
 package cd.go.contrib.elasticagents.openstack.executors;
 
-import cd.go.contrib.elasticagents.openstack.AgentInstances;
-import cd.go.contrib.elasticagents.openstack.OpenStackInstance;
 import cd.go.contrib.elasticagents.openstack.RequestExecutor;
+import cd.go.contrib.elasticagents.openstack.client.AgentInstances;
+import cd.go.contrib.elasticagents.openstack.client.OpenStackInstance;
 import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.requests.ShouldAssignWorkRequest;
-import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
 import com.thoughtworks.go.plugin.api.logging.Logger;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
@@ -53,11 +52,10 @@ public class ShouldAssignWorkRequestExecutor implements RequestExecutor {
             return DefaultGoPluginApiResponse.success("false");
         }
 
-        OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(clusterProfileProperties);
         LOG.debug(format("[{0}] [should-assign-work] {1} {2}", transactionId, request.elasticAgentProfileProperties(), clusterProfileProperties));
 
         if ((agentInstances.matchInstance(request.agent().elasticAgentId(), request.elasticAgentProfileProperties(), request.environment(),
-                clusterProfileProperties, clientWrapper, transactionId, clusterProfileProperties.getUsePreviousOpenstackImage()))) {
+                transactionId, clusterProfileProperties.getUsePreviousOpenstackImage()))) {
             LOG.info(format("[{0}] [should-assign-work] Work can be assigned to Agent {1}", transactionId, request.agent().elasticAgentId()));
             return DefaultGoPluginApiResponse.success("true");
         } else {

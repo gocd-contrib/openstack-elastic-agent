@@ -63,11 +63,11 @@ public class Agents{
         addAll(agents.agents());
     }
 
-    public Collection<Agent> findInstancesToDisable() {
+    public Collection<Agent> findAgentsToDisable() {
         return FluentIterable.from(agents.values()).filter(AGENT_IDLE_PREDICATE).toList();
     }
 
-    public Collection<Agent> findInstancesToTerminate() {
+    public Collection<Agent> findAgentsToTerminate() {
         return FluentIterable.from(agents.values()).filter(AGENT_DISABLED_PREDICATE).toList();
     }
 
