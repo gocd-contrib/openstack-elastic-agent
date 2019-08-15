@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cd.go.contrib.elasticagents.openstack;
+package cd.go.contrib.elasticagents.openstack.model;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
@@ -66,7 +66,7 @@ public class Agent {
 
     }
 
-    public Agent(String agentId){
+    public Agent(String agentId) {
         this(agentId, null, null, null);
     }
 

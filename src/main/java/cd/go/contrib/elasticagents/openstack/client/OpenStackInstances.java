@@ -17,6 +17,7 @@
 package cd.go.contrib.elasticagents.openstack.client;
 
 import cd.go.contrib.elasticagents.openstack.*;
+import cd.go.contrib.elasticagents.openstack.model.Agent;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 import cd.go.contrib.elasticagents.openstack.utils.ServerHealthMessages;
 import cd.go.contrib.elasticagents.openstack.utils.Util;
@@ -30,26 +31,34 @@ import org.openstack4j.model.common.ActionResponse;
 import org.openstack4j.model.compute.Server;
 
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static java.text.MessageFormat.format;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.stripToEmpty;
 
-public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
+public class OpenStackInstances {
 
     public static final Logger LOG = Logger.getLoggerFor(OpenStackInstances.class);
 
     private final String uuid;
     private final Map<String, OpenStackInstance> instances = new ConcurrentHashMap<>();
+    private final Map<String, PendingAgent> pendingAgents = new ConcurrentHashMap<>();
     private final OpenstackClientWrapper clientWrapper;
-    private final PluginSettings pluginSettings;
+    private PluginSettings pluginSettings;
     private boolean refreshed = false;
     private boolean refreshRunning = false;
 
     public OpenStackInstances(PluginSettings pluginSettings) {
         LOG.debug("new OpenStackInstances, PluginSettings:[{}] ", pluginSettings);
+        if (isEmpty(pluginSettings.toString())) {
+            final String message = "OpenStack elastic agents PluginSettings are empty";
+            LOG.error(message);
+            throw new IllegalArgumentException(message);
+        }
         this.pluginSettings = pluginSettings;
         this.clientWrapper = new OpenstackClientWrapper(pluginSettings);
         this.uuid = pluginSettings.uuid();
@@ -61,7 +70,24 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         this.uuid = pluginSettings.uuid();
     }
 
-    @Override
+    public PluginSettings getPluginSettings() {
+        return pluginSettings;
+    }
+
+    public void setPluginSettings(PluginSettings pluginSettings) {
+        this.pluginSettings = pluginSettings;
+    }
+
+    /**
+     * This message is sent to request creation of an agent instance.
+     * Implementations may, at their discretion choose to not spin up an agent instance.
+     * <p>
+     * So that instances created are auto-registered with the server, the agent instance should have an
+     * <code>autoregister.properties</code>.
+     *
+     * @param request       the request object
+     * @param transactionId used to trace transaction in logs.
+     */
     public OpenStackInstance create(CreateAgentRequest request, String transactionId) throws Exception {
         LOG.info("[{}] [create Agent] Processing request for {}", transactionId, request.job().represent());
         String imageNameOrId = getImageIdOrName(request.properties());
@@ -75,49 +101,18 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         LOG.info("[create agent] properties: {}", request.properties());
 
         register(op_instance);
+        addPending(op_instance, request);
         return op_instance;
     }
 
-    @Override
-    public synchronized boolean terminate(String instanceId) {
-        boolean terminated = false;
-        OpenStackInstance opInstance = instances.get(instanceId);
-        try {
-            if (opInstance == null) {
-                LOG.warn("[terminate] Requested to terminate an instance [{}] that does not exist in plugin state," +
-                        " trying anyway.", instanceId);
-            }
-            LOG.info("[terminate] OpenStack instance [{}]", instanceId);
-            ActionResponse response = clientWrapper.terminate(instanceId);
-            if (response.isSuccess()) {
-                terminated = true;
-            } else {
-                try {
-                    final String message = clientWrapper.getServer(instanceId).getFault().getMessage();
-                    LOG.warn("[terminate] Failed to terminate instance [{}] with message [{}], trying again.",
-                            instanceId, message);
-                    response = clientWrapper.terminate(instanceId);
-                    if (response.isSuccess()) {
-                        terminated = true;
-                        LOG.info("[terminate] Succeeded to terminate instance [{}] second time.", instanceId);
-                    } else {
-                        terminated = false;
-                        LOG.error("[terminate] Failed to terminate instance [{}] second time.", instanceId);
-                    }
-                } catch (InstanceNotFoundException e) {
-                    terminated = false;
-                    LOG.warn("[terminate] Failed to get instance [{}].", instanceId);
-                }
-            }
-            instances.remove(instanceId);
-        } catch (RuntimeException ex) {
-            LOG.warn("[terminate] Exception when trying to terminate an instance {}, {}",
-                    instanceId, ex.getLocalizedMessage());
-        }
-        return terminated;
-    }
-
-    @Override
+    /**
+     * This message is sent after plugin initialization time so that the plugin may connect to the cloud provider
+     * and fetch a list of all instances that have been spun up by this plugin (before the server was shut down).
+     * This call should ideally remember if the agent instances are refreshed from the cluster,
+     * and do nothing if instances were previously refreshed.
+     *
+     * @param pluginRequest the plugin request object
+     */
     public synchronized void refreshAll(PluginRequest pluginRequest) {
         LOG.debug("[refreshAll]: [{}] uuid=[{}] clusterURL={}, refreshRunning=[{}] refreshed=[{}]",
                 this, uuid, pluginSettings.getOpenstackEndpoint(), refreshRunning, refreshed);
@@ -130,10 +125,6 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         LOG.debug("[refreshAll]: [{}] uuid=[{}] clusterURL={}, startTimeMillis=[{}] refreshed=[{}], ",
                 this, uuid, pluginSettings.getOpenstackEndpoint(), startTimeMillis, refreshed);
         if (!refreshed) {
-            if (isEmpty(pluginSettings.toString())) {
-                LOG.warn("[refreshAll]: OpenStack elastic agents plugin settings are empty");
-                return;
-            }
             try {
                 Agents agents = pluginRequest.listAgents();
                 List<Server> allInstances = clientWrapper.listServers(pluginSettings.getOpenstackVmPrefix());
@@ -161,45 +152,55 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         final long durationInMillis = System.currentTimeMillis() - startTimeMillis;
         LOG.info("[refreshAll] [{}] uuid=[{}] clusterURL={}, refreshing instances took {} millis",
                 this, uuid, pluginSettings.getOpenstackEndpoint(), durationInMillis);
+        refreshPending(pluginRequest);
         refreshRunning = false;
     }
 
-    @Override
-    public void terminateUnregisteredInstances(Agents knownAgents, Map<String, PendingAgent> pendingAgents) {
-        Period period = pluginSettings.getAgentTTLMinPeriod();
-        List<Server> allInstances = clientWrapper.listServers(pluginSettings.getOpenstackVmPrefix());
-        String allInstancesAsString = allInstances.stream()
-                .map(n -> n.getName())
-                .collect(Collectors.joining(","));
-        final long startTimeMillis = System.currentTimeMillis();
-        LOG.debug("[terminateUnregisteredInstances]: [{}] uuid=[{}] clusterURL={}, startTimeMillis=[{}] allInstances.size=[{}] [{}], ",
-                this, uuid, pluginSettings.getOpenstackEndpoint(), startTimeMillis, allInstances.size(), allInstancesAsString);
-
-        for (Server server : allInstances) {
-            final String instanceId = server.getId();
-            if (knownAgents.containsAgentWithId(instanceId)) {
-                LOG.debug("[terminateUnregisteredInstances]: [{}] uuid=[{}] keeping known agent instance=[{}]",
-                        this, uuid, server.getName());
-            } else if (pendingAgents.containsKey(instanceId)) {
-                LOG.debug("[terminateUnregisteredInstances]: [{}] uuid=[{}] keeping pending agent instance=[{}]",
-                        this, uuid, server.getName());
+    /**
+     * This message is sent when the plugin needs to terminate the OpenStack instance.
+     *
+     * @param instanceId the elastic agent id, which is the same as OpenStack ID
+     * @return if the agent instance is terminated.
+     */
+    public synchronized boolean terminate(String instanceId) {
+        boolean terminated = false;
+        OpenStackInstance opInstance = instances.get(instanceId);
+        try {
+            if (opInstance == null) {
+                LOG.warn("[terminate] Requested to terminate an instance [{}] that does not exist in plugin state," +
+                        " trying anyway.", instanceId);
+            }
+            LOG.info("[terminate] OpenStack instance [{}]", instanceId);
+            ActionResponse response = clientWrapper.terminate(instanceId);
+            if (response.isSuccess()) {
+                terminated = true;
             } else {
-                LOG.debug("[terminateUnregisteredInstances]: [{}] uuid=[{}] terminating agent instance=[{}], since instance not registered nor pending.", this, uuid, server.getName());
-                final boolean terminated = terminate(instanceId);
-                if (!terminated) {
-                    LOG.warn("[terminateUnregisteredInstances]: [{}] uuid=[{}] Exception when terminating agent instance=[{}].",
-                            this, uuid, server.getName());
+                try {
+                    final String message = clientWrapper.getServer(instanceId).getFault().getMessage();
+                    LOG.warn("[terminate] Failed to terminate instance [{}] with message [{}], trying again.",
+                            instanceId, message);
+                    response = clientWrapper.terminate(instanceId);
+                    if (response.isSuccess()) {
+                        terminated = true;
+                        LOG.info("[terminate] Succeeded to terminate instance [{}] second time.", instanceId);
+                    } else {
+                        LOG.error("[terminate] Failed to terminate instance [{}] second time.", instanceId);
+                    }
+                } catch (InstanceNotFoundException e) {
+                    LOG.warn("[terminate] Failed to get instance [{}].", instanceId);
                 }
             }
+            instances.remove(instanceId);
+        } catch (RuntimeException ex) {
+            LOG.warn("[terminate] Exception when trying to terminate an instance {}, {}",
+                    instanceId, ex.getLocalizedMessage());
         }
+        return terminated;
     }
 
-    public boolean doesInstanceExist(String id) {
-        try {
-            return clientWrapper.getServer(id) != null;
-        } catch (InstanceNotFoundException e) {
-            return false;
-        }
+    public PendingAgent[] getPendingAgents() {
+        Collection<PendingAgent> values = pendingAgents.values();
+        return values.toArray(new PendingAgent[values.size()]);
     }
 
     public boolean matchInstance(String id, Map<String, String> properties, String requestEnvironment, String transactionId, boolean usePreviousImageId) {
@@ -229,11 +230,10 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         if (!proposedImageIdOrName.equals(instance.getImageIdOrName())) {
             LOG.debug("[{}] [matchInstance] image name/id: [{}] did NOT match with instance image: [{}]", transactionId,
                     proposedImageIdOrName, instance.getImageIdOrName());
-            String proposedImageId = null;
+            String proposedImageId;
             try {
                 proposedImageId = clientWrapper.getImageId(proposedImageIdOrName, transactionId);
             } catch (ImageNotFoundException e) {
-
                 return false;
             }
             LOG.debug("[{}] [matchInstance] Trying to match image id: [{}] with instance image: [{}]", transactionId,
@@ -276,53 +276,38 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         return true;
     }
 
-    void register(OpenStackInstance instance) {
-        instances.put(instance.id(), instance);
+    /**
+     * Returns {@link OpenStackInstance} for the given <code>id</code> or <code>null</code>, if the agent is not found.
+     *
+     * @param instanceId the elastic agent id
+     * @return an {@link OpenStackInstance} for the given <code>id</code>
+     */
+    public OpenStackInstance find(String instanceId) {
+        return instances.get(instanceId);
     }
 
-    @Override
-    public Agents fetchExpiredAgents(Agents agents) {
-        LOG.debug("[instancesCreatedAfterTTL] agentTTLMin: [{}] agentTTLMax: [{}] agents.agents().size(): [{}]",
-                pluginSettings.getAgentTTLMinPeriod().getMinutes(), pluginSettings.getAgentTTLMax(), agents.agents().size());
-        List<Agent> oldAgents = new ArrayList<>();
-        for (Agent agent : agents.agents()) {
-
-            OpenStackInstance instance = instances.get(agent.elasticAgentId());
-            if (instance == null) {
-                continue;
-            }
-
-            LOG.debug("[instancesCreatedAfterTTL] agentTTLMin: [{}] agentTTLMax: [{}]",
-                    pluginSettings.getAgentTTLMinPeriod().getMinutes(), pluginSettings.getAgentTTLMax());
-            int minutesTTL = Util.calculateTTL(pluginSettings.getAgentTTLMinPeriod().getMinutes(), pluginSettings.getAgentTTLMax());
-            Date expireDate = DateUtils.addMinutes(instance.createAt().toDate(), minutesTTL);
-            LOG.debug("[instancesCreatedAfterTTL] Agent: [{}] with minutesTTL: [{}]", agent.elasticAgentId(), minutesTTL);
-            if (expireDate.before(new Date())) {
-                LOG.info("[instancesCreatedAfterTTL] Agent: [{}] to be terminated with minutesTTL: [{}]", agent.elasticAgentId(), minutesTTL);
-                oldAgents.add(agent);
-            }
-        }
-        return new Agents(oldAgents);
+    /**
+     * Returns true if the agent is found in OpenStack.
+     *
+     * @param instanceId the elastic agent id
+     * @return rue if the agent is found in OpenStack.
+     */
+    public boolean hasInstance(String instanceId) {
+        return find(instanceId) != null;
     }
 
-    @Override
-    public OpenStackInstance find(String agentId) {
-        return instances.get(agentId);
-    }
-
-    @Override
-    public boolean hasInstance(String elasticAgentId) {
-        return find(elasticAgentId) != null;
-    }
-
-    @Override
-    public void performCleanup(PluginRequest pluginRequest) {
+    /**
+     * Remove agents in GoCD server and instances in OpenStack.
+     * <p>
+     * Decision to remove is based on TTL or if the Agent has manually been disabled in the GoCD Server.
+     *
+     * @param pluginRequest the plugin request object
+     */
+    public void removeOldAndDisabled(PluginRequest pluginRequest) {
         final long startTimeMillis = System.currentTimeMillis();
-        LOG.debug("[performCleanup] clusterURL={}, startTimeMillis=[{}] ",
-                pluginSettings.getOpenstackEndpoint(), startTimeMillis);
-        Agents allAgents = null;
+        LOG.debug("[performCleanup] clusterURL={}, startTimeMillis=[{}] ", pluginSettings.getOpenstackEndpoint(), startTimeMillis);
+        Agents allAgents;
         try {
-
             allAgents = pluginRequest.listAgents();
             Agents expiredAgents = fetchExpiredAgents(allAgents);
             Collection<Agent> agentsToDisable = expiredAgents.findAgentsToDisable();
@@ -338,25 +323,125 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
             }
             pluginRequest.deleteAgents(toBeDeleted);
 
-
-            // moved to cd.go.contrib.elasticagents.openstack.PendingAgentsService
-//            allAgents = pluginRequest.listAgents();
-//            terminateUnregisteredInstances(allAgents, pendingAgents);
-            final long durationInMillis = System.currentTimeMillis() - startTimeMillis;
             LOG.info("[performCleanup] clusterURL={}, refreshing instances took {} millis",
-                    pluginSettings.getOpenstackEndpoint(), durationInMillis);
+                    pluginSettings.getOpenstackEndpoint(), System.currentTimeMillis() - startTimeMillis);
         } catch (ServerRequestFailedException e) {
             LOG.error("[performCleanup] Exception [{}]", e);
         }
     }
 
-    @Override
-    public boolean isInstanceInErrorState(String id) throws Exception {
+    public String getImageId(Map<String, String> properties, String transactionId) throws ImageNotFoundException {
+        return clientWrapper.getImageId(getImageIdOrName(properties), transactionId);
+    }
+
+    public String getFlavorId(Map<String, String> properties, String transactionId) {
+        return clientWrapper.getFlavorId(getFlavorIdOrName(properties), transactionId);
+    }
+
+    String getEncodedUserData(Map<String, String> properties) {
+        String userData = getUserData(properties);
+        if (StringUtils.isBlank(userData))
+            return null;
+        final byte[] userDataBytes = userData.getBytes(StandardCharsets.UTF_8);
+        return Base64.encodeBase64String(userDataBytes);
+    }
+
+    void register(OpenStackInstance instance) {
+        instances.put(instance.id(), instance);
+    }
+
+    void addPending(OpenStackInstance pendingInstance, CreateAgentRequest request) {
+        pendingAgents.putIfAbsent(pendingInstance.id(), new PendingAgent(pendingInstance, request));
+    }
+
+    String getUserData(Map<String, String> properties) {
+        String requestUserData = properties.get(Constants.OPENSTACK_USERDATA_ARGS);
+        if (StringUtils.isNotBlank(requestUserData))
+            return requestUserData;
+
+        return pluginSettings.getOpenstackUserdata();
+    }
+
+    void refreshPending(PluginRequest pluginRequest) {
+        long startTimeMillis;
+        try {
+            LOG.info("[refreshAll] [{}] uuid=[{}] clusterURL={}, starting refresh pending agents, total pending agent count = {} ",
+                    this, uuid, pluginSettings.getOpenstackEndpoint(), pendingAgents.size());
+            startTimeMillis = System.currentTimeMillis();
+            Agents registeredAgents = pluginRequest.listAgents();
+            for (Agent agent : registeredAgents.agents()) {
+                PendingAgent removed = pendingAgents.remove(agent.elasticAgentId());
+                if (removed != null)
+                    LOG.info(format("[refresh-pending] Agent {0} is registered with GoCD server and is no longer pending", removed));
+            }
+            for (Iterator<Map.Entry<String, PendingAgent>> iter = pendingAgents.entrySet().iterator(); iter.hasNext(); ) {
+                Map.Entry<String, PendingAgent> entry = iter.next();
+                try {
+                    String instanceId = entry.getKey();
+                    if (!doesInstanceExist(instanceId)) {
+                        LOG.warn(format("[refresh-pending] Pending agent {0} has disappeared from OpenStack", instanceId));
+                        iter.remove();
+                    } else if (isInstanceInErrorState(instanceId)) {
+                        LOG.error(format("[refresh-pending] Pending agent instance {0} is in ERROR state on OpenStack", instanceId));
+                        iter.remove();
+                        if (pluginSettings.getOpenstackDeleteErrorInstances()) {
+                            LOG.error(format("[refresh-pending] Deleting pending agent ERROR instance {0}", instanceId));
+                            terminate(instanceId);
+                        }
+                    } else if (hasPendingAgentTimedOut(instanceId)) {
+                        final String message = format("Pending agent {0} has been pending for too long, terminating instance", instanceId);
+                        LOG.warn("[refresh-pending] " + message);
+                        pluginRequest.addServerHealthMessage("AgentTimedOut-" + instanceId, ServerHealthMessages.Type.WARNING, message);
+                        iter.remove();
+                        terminate(instanceId);
+                    } else {
+                        LOG.debug(format("[refresh-pending] Pending agent {0} is still pending", instanceId));
+                    }
+                } catch (Exception e) {
+                    LOG.error("Failed to check instance state", e);
+                }
+            }
+            LOG.info(MessageFormat.format("[refresh-pending] Total pending agent count = {0}", pendingAgents.size()));
+
+            terminateUnregisteredInstances(pluginRequest.listAgents());
+            LOG.info("[pendingAgentsService.refreshAll] [{}] uuid=[{}] clusterURL={}, refreshing pending instances took {} millis",
+                    this, uuid, pluginSettings.getOpenstackEndpoint(), System.currentTimeMillis() - startTimeMillis);
+        } catch (ServerRequestFailedException e) {
+            LOG.warn("[refreshAll] [{}] uuid=[{}] clusterURL={}, Exception {}",
+                    this, uuid, pluginSettings.getOpenstackEndpoint(), e);
+        }
+    }
+
+    private String getImageIdOrName(Map<String, String> properties) {
+        LOG.debug("getImageIdOrName properties={}, settings={}", properties, pluginSettings);
+        return StringUtils.isNotBlank(properties.get(Constants.OPENSTACK_IMAGE_ID_ARGS)) ? properties.get(Constants.OPENSTACK_IMAGE_ID_ARGS) : pluginSettings.getOpenstackImage();
+    }
+
+    private String getFlavorIdOrName(Map<String, String> properties) {
+        return StringUtils.isNotBlank(properties.get(Constants.OPENSTACK_FLAVOR_ID_ARGS)) ? properties.get(Constants.OPENSTACK_FLAVOR_ID_ARGS) : pluginSettings.getOpenstackFlavor();
+    }
+
+    private String generateInstanceName() {
+        String instanceName = pluginSettings.getOpenstackVmPrefix() + RandomStringUtils.randomAlphanumeric(12).toLowerCase();
+        while (clientWrapper.instanceNameExists(instanceName)) {
+            instanceName = pluginSettings.getOpenstackVmPrefix() + RandomStringUtils.randomAlphanumeric(12).toLowerCase();
+        }
+        return instanceName;
+    }
+
+    private boolean doesInstanceExist(String id) {
+        try {
+            return clientWrapper.getServer(id) != null;
+        } catch (InstanceNotFoundException e) {
+            return false;
+        }
+    }
+
+    private boolean isInstanceInErrorState(String id) {
         return clientWrapper.isInstanceInErrorState(id);
     }
 
-    @Override
-    public boolean hasPendingAgentTimedOut(String id) {
+    private boolean hasPendingAgentTimedOut(String id) {
         OpenStackInstance instance = instances.get(id);
         if (instance == null) {
             return false;
@@ -374,46 +459,74 @@ public class OpenStackInstances implements AgentInstances<OpenStackInstance> {
         return false;
     }
 
-    @Override
-    public String getImageId(Map<String, String> properties, String transactionId) throws ImageNotFoundException {
-        return clientWrapper.getImageId(getImageIdOrName(properties), transactionId);
-    }
+    /**
+     * Terminate instances that is not Pending nor Registered in GoCD server.
+     *
+     * @param knownAgents the list of all the agents
+     */
+    private void terminateUnregisteredInstances(Agents knownAgents) {
+        Period period = pluginSettings.getAgentTTLMinPeriod();
+        List<Server> allInstances = clientWrapper.listServers(pluginSettings.getOpenstackVmPrefix());
+        String allInstancesAsString = allInstances.stream()
+                .map(n -> n.getName())
+                .collect(Collectors.joining(","));
+        final long startTimeMillis = System.currentTimeMillis();
+        LOG.debug("[terminateUnregisteredInstances]: [{}] uuid=[{}] clusterURL={}, startTimeMillis=[{}] allInstances.size=[{}] [{}], ",
+                this, uuid, pluginSettings.getOpenstackEndpoint(), startTimeMillis, allInstances.size(), allInstancesAsString);
 
-    @Override
-    public String getFlavorId(Map<String, String> properties, String transactionId) {
-        return clientWrapper.getFlavorId(getFlavorIdOrName(properties), transactionId);
-    }
-
-    private String generateInstanceName() {
-        String instanceName = pluginSettings.getOpenstackVmPrefix() + RandomStringUtils.randomAlphanumeric(12).toLowerCase();
-        while (clientWrapper.instanceNameExists(instanceName)) {
-            instanceName = pluginSettings.getOpenstackVmPrefix() + RandomStringUtils.randomAlphanumeric(12).toLowerCase();
+        for (Server server : allInstances) {
+            final String instanceId = server.getId();
+            if (knownAgents.containsAgentWithId(instanceId)) {
+                LOG.debug("[terminateUnregisteredInstances]: [{}] uuid=[{}] keeping known agent instance=[{}]",
+                        this, uuid, server.getName());
+            } else if (hasPendingInstance(instanceId)) {
+                LOG.debug("[terminateUnregisteredInstances]: [{}] uuid=[{}] keeping pending agent instance=[{}]",
+                        this, uuid, server.getName());
+            } else {
+                LOG.debug("[terminateUnregisteredInstances]: [{}] uuid=[{}] terminating agent instance=[{}], since instance not registered nor pending.", this, uuid, server.getName());
+                final boolean terminated = terminate(instanceId);
+                if (!terminated) {
+                    LOG.warn("[terminateUnregisteredInstances]: [{}] uuid=[{}] Exception when terminating agent instance=[{}].",
+                            this, uuid, server.getName());
+                }
+            }
         }
-        return instanceName;
     }
 
-    public String getImageIdOrName(Map<String, String> properties) {
-        LOG.debug("getImageIdOrName properties={}, settings={}", properties, pluginSettings);
-        return StringUtils.isNotBlank(properties.get(Constants.OPENSTACK_IMAGE_ID_ARGS)) ? properties.get(Constants.OPENSTACK_IMAGE_ID_ARGS) : pluginSettings.getOpenstackImage();
+    private boolean hasPendingInstance(String instanceId) {
+        return pendingAgents.containsKey(instanceId);
     }
 
-    public String getFlavorIdOrName(Map<String, String> properties) {
-        return StringUtils.isNotBlank(properties.get(Constants.OPENSTACK_FLAVOR_ID_ARGS)) ? properties.get(Constants.OPENSTACK_FLAVOR_ID_ARGS) : pluginSettings.getOpenstackFlavor();
-    }
+    /**
+     * This message is sent from the {@link cd.go.contrib.elasticagents.openstack.executors.ServerPingRequestExecutor}
+     * to filter out any expired agents. The TTL may be configurable and
+     * set via the {@link PluginSettings} instance that is passed in through constructor.
+     *
+     * @param agents the list of all the agents
+     * @return a list of agent instances which were created based on {@link PluginSettings#getAgentTTLMinPeriod()}
+     * and {@link PluginSettings#getAgentTTLMax()}.
+     */
+    private Agents fetchExpiredAgents(Agents agents) {
+        LOG.debug("[instancesCreatedAfterTTL] uuid=[{}] agentTTLMin: [{}] agentTTLMax: [{}] agents.agents().size(): [{}]",
+                uuid, pluginSettings.getAgentTTLMinPeriod().getMinutes(), pluginSettings.getAgentTTLMax(), agents.agents().size());
+        List<Agent> oldAgents = new ArrayList<>();
+        for (Agent agent : agents.agents()) {
 
-    public String getEncodedUserData(Map<String, String> properties) {
-        String userData = getUserData(properties);
-        if (userData == null)
-            return null;
-        final byte[] userDataBytes = userData.getBytes(StandardCharsets.UTF_8);
-        return Base64.encodeBase64String(userDataBytes);
-    }
+            OpenStackInstance instance = instances.get(agent.elasticAgentId());
+            if (instance == null) {
+                continue;
+            }
 
-    public String getUserData(Map<String, String> properties) {
-        String requestUserData = properties.get(Constants.OPENSTACK_USERDATA_ARGS);
-        if (StringUtils.isNotBlank(requestUserData))
-            return requestUserData;
-
-        return pluginSettings.getOpenstackUserdata();
+            LOG.debug("[instancesCreatedAfterTTL] uuid=[{}] agentTTLMin: [{}] agentTTLMax: [{}]",
+                    uuid, pluginSettings.getAgentTTLMinPeriod().getMinutes(), pluginSettings.getAgentTTLMax());
+            int minutesTTL = Util.calculateTTL(pluginSettings.getAgentTTLMinPeriod().getMinutes(), pluginSettings.getAgentTTLMax());
+            Date expireDate = DateUtils.addMinutes(instance.createAt().toDate(), minutesTTL);
+            LOG.debug("[instancesCreatedAfterTTL] uuid=[{}] Agent: [{}] with minutesTTL: [{}]", uuid, agent.elasticAgentId(), minutesTTL);
+            if (expireDate.before(new Date())) {
+                LOG.info("[instancesCreatedAfterTTL] uuid=[{}] Agent: [{}] to be terminated with minutesTTL: [{}]", uuid, agent.elasticAgentId(), minutesTTL);
+                oldAgents.add(agent);
+            }
+        }
+        return new Agents(oldAgents);
     }
 }

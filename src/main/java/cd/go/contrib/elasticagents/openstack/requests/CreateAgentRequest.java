@@ -16,11 +16,9 @@
 
 package cd.go.contrib.elasticagents.openstack.requests;
 
-import cd.go.contrib.elasticagents.openstack.PendingAgentsService;
 import cd.go.contrib.elasticagents.openstack.PluginRequest;
 import cd.go.contrib.elasticagents.openstack.RequestExecutor;
-import cd.go.contrib.elasticagents.openstack.client.AgentInstances;
-import cd.go.contrib.elasticagents.openstack.client.OpenStackInstance;
+import cd.go.contrib.elasticagents.openstack.client.OpenStackInstances;
 import cd.go.contrib.elasticagents.openstack.executors.CreateAgentRequestExecutor;
 import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
@@ -44,7 +42,6 @@ public class CreateAgentRequest {
     private ClusterProfileProperties clusterProfileProperties;
 
     public CreateAgentRequest() {
-
     }
 
     public CreateAgentRequest(String autoRegisterKey, Map<String, String> elasticAgentProfileProperties, JobIdentifier jobIdentifier,
@@ -85,8 +82,8 @@ public class CreateAgentRequest {
         return environment;
     }
 
-    public RequestExecutor executor(PendingAgentsService pendingAgents, AgentInstances<OpenStackInstance> agentInstances, PluginRequest pluginRequest) throws Exception {
-        return new CreateAgentRequestExecutor(this, agentInstances, pluginRequest, pendingAgents);
+    public RequestExecutor executor(OpenStackInstances agentInstances, PluginRequest pluginRequest) throws Exception {
+        return new CreateAgentRequestExecutor(this, agentInstances, pluginRequest);
     }
 
     @Override

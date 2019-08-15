@@ -17,12 +17,14 @@
 package cd.go.contrib.elasticagents.openstack.requests;
 
 import cd.go.contrib.elasticagents.openstack.PluginSettings;
+import cd.go.contrib.elasticagents.openstack.TestHelper;
 import cd.go.contrib.elasticagents.openstack.model.ClusterProfile;
 import cd.go.contrib.elasticagents.openstack.model.ElasticAgentProfile;
 import org.json.JSONException;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -64,8 +66,8 @@ public class MigrateConfigurationRequestTest {
         MigrateConfigurationRequest request = MigrateConfigurationRequest.fromJSON(requestBody);
 
         PluginSettings pluginSettings = new PluginSettings();
-        pluginSettings.setGoServerUrl("https://127.0.0.1:8154/go");
-        pluginSettings.setAgentTTLMin("20");
+//        pluginSettings.setGoServerUrl("https://127.0.0.1:8154/go");
+//        pluginSettings.setAgentTTLMin("20");
 
         ClusterProfile clusterProfile = new ClusterProfile();
         clusterProfile.setId("cluster_profile_id");
@@ -102,10 +104,10 @@ public class MigrateConfigurationRequestTest {
     }
 
     @Test
-    public void shouldSerializeToJSONFromMigrationConfigRequest() throws JSONException {
-        PluginSettings pluginSettings = new PluginSettings();
-        pluginSettings.setGoServerUrl("https://127.0.0.1:8154/go");
-        pluginSettings.setAgentTTLMin("20");
+    public void shouldSerializeToJSONFromMigrationConfigRequest() throws JSONException, IOException {
+        PluginSettings pluginSettings = TestHelper.generatePluginSettings(TestHelper.PROFILE_TYPE.ID1);
+//        pluginSettings.setGoServerUrl("https://127.0.0.1:8154/go");
+//        pluginSettings.setAgentTTLMin("20");
 
         ClusterProfile clusterProfile = new ClusterProfile();
         clusterProfile.setId("cluster_profile_id");
@@ -127,7 +129,7 @@ public class MigrateConfigurationRequestTest {
 
         String expected = "{" +
                 "    \"plugin_settings\":{" +
-                "        \"go_server_url\":\"https://127.0.0.1:8154/go\", " +
+                "        \"go_server_url\":\"https://gocd.example.com:8154/go\", " +
                 "        \"auto_register_timeout\":\"20\"" +
                 "    }," +
                 "    \"cluster_profiles\":[" +
@@ -135,7 +137,7 @@ public class MigrateConfigurationRequestTest {
                 "            \"id\":\"cluster_profile_id\"," +
                 "            \"plugin_id\":\"plugin_id\"," +
                 "            \"properties\":{" +
-                "                \"go_server_url\":\"https://127.0.0.1:8154/go\", " +
+                "                \"go_server_url\":\"https://gocd.example.com:8154/go\", " +
                 "                \"auto_register_timeout\":\"20\"" +
                 "            }" +
                 "         }" +

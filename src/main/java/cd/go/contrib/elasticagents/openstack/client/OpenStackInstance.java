@@ -63,7 +63,7 @@ public class OpenStackInstance {
         Iterator entries = request.properties().entrySet().iterator();
         while (entries.hasNext()) {
             Map.Entry entry = (Map.Entry) entries.next();
-            if (!((String) entry.getKey()).equals(OPENSTACK_USERDATA_ARGS)) {
+            if (!entry.getKey().equals(OPENSTACK_USERDATA_ARGS)) {
                 mdata.put((String) entry.getKey(), (String) entry.getValue());
             }
         }
@@ -151,7 +151,7 @@ public class OpenStackInstance {
         return maxCompletedJobs != 0 && jobsCompleted >= maxCompletedJobs;
     }
 
-    public DateTime createAt() {
+    DateTime createAt() {
         return createdAt;
     }
 

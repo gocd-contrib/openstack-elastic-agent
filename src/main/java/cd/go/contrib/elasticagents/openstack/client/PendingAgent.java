@@ -1,6 +1,6 @@
-package cd.go.contrib.elasticagents.openstack;
+package cd.go.contrib.elasticagents.openstack.client;
 
-import cd.go.contrib.elasticagents.openstack.client.OpenStackInstance;
+import cd.go.contrib.elasticagents.openstack.AgentMatchResult;
 import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 import com.thoughtworks.go.plugin.api.logging.Logger;

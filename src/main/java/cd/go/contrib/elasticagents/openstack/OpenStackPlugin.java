@@ -16,8 +16,6 @@
 
 package cd.go.contrib.elasticagents.openstack;
 
-import cd.go.contrib.elasticagents.openstack.client.AgentInstances;
-import cd.go.contrib.elasticagents.openstack.client.OpenStackInstance;
 import cd.go.contrib.elasticagents.openstack.client.OpenStackInstances;
 import cd.go.contrib.elasticagents.openstack.executors.*;
 import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
@@ -32,6 +30,7 @@ import com.thoughtworks.go.plugin.api.logging.Logger;
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -41,12 +40,10 @@ import static cd.go.contrib.elasticagents.openstack.Constants.PLUGIN_IDENTIFIER;
 public class OpenStackPlugin implements GoPlugin {
 
     public static final Logger LOG = Logger.getLoggerFor(OpenStackPlugin.class);
-    private static Map<String, AgentInstances> clusterSpecificAgentInstances;
-    private static Map<String, PendingAgentsService> clusterSpecificPendingAgents;
+    private static Map<String, OpenStackInstances> clusterSpecificInstances;
 
     static {
-        clusterSpecificAgentInstances = new ConcurrentHashMap<>();
-        clusterSpecificPendingAgents = new ConcurrentHashMap<>();
+        clusterSpecificInstances = new ConcurrentHashMap<>();
     }
 
     private PluginRequest pluginRequest;
@@ -64,33 +61,32 @@ public class OpenStackPlugin implements GoPlugin {
                 case REQUEST_CAPABILITIES:
                     return new GetCapabilitiesExecutor().execute();
                 case REQUEST_SHOULD_ASSIGN_WORK:
-                    LOG.debug("REQUEST_SHOULD_ASSIGN_WORK: request.requestBody()={}", request.requestBody());
+                    final long startTimeMillis = System.currentTimeMillis();
+                    LOG.debug("[REQUEST_SHOULD_ASSIGN_WORK]: startTimeMillis=[{}] request.requestBody()={}", startTimeMillis, request.requestBody());
                     ShouldAssignWorkRequest shouldAssignWorkRequest = ShouldAssignWorkRequest.fromJSON(request.requestBody());
                     clusterProfileProperties = shouldAssignWorkRequest.clusterProfileProperties();
                     clusterProfileProperties.validate(shouldAssignWorkRequest.jobIdentifier().represent());
                     LOG.debug("REQUEST_SHOULD_ASSIGN_WORK: clusterProfileProperties={}", clusterProfileProperties);
-                    return shouldAssignWorkRequest.executor(getAgentInstancesFor(clusterProfileProperties)).execute();
+                    final GoPluginApiResponse apiResponse = shouldAssignWorkRequest.executor(getAgentInstancesFor(clusterProfileProperties)).execute();
+                    final long durationInMillis = System.currentTimeMillis() - startTimeMillis;
+                    LOG.debug("[REQUEST_SHOULD_ASSIGN_WORK] assigning instance decision took {} millis", durationInMillis);
+                    return apiResponse;
                 case REQUEST_CREATE_AGENT:
                     LOG.debug("REQUEST_CREATE_AGENT: request.requestBody()={}", request.requestBody());
                     CreateAgentRequest createAgentRequest = CreateAgentRequest.fromJSON(request.requestBody());
                     clusterProfileProperties = createAgentRequest.clusterProfileProperties();
                     clusterProfileProperties.validate(createAgentRequest.job().represent());
-                    LOG.debug("REQUEST_CREATE_AGENT: before refreshPendingInstancesForCluster()");
-                    refreshPendingInstancesForCluster(clusterProfileProperties);
-                    LOG.debug("REQUEST_CREATE_AGENT: before execute()");
-                    final PendingAgentsService pendingAgentsService = getPendingInstancesFor(clusterProfileProperties);
-                    final AgentInstances<OpenStackInstance> instances = getAgentInstancesFor(clusterProfileProperties);
-                    return createAgentRequest.executor(pendingAgentsService, instances, pluginRequest).execute();
+                    final OpenStackInstances instances = getAgentInstancesFor(clusterProfileProperties);
+                    return createAgentRequest.executor(instances, pluginRequest).execute();
                 case REQUEST_SERVER_PING:
                     LOG.debug("REQUEST_SERVER_PING: request.requestBody()={}", request.requestBody());
                     ServerPingRequest serverPingRequest = ServerPingRequest.fromJSON(request.requestBody());
-//                    List<ClusterProfileProperties> listOfClusterProfileProperties = serverPingRequest.allClusterProfileProperties();
-//                    for (ClusterProfileProperties prop : listOfClusterProfileProperties) {
-//                        prop.validate(serverPingRequest.toString());
-//                    }
-//                    refreshInstancesForAllClusters(listOfClusterProfileProperties);
-                    pluginRequest.sendServerHealthMessage();
-                    return serverPingRequest.executor(clusterSpecificAgentInstances, pluginRequest).execute();
+                    List<ClusterProfileProperties> listOfClusterProfileProperties = serverPingRequest.allClusterProfileProperties();
+                    for (ClusterProfileProperties prop : listOfClusterProfileProperties) {
+                        prop.validate(serverPingRequest.toString());
+                        getAgentInstancesFor(prop);
+                    }
+                    return serverPingRequest.executor(clusterSpecificInstances, pluginRequest).execute();
                 case REQUEST_GET_CLUSTER_PROFILE_METADATA:
                     return new GetClusterProfileMetadataExecutor().execute();
                 case REQUEST_GET_CLUSTER_PROFILE_VIEW:
@@ -120,6 +116,9 @@ public class OpenStackPlugin implements GoPlugin {
                     return jobCompletionRequest.executor(getAgentInstancesFor(clusterProfileProperties), pluginRequest).execute();
                 case REQUEST_CLUSTER_PROFILE_CHANGED:
                     LOG.debug("NOOP REQUEST_CLUSTER_PROFILE_CHANGED: request.requestBody()={}", request.requestBody());
+                    final UpdateClusterConfigurationRequest updateClusterConfigurationRequest = UpdateClusterConfigurationRequest.fromJSON(request.requestBody());
+                    final OpenStackInstances agentInstances = getAgentInstancesFor(updateClusterConfigurationRequest.getOldClusterProfile());
+                    updateClusterConfigurationRequest.executor(agentInstances).execute();
                 case REQUEST_GET_CONFIG:
                     LOG.debug("NOOP REQUEST_GET_CONFIG: request.requestBody()={}", request.requestBody());
                 default:
@@ -133,50 +132,23 @@ public class OpenStackPlugin implements GoPlugin {
         }
     }
 
-//    private void refreshInstancesForAllClusters(List<ClusterProfileProperties> listOfClusterProfileProperties) throws Exception {
-//        LOG.debug("refreshInstancesForAllClusters: listOfClusterProfileProperties.size()={}", listOfClusterProfileProperties.size());
-//        for (ClusterProfileProperties clusterProfileProperties : listOfClusterProfileProperties) {
-//            refreshInstancesForCluster(clusterProfileProperties);
-//        }
-//    }
-
-    private synchronized AgentInstances<OpenStackInstance> getAgentInstancesFor(ClusterProfileProperties clusterProfileProperties) {
-        AgentInstances openStackInstances;
+    private synchronized OpenStackInstances getAgentInstancesFor(ClusterProfileProperties clusterProfileProperties) {
+        OpenStackInstances openStackInstances;
         final String uuid = clusterProfileProperties.uuid();
         LOG.debug("getAgentInstancesFor [{}]: uuid()={} clusterSpecificAgentInstances.size()={} ",
-                this, uuid, clusterSpecificAgentInstances.size());
-        if (clusterSpecificAgentInstances.containsKey(uuid)) {
+                this, uuid, clusterSpecificInstances.size());
+        if (clusterSpecificInstances.containsKey(uuid)) {
             LOG.debug("getAgentInstancesFor [{}]: clusterProfileProperties={} does exist", this, uuid);
-            openStackInstances = clusterSpecificAgentInstances.get(uuid);
+            openStackInstances = clusterSpecificInstances.get(uuid);
         } else {
             LOG.debug("getAgentInstancesFor [{}]: uuid={}, cluster={} does NOT exist, " +
-                    "creating new OpenStackInstances", this, uuid, clusterProfileProperties.getOpenstackEndpoint());
+                            "creating new OpenStackInstances",
+                    this, uuid, clusterProfileProperties.getOpenstackEndpoint());
             openStackInstances = new OpenStackInstances(clusterProfileProperties);
-            clusterSpecificAgentInstances.put(uuid, openStackInstances);
+            clusterSpecificInstances.put(uuid, openStackInstances);
             openStackInstances.refreshAll(pluginRequest);
         }
         return openStackInstances;
-    }
-
-//    private void refreshInstancesForCluster(ClusterProfileProperties clusterProfileProperties) throws Exception {
-//        final String uuid = clusterProfileProperties.uuid();
-//        LOG.debug("refreshInstancesForCluster: clusterSpecificAgentInstances.size()={}, clusterProfileProperties.uuid()={}",
-//                clusterSpecificAgentInstances.size(), uuid);
-//        final AgentInstances<OpenStackInstance> instances = getAgentInstancesFor(clusterProfileProperties);
-//        instances.refreshAll(pluginRequest);
-//    }
-
-    private PendingAgentsService getPendingInstancesFor(ClusterProfileProperties clusterProfileProperties) {
-        return clusterSpecificPendingAgents.get(clusterProfileProperties.uuid());
-    }
-
-    private void refreshPendingInstancesForCluster(ClusterProfileProperties clusterProfileProperties) throws Exception {
-        if (clusterSpecificPendingAgents.containsKey(clusterProfileProperties.uuid())) {
-            PendingAgentsService pendingAgents = clusterSpecificPendingAgents.get(clusterProfileProperties.uuid());
-            pendingAgents.refreshAll(pluginRequest, clusterProfileProperties);
-        } else {
-            clusterSpecificPendingAgents.put(clusterProfileProperties.uuid(), new PendingAgentsService(getAgentInstancesFor(clusterProfileProperties)));
-        }
     }
 
     @Override

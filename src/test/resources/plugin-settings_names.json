@@ -1,0 +1,23 @@
+{
+  "openstack_endpoint": "https://openstack.example.com:13000/v3",
+  "openstack_domain": "Default",
+  "openstack_tenant": "tenant",
+  "openstack_vm_prefix": "prefix-",
+  "openstack_user": "user",
+  "openstack_password": "secret",
+  "go_server_url": "https://gocd.example.com:8154/go",
+  "agent_pending_register_timeout": "20",
+  "openstack_keystone_version": "3",
+  "auto_register_timeout": "20",
+  "agent_ttl_max": "30",
+  "default_min_instance_limit": "1",
+  "default_max_instance_limit": "10",
+  "openstack_image": "ubuntu-14",
+  "openstack_image_cache_ttl": "25",
+  "use_previous_openstack_image": "true",
+  "openstack_flavor": "m1.small",
+  "openstack_network": "780f2cfc-389b-4cc5-9b85-ed03a73975ee",
+  "openstack_userdata": "",
+  "ssl_verification_disabled": "false",
+  "delete_error_instances": "true"
+}

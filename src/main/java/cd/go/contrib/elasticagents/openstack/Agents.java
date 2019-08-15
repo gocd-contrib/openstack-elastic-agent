@@ -16,12 +16,13 @@
 
 package cd.go.contrib.elasticagents.openstack;
 
+import cd.go.contrib.elasticagents.openstack.model.Agent;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 
 import java.util.*;
 
-public class Agents{
+public class Agents {
 
     private final Map<String, Agent> agents = new HashMap<>();
 

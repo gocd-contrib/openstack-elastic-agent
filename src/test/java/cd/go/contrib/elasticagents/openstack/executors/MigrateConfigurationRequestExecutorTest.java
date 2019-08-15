@@ -18,6 +18,7 @@ package cd.go.contrib.elasticagents.openstack.executors;
 
 import cd.go.contrib.elasticagents.openstack.Constants;
 import cd.go.contrib.elasticagents.openstack.PluginSettings;
+import cd.go.contrib.elasticagents.openstack.TestHelper;
 import cd.go.contrib.elasticagents.openstack.model.ClusterProfile;
 import cd.go.contrib.elasticagents.openstack.model.ElasticAgentProfile;
 import cd.go.contrib.elasticagents.openstack.requests.MigrateConfigurationRequest;
@@ -43,9 +44,7 @@ public class MigrateConfigurationRequestExecutorTest {
 
     @Before
     public void setUp() throws Exception {
-        pluginSettings = new PluginSettings();
-        pluginSettings.setGoServerUrl("https://127.0.0.1:8154/go");
-        pluginSettings.setAgentPendingRegisterTimeout("20");
+        pluginSettings = TestHelper.generatePluginSettings(TestHelper.PROFILE_TYPE.ID1);
 
         clusterProfile = new ClusterProfile();
         clusterProfile.setId("cluster_profile_id");

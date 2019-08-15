@@ -17,22 +17,41 @@
 package cd.go.contrib.elasticagents.openstack.requests;
 
 import cd.go.contrib.elasticagents.openstack.PluginRequest;
-import cd.go.contrib.elasticagents.openstack.client.AgentInstances;
+import cd.go.contrib.elasticagents.openstack.client.OpenStackInstances;
 import cd.go.contrib.elasticagents.openstack.executors.ServerPingRequestExecutor;
+import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ServerPingRequest {
     private static final Gson GSON = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
+
+    private List<ClusterProfileProperties> allClusterProfileProperties = new ArrayList<>();
+
+    public ServerPingRequest() {
+    }
+
+    public ServerPingRequest(List<Map<String, String>> allClusterProfileProperties) {
+        this.allClusterProfileProperties = allClusterProfileProperties.stream()
+                .map(clusterProfile -> ClusterProfileProperties.fromConfiguration(clusterProfile))
+                .collect(Collectors.toList());
+    }
 
     public static ServerPingRequest fromJSON(String json) {
         return GSON.fromJson(json, ServerPingRequest.class);
     }
 
-    public ServerPingRequestExecutor executor(Map<String, AgentInstances> clusterSpecificAgentInstances, PluginRequest pluginRequest) {
-        return new ServerPingRequestExecutor(this, clusterSpecificAgentInstances, pluginRequest);
+    public List<ClusterProfileProperties> allClusterProfileProperties() {
+        return allClusterProfileProperties;
+    }
+
+    public ServerPingRequestExecutor executor(Map<String, OpenStackInstances> clusterSpecificAgentInstances, PluginRequest pluginRequest) {
+        return new ServerPingRequestExecutor(clusterSpecificAgentInstances, pluginRequest);
     }
 }

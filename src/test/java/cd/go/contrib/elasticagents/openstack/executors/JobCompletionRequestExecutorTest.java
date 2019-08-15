@@ -17,8 +17,8 @@
 package cd.go.contrib.elasticagents.openstack.executors;
 
 import cd.go.contrib.elasticagents.openstack.PluginRequest;
-import cd.go.contrib.elasticagents.openstack.client.AgentInstances;
 import cd.go.contrib.elasticagents.openstack.client.OpenStackInstance;
+import cd.go.contrib.elasticagents.openstack.client.OpenStackInstances;
 import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
 import cd.go.contrib.elasticagents.openstack.requests.JobCompletionRequest;
@@ -35,7 +35,7 @@ public class JobCompletionRequestExecutorTest {
     public void shouldNotTerminateAgentAfterInsufficientJobCompletes() throws Exception {
         String elasticAgentId = "agent-id";
         JobCompletionRequest request = new JobCompletionRequest(elasticAgentId, new JobIdentifier(), clusterProfileProperties);
-        AgentInstances agentInstances = mock(AgentInstances.class);
+        OpenStackInstances agentInstances = mock(OpenStackInstances.class);
         PluginRequest pluginRequest = mock(PluginRequest.class);
         String instanceId = "b45b5658-b093-4a58-bf22-17d898171c95";
         OpenStackInstance opInstance = new OpenStackInstance(instanceId, new Date(), null,
@@ -50,7 +50,7 @@ public class JobCompletionRequestExecutorTest {
     public void shouldTerminateAgentAfterEnoughJobCompletes() throws Exception {
         String elasticAgentId = "agent-id";
         JobCompletionRequest request = new JobCompletionRequest(elasticAgentId, new JobIdentifier(), clusterProfileProperties);
-        AgentInstances agentInstances = mock(AgentInstances.class);
+        OpenStackInstances agentInstances = mock(OpenStackInstances.class);
         PluginRequest pluginRequest = mock(PluginRequest.class);
         String instanceId = "b45b5658-b093-4a58-bf22-17d898171c95";
         OpenStackInstance opInstance = new OpenStackInstance(instanceId, new Date(), null,

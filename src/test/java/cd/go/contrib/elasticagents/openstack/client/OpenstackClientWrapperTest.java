@@ -1,10 +1,10 @@
 package cd.go.contrib.elasticagents.openstack.client;
 
 import cd.go.contrib.elasticagents.openstack.PluginSettings;
+import cd.go.contrib.elasticagents.openstack.TestHelper;
 import org.cache2k.Cache;
 import org.cache2k.Cache2kBuilder;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.api.compute.ComputeImageService;
@@ -12,13 +12,11 @@ import org.openstack4j.api.compute.ComputeService;
 import org.openstack4j.api.compute.FlavorService;
 import org.openstack4j.model.compute.Flavor;
 import org.openstack4j.model.compute.Image;
-import org.openstack4j.model.compute.Server;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -34,25 +32,12 @@ public class OpenstackClientWrapperTest {
 
     @Before
     public void setUp() throws Exception {
-        pluginSettings = new PluginSettings();
-        pluginSettings.setOpenstackEndpoint("http://some/url");
-        pluginSettings.setOpenstackFlavor("default-flavor");
-        pluginSettings.setOpenstackImage("7637f039-027d-471f-8d6c-4177635f84f8");
-        pluginSettings.setOpenstackNetwork("780f2cfc-389b-4cc5-9b85-ed03a73975ee");
-        pluginSettings.setOpenstackPassword("secret");
-        pluginSettings.setOpenstackUser("user");
-        pluginSettings.setOpenstackTenant("tenant");
-        pluginSettings.setOpenstackVmPrefix("prefix-");
-        pluginSettings.setOpenstackKeystoneVersion("3");
+        pluginSettings = TestHelper.generatePluginSettings(TestHelper.PROFILE_TYPE.ID1);
         client = mock(OSClient.class);
         clientFactory = mock(OpenStackClientFactory.class);
         when(clientFactory.createClient(any())).thenReturn(client);
         compute = mock(ComputeService.class);
         when(client.compute()).thenReturn(compute);
-//        final Token token = mock(Token.class);
-//        when(client.getToken()).thenReturn(token);
-//        when(token.getExpires()).thenReturn(new Date());
-//        when(client.getAccess()).thenReturn(mock(Access.class));
     }
 
     @Test
@@ -233,46 +218,5 @@ public class OpenstackClientWrapperTest {
         verify(flavorService, times(2)).list();
         assertEquals(expectedFlavorId, clientWrapper.getFlavorId(flavorName, transactionId));
         verify(flavorService, times(2)).list();
-    }
-
-    @Test
-    @Ignore
-    public void listServersInOSP13() {
-        pluginSettings = new PluginSettings();
-        pluginSettings.setOpenstackEndpoint("https://gotosp13.osp.jeppesensystems.com:13000/v3");
-        pluginSettings.setOpenstackFlavor("m1.small");
-        pluginSettings.setOpenstackImage("7637f039-027d-471f-8d6c-4177635f84f8");
-        pluginSettings.setOpenstackNetwork("780f2cfc-389b-4cc5-9b85-ed03a73975ee");
-        pluginSettings.setOpenstackPassword("jeppesen_gocd");
-        pluginSettings.setOpenstackUser("gocd");
-        pluginSettings.setOpenstackTenant("gocd");
-        pluginSettings.setOpenstackVmPrefix("devel-13-");
-        pluginSettings.setOpenstackKeystoneVersion("3");
-        pluginSettings.setOpenstackDomain("Default");
-        pluginSettings.setOpenstackImageCacheTTL("10");
-        long startTimeMillis = System.currentTimeMillis();
-        OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(pluginSettings);
-        System.out.println("Create Client " + (System.currentTimeMillis() - startTimeMillis));
-
-        startTimeMillis = System.currentTimeMillis();
-        List<Server> allInstances = clientWrapper.listServers(pluginSettings.getOpenstackVmPrefix());
-        System.out.println("listServers " + (System.currentTimeMillis() - startTimeMillis));
-        String allInstancesAsString = allInstances.stream()
-                .map(n -> n.getName())
-                .collect(Collectors.joining(","));
-        System.out.println(System.currentTimeMillis() - startTimeMillis);
-        System.out.println("allInstances.size=[" + allInstances.size() + "] [" + allInstancesAsString + "]");
-
-        for (int i = 0; i < 10; i++) {
-
-            startTimeMillis = System.currentTimeMillis();
-            clientWrapper = new OpenstackClientWrapper(pluginSettings);
-            System.out.println("Create Client " + (System.currentTimeMillis() - startTimeMillis));
-
-            startTimeMillis = System.currentTimeMillis();
-            allInstances = clientWrapper.listServers(pluginSettings.getOpenstackVmPrefix());
-            System.out.println("listServers " + (System.currentTimeMillis() - startTimeMillis));
-        }
-
     }
 }

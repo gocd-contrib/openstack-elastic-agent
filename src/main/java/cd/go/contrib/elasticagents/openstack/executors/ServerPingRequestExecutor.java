@@ -16,11 +16,10 @@
 
 package cd.go.contrib.elasticagents.openstack.executors;
 
-import cd.go.contrib.elasticagents.openstack.Agent;
 import cd.go.contrib.elasticagents.openstack.PluginRequest;
 import cd.go.contrib.elasticagents.openstack.RequestExecutor;
-import cd.go.contrib.elasticagents.openstack.client.AgentInstances;
-import cd.go.contrib.elasticagents.openstack.requests.ServerPingRequest;
+import cd.go.contrib.elasticagents.openstack.client.OpenStackInstances;
+import cd.go.contrib.elasticagents.openstack.model.Agent;
 import com.thoughtworks.go.plugin.api.logging.Logger;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
@@ -34,12 +33,10 @@ import java.util.stream.Collectors;
 public class ServerPingRequestExecutor implements RequestExecutor {
 
     private static final Logger LOG = Logger.getLoggerFor(ServerPingRequestExecutor.class);
-    private final ServerPingRequest serverPingRequest;
     private final PluginRequest pluginRequest;
-    private Map<String, AgentInstances> clusterSpecificAgentInstances;
+    private Map<String, OpenStackInstances> clusterSpecificAgentInstances;
 
-    public ServerPingRequestExecutor(ServerPingRequest serverPingRequest, Map<String, AgentInstances> clusterSpecificAgentInstances, PluginRequest pluginRequest) {
-        this.serverPingRequest = serverPingRequest;
+    public ServerPingRequestExecutor(Map<String, OpenStackInstances> clusterSpecificAgentInstances, PluginRequest pluginRequest) {
         this.clusterSpecificAgentInstances = clusterSpecificAgentInstances;
         this.pluginRequest = pluginRequest;
     }
@@ -48,17 +45,16 @@ public class ServerPingRequestExecutor implements RequestExecutor {
     public GoPluginApiResponse execute() throws Exception {
         LOG.debug("[execute] clusterSpecificAgentInstances.size()={}", clusterSpecificAgentInstances.size());
 
-        for (AgentInstances agentInstances : clusterSpecificAgentInstances.values()) {
-            agentInstances.performCleanup(pluginRequest);
+        for (OpenStackInstances agentInstances : clusterSpecificAgentInstances.values()) {
+            agentInstances.refreshAll(pluginRequest);
+            agentInstances.removeOldAndDisabled(pluginRequest);
         }
-
-        // FIXME: 2019-08-18 Is it needed?
-        // This seems to be performed in cd.go.contrib.elasticagents.openstack.PendingAgentsService
-        checkForPossiblyMissingAgents();
+        removeAgentsForMissingOpenStackInstances();
+        pluginRequest.sendServerHealthMessage();
         return DefaultGoPluginApiResponse.success("");
     }
 
-    private void checkForPossiblyMissingAgents() throws Exception {
+    private void removeAgentsForMissingOpenStackInstances() throws Exception {
         Collection<Agent> allAgents = pluginRequest.listAgents().agents();
         LOG.debug("[checkForPossiblyMissingAgents] allAgents.size()={}", allAgents.size());
 

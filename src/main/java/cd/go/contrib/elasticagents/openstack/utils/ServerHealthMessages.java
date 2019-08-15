@@ -26,7 +26,7 @@ public class ServerHealthMessages {
         Map<String, String> messageToBeAdded = new HashMap<>();
         messageToBeAdded.put("type", type.toString().toLowerCase());
         messageToBeAdded.put("message", message);
-        massageCache.put(id,  messageToBeAdded);
+        massageCache.put(id, messageToBeAdded);
     }
 
     public void remove(String id) {

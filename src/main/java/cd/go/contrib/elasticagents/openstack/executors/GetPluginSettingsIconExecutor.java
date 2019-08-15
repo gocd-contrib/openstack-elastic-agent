@@ -17,13 +17,13 @@ package cd.go.contrib.elasticagents.openstack.executors;
  */
 
 
-        import cd.go.contrib.elasticagents.openstack.RequestExecutor;
-        import cd.go.contrib.elasticagents.openstack.utils.Util;
-        import com.google.gson.Gson;
-        import com.google.gson.JsonObject;
-        import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
-        import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
-        import org.apache.commons.codec.binary.Base64;
+import cd.go.contrib.elasticagents.openstack.RequestExecutor;
+import cd.go.contrib.elasticagents.openstack.utils.Util;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
+import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
+import org.apache.commons.codec.binary.Base64;
 
 public class GetPluginSettingsIconExecutor implements RequestExecutor {
     private static final Gson GSON = new Gson();

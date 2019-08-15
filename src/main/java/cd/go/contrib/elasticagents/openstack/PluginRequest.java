@@ -16,6 +16,7 @@
 
 package cd.go.contrib.elasticagents.openstack;
 
+import cd.go.contrib.elasticagents.openstack.model.Agent;
 import cd.go.contrib.elasticagents.openstack.utils.ServerHealthMessages;
 import com.thoughtworks.go.plugin.api.GoApplicationAccessor;
 import com.thoughtworks.go.plugin.api.logging.Logger;

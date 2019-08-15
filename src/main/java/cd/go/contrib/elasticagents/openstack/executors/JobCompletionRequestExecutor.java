@@ -1,10 +1,10 @@
 package cd.go.contrib.elasticagents.openstack.executors;
 
-import cd.go.contrib.elasticagents.openstack.Agent;
 import cd.go.contrib.elasticagents.openstack.PluginRequest;
 import cd.go.contrib.elasticagents.openstack.RequestExecutor;
-import cd.go.contrib.elasticagents.openstack.client.AgentInstances;
 import cd.go.contrib.elasticagents.openstack.client.OpenStackInstance;
+import cd.go.contrib.elasticagents.openstack.client.OpenStackInstances;
+import cd.go.contrib.elasticagents.openstack.model.Agent;
 import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.requests.JobCompletionRequest;
 import com.thoughtworks.go.plugin.api.logging.Logger;
@@ -20,10 +20,10 @@ public class JobCompletionRequestExecutor implements RequestExecutor {
     public static final Logger LOG = Logger.getLoggerFor(JobCompletionRequestExecutor.class);
 
     private final JobCompletionRequest jobCompletionRequest;
-    private final AgentInstances<OpenStackInstance> agentInstances;
+    private final OpenStackInstances agentInstances;
     private final PluginRequest pluginRequest;
 
-    public JobCompletionRequestExecutor(JobCompletionRequest jobCompletionRequest, AgentInstances<OpenStackInstance> agentInstances, PluginRequest pluginRequest) {
+    public JobCompletionRequestExecutor(JobCompletionRequest jobCompletionRequest, OpenStackInstances agentInstances, PluginRequest pluginRequest) {
         this.jobCompletionRequest = jobCompletionRequest;
         this.agentInstances = agentInstances;
         this.pluginRequest = pluginRequest;
