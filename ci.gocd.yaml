@@ -18,9 +18,13 @@ pipelines:
           resources:
             - docker
           artifacts:
-           - build:
-               source: build/libs/*.jar*
-               destination: build/libs
+           - external:
+              id: pkg
+              store_id: s3-eu-west-1
+              configuration:
+                options:
+                  Source: build/libs/*.jar*
+                  Destination: ${GO_ARTIFACT_LOCATOR}
           tasks:
            - exec:
                command: bash
@@ -36,10 +40,14 @@ pipelines:
                 - docker
               tasks:
                 - fetch:
+                    artifact_origin: external
                     stage: build
                     job: build
-                    source: build/libs
-                    destination: build
+                    artifact_id: pkg
+                    configuration:
+                      options:
+                        IsFile: false
+                        Destination:
                 - exec:
                     command: /bin/bash
                     arguments:
