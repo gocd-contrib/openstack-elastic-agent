@@ -1,5 +1,6 @@
-package cd.go.contrib.elasticagents.openstack;
+package cd.go.contrib.elasticagents.openstack.client;
 
+import cd.go.contrib.elasticagents.openstack.PluginSettings;
 import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 import org.junit.Before;
@@ -8,8 +9,8 @@ import org.junit.Test;
 import java.util.Date;
 import java.util.HashMap;
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class OpenStackInstanceTest {
@@ -30,36 +31,10 @@ public class OpenStackInstanceTest {
     }
 
     @Test
-    public void getUserDataWhenNoneSpecified() {
-        String result = OpenStackInstance.getUserData(request, settings);
-        assertNull(result);
-    }
-
-    @Test
-    public void getUserDataWhenSpecifiedOnlyInPluginSettings() {
-        settings.setOpenstackUserdata("script");
-        String result = OpenStackInstance.getUserData(request, settings);
-        assertThat(result, is("script"));
-    }
-
-    @Test
-    public void getUserDataWhenSpecifiedOnlyInCreateAgentRequest() {
-        request.properties().put("openstack_userdata", "script");
-        String result = OpenStackInstance.getUserData(request, settings);
-        assertThat(result, is("script"));
-    }
-
-    @Test
-    public void getEncodedUserDataWhenNoneSpecified() {
-        String result = OpenStackInstance.getEncodedUserData(request, settings);
-        assertNull(result);
-    }
-
-    @Test
     public void shouldReportDoneSecondTimeJobIsRunGivenMax2AllowedTimes() {
         instanceId = "b45b5658-b093-4a58-bf22-17d898171c95";
         instance = new OpenStackInstance(instanceId, new Date(), "testing",
-                "7637f039-027d-471f-8d6c-4177635f84f8", "c1980bb5-ed59-4573-83c9-8391b53b3a55");
+                "7637f039-027d-471f-8d6c-4177635f84f8", "c1980bb5-ed59-4573-83c9-8391b53b3a55", settings);
         instance.setMaxCompletedJobs("2");
         assertFalse(instance.incrementJobsCompleted());
         assertTrue(instance.incrementJobsCompleted());
@@ -70,7 +45,7 @@ public class OpenStackInstanceTest {
     public void shouldNotReportDoneGivenNoMaxSet() {
         instanceId = "b45b5658-b093-4a58-bf22-17d898171c95";
         instance = new OpenStackInstance(instanceId, new Date(), "testing",
-                "7637f039-027d-471f-8d6c-4177635f84f8", "c1980bb5-ed59-4573-83c9-8391b53b3a55");
+                "7637f039-027d-471f-8d6c-4177635f84f8", "c1980bb5-ed59-4573-83c9-8391b53b3a55", settings);
         assertFalse(instance.incrementJobsCompleted());
         assertFalse(instance.incrementJobsCompleted());
         assertFalse(instance.incrementJobsCompleted());

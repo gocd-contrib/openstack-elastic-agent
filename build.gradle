@@ -20,7 +20,7 @@ apply from: "https://raw.githubusercontent.com/gocd/gocd-plugin-gradle-task-help
 
 gocdPlugin {
     id = 'cd.go.contrib.elastic-agent.openstack'
-    pluginVersion = '0.14.0'
+    pluginVersion = "0.14.2"
     goCdVersion = '19.5.0'
     name = 'OpenStack Elastic Agent Plugin'
     description = 'OpenStack Based Elastic Agent Plugins for GoCD'
@@ -37,6 +37,7 @@ gocdPlugin {
 
     prerelease = !"No".equalsIgnoreCase(System.getenv('PRERELEASE'))
     assetsToRelease = [project.tasks.jar]
+    licenseReport.excludeGroups = ['net.jcip', 'org.jboss.resteasy']
 }
 
 group = 'cd.go.contrib'
@@ -60,16 +61,15 @@ sourceSets {
 dependencies {
     compileOnly group: 'cd.go.plugin', name: 'go-plugin-api', version: '19.5.0'
     compile group: 'com.google.code.gson', name: 'gson', version: '2.8.5'
-    compile group: 'org.pacesys', name: 'openstack4j', version: '2.20'
+    compile group: 'org.pacesys', name: 'openstack4j', version: '3.2.0'
     compile group: 'com.google.guava', name: 'guava', version: '28.0-jre'
     compile group: 'joda-time', name: 'joda-time', version: '2.10.2'
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5'
-    compile group: 'commons-codec', name: 'commons-codec', version: '1.12'
-    compile group: 'org.cache2k', name: 'cache2k-api', version: '1.2.2.Final'
-    compile group: 'org.cache2k', name: 'cache2k-core', version: '1.2.2.Final'
-
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.9'
+    compile group: 'commons-codec', name: 'commons-codec', version: '1.13'
+    compile group: 'org.cache2k', name: 'cache2k-api', version: '1.2.3.Final'
+    compile group: 'org.cache2k', name: 'cache2k-core', version: '1.2.3.Final'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile group: 'org.hamcrest', name: 'hamcrest-library', version: '2.1'

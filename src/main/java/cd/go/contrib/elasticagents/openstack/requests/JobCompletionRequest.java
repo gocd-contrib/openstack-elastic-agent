@@ -17,10 +17,9 @@
 package cd.go.contrib.elasticagents.openstack.requests;
 
 
-import cd.go.contrib.elasticagents.openstack.AgentInstances;
-import cd.go.contrib.elasticagents.openstack.OpenStackInstance;
 import cd.go.contrib.elasticagents.openstack.PluginRequest;
 import cd.go.contrib.elasticagents.openstack.RequestExecutor;
+import cd.go.contrib.elasticagents.openstack.client.OpenStackInstances;
 import cd.go.contrib.elasticagents.openstack.executors.JobCompletionRequestExecutor;
 import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
@@ -68,7 +67,7 @@ public class JobCompletionRequest {
         return clusterProfileProperties;
     }
 
-    public RequestExecutor executor(AgentInstances<OpenStackInstance> agentInstances, PluginRequest pluginRequest) {
+    public RequestExecutor executor(OpenStackInstances agentInstances, PluginRequest pluginRequest) {
         return new JobCompletionRequestExecutor(this, agentInstances, pluginRequest);
     }
 

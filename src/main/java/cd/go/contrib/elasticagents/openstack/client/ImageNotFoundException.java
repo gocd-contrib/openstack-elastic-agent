@@ -1,4 +1,4 @@
-package cd.go.contrib.elasticagents.openstack.utils;
+package cd.go.contrib.elasticagents.openstack.client;
 
 public class ImageNotFoundException extends Exception {
     public ImageNotFoundException(String message) {

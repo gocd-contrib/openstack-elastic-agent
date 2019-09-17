@@ -16,12 +16,13 @@
 
 package cd.go.contrib.elasticagents.openstack;
 
+import cd.go.contrib.elasticagents.openstack.model.Agent;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 
 import java.util.*;
 
-public class Agents{
+public class Agents {
 
     private final Map<String, Agent> agents = new HashMap<>();
 
@@ -63,11 +64,11 @@ public class Agents{
         addAll(agents.agents());
     }
 
-    public Collection<Agent> findInstancesToDisable() {
+    public Collection<Agent> findAgentsToDisable() {
         return FluentIterable.from(agents.values()).filter(AGENT_IDLE_PREDICATE).toList();
     }
 
-    public Collection<Agent> findInstancesToTerminate() {
+    public Collection<Agent> findAgentsToTerminate() {
         return FluentIterable.from(agents.values()).filter(AGENT_DISABLED_PREDICATE).toList();
     }
 

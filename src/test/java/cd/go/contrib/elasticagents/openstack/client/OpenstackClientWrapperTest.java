@@ -1,7 +1,10 @@
-package cd.go.contrib.elasticagents.openstack.utils;
+package cd.go.contrib.elasticagents.openstack.client;
 
+import cd.go.contrib.elasticagents.openstack.PluginSettings;
+import cd.go.contrib.elasticagents.openstack.TestHelper;
 import org.cache2k.Cache;
 import org.cache2k.Cache2kBuilder;
+import org.junit.Before;
 import org.junit.Test;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.api.compute.ComputeImageService;
@@ -22,6 +25,20 @@ import static org.mockito.Mockito.*;
 public class OpenstackClientWrapperTest {
 
     private String transactionId = UUID.randomUUID().toString();
+    private PluginSettings pluginSettings;
+    private OSClient client;
+    private OpenStackClientFactory clientFactory;
+    private ComputeService compute;
+
+    @Before
+    public void setUp() throws Exception {
+        pluginSettings = TestHelper.generatePluginSettings(TestHelper.PROFILE_TYPE.ID1);
+        client = mock(OSClient.class);
+        clientFactory = mock(OpenStackClientFactory.class);
+        when(clientFactory.createClient(any())).thenReturn(client);
+        compute = mock(ComputeService.class);
+        when(client.compute()).thenReturn(compute);
+    }
 
     @Test
     public void shouldGetImageIdGivenImageName() throws ImageNotFoundException {
@@ -29,9 +46,6 @@ public class OpenstackClientWrapperTest {
         // Arrange
         String imageName = "ImageName";
         String expectedImageId = "ImageId";
-        OSClient client = mock(OSClient.class);
-        final ComputeService compute = mock(ComputeService.class);
-        when(client.compute()).thenReturn(compute);
         final ComputeImageService imageService = mock(ComputeImageService.class);
         when(compute.images()).thenReturn(imageService);
 
@@ -50,9 +64,10 @@ public class OpenstackClientWrapperTest {
 
         doReturn(images).when(imageService).list();
 
-        Cache<String, String> imageCache = new Cache2kBuilder<String, String>() {}.entryCapacity(100).build();
+        Cache<String, String> imageCache = new Cache2kBuilder<String, String>() {
+        }.entryCapacity(100).build();
 
-        final OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(client, imageCache, null);
+        final OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(pluginSettings, clientFactory, imageCache, null);
 
         // Act
         final String imageId = clientWrapper.getImageId(imageName, transactionId);
@@ -69,9 +84,6 @@ public class OpenstackClientWrapperTest {
         String firstImageId = "firstImageId";
         String secondImageId = "secondImageId";
         String thirdImageId = "thirdImageId";
-        OSClient client = mock(OSClient.class);
-        final ComputeService compute = mock(ComputeService.class);
-        when(client.compute()).thenReturn(compute);
         final ComputeImageService imageService = mock(ComputeImageService.class);
         when(compute.images()).thenReturn(imageService);
 
@@ -95,7 +107,7 @@ public class OpenstackClientWrapperTest {
                 .build();
 
         // Act
-        final OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(client, cache, null);
+        final OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(pluginSettings, clientFactory, cache, null);
         clientWrapper.resetPreviousImages();
 
         // Assert
@@ -118,9 +130,6 @@ public class OpenstackClientWrapperTest {
         // Arrange
         String imageName = "ImageName";
         String expectedImageId = "ImageId";
-        OSClient client = mock(OSClient.class);
-        final ComputeService compute = mock(ComputeService.class);
-        when(client.compute()).thenReturn(compute);
         final ComputeImageService imageService = mock(ComputeImageService.class);
         when(compute.images()).thenReturn(imageService);
 
@@ -146,7 +155,7 @@ public class OpenstackClientWrapperTest {
                 .build();
 
         // Act
-        final OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(client, cache, null);
+        final OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(pluginSettings, clientFactory, cache, null);
 
         // Assert
         verify(imageService, times(0)).list();
@@ -155,8 +164,8 @@ public class OpenstackClientWrapperTest {
         verify(imageService, times(1)).list();
         assertEquals(expectedImageId, clientWrapper.getImageId(imageName, transactionId));
         verify(imageService, times(1)).list();
-        System.out.println("sleep 1000");
-        Thread.sleep(1000);
+        System.out.println("sleep 1100");
+        Thread.sleep(1100);
         assertEquals(expectedImageId, clientWrapper.getImageId(imageName, transactionId));
         verify(imageService, times(2)).list();
         assertEquals(expectedImageId, clientWrapper.getImageId(imageName, transactionId));
@@ -169,9 +178,6 @@ public class OpenstackClientWrapperTest {
         // Arrange
         String flavorName = "m1.medium";
         String expectedFlavorId = "289349234";
-        OSClient client = mock(OSClient.class);
-        final ComputeService compute = mock(ComputeService.class);
-        when(client.compute()).thenReturn(compute);
         final FlavorService flavorService = mock(FlavorService.class);
         when(compute.flavors()).thenReturn(flavorService);
 
@@ -197,7 +203,7 @@ public class OpenstackClientWrapperTest {
                 .build();
 
         // Act
-        final OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(client, null, cache);
+        final OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(pluginSettings, clientFactory, null, cache);
 
         // Assert
         verify(flavorService, times(0)).list();
@@ -206,8 +212,8 @@ public class OpenstackClientWrapperTest {
         verify(flavorService, times(1)).list();
         assertEquals(expectedFlavorId, clientWrapper.getFlavorId(flavorName, transactionId));
         verify(flavorService, times(1)).list();
-        System.out.println("sleep 1000");
-        Thread.sleep(1000);
+        System.out.println("sleep 1100");
+        Thread.sleep(1100);
         assertEquals(expectedFlavorId, clientWrapper.getFlavorId(flavorName, transactionId));
         verify(flavorService, times(2)).list();
         assertEquals(expectedFlavorId, clientWrapper.getFlavorId(flavorName, transactionId));

@@ -24,7 +24,6 @@ import com.google.gson.GsonBuilder;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
 import java.util.Map;
-import java.util.Objects;
 
 public class ClusterProfileProperties extends PluginSettings {
     public static ClusterProfileProperties fromJSON(String json) {
@@ -33,10 +32,6 @@ public class ClusterProfileProperties extends PluginSettings {
 
     public static ClusterProfileProperties fromConfiguration(Map<String, String> clusterProfileProperties) {
         return GSON.fromJson(GSON.toJson(clusterProfileProperties), ClusterProfileProperties.class);
-    }
-
-    public String uuid() {
-        return Integer.toHexString(Objects.hash(this));
     }
 
     public String toJson() {

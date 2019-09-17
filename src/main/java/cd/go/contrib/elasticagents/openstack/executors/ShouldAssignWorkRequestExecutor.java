@@ -16,52 +16,49 @@
 
 package cd.go.contrib.elasticagents.openstack.executors;
 
-import cd.go.contrib.elasticagents.openstack.AgentInstances;
-import cd.go.contrib.elasticagents.openstack.OpenStackInstance;
 import cd.go.contrib.elasticagents.openstack.RequestExecutor;
+import cd.go.contrib.elasticagents.openstack.client.OpenStackInstance;
+import cd.go.contrib.elasticagents.openstack.client.OpenStackInstances;
 import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.requests.ShouldAssignWorkRequest;
-import cd.go.contrib.elasticagents.openstack.utils.OpenstackClientWrapper;
 import com.thoughtworks.go.plugin.api.logging.Logger;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
 import java.util.UUID;
 
-import static java.text.MessageFormat.format;
-
 public class ShouldAssignWorkRequestExecutor implements RequestExecutor {
     private static final Logger LOG = Logger.getLoggerFor(ShouldAssignWorkRequestExecutor.class);
-    private final AgentInstances agentInstances;
+    private final OpenStackInstances openStackInstances;
     private final ClusterProfileProperties clusterProfileProperties;
     private final ShouldAssignWorkRequest request;
 
-    public ShouldAssignWorkRequestExecutor(ShouldAssignWorkRequest request, AgentInstances agentInstances, ClusterProfileProperties clusterProfileProperties) {
+    public ShouldAssignWorkRequestExecutor(ShouldAssignWorkRequest request, OpenStackInstances openStackInstances, ClusterProfileProperties clusterProfileProperties) {
         this.request = request;
-        this.agentInstances = agentInstances;
+        this.openStackInstances = openStackInstances;
         this.clusterProfileProperties = clusterProfileProperties;
     }
 
     @Override
     public GoPluginApiResponse execute() throws Exception {
+        final long startTimeMillis = System.currentTimeMillis();
         String transactionId = UUID.randomUUID().toString();
-        LOG.info(format("[{0}] [should-assign-work] {1}", transactionId, request));
+        LOG.info("[{}] [should-assign-work] startTimeMillis=[{}] {}", transactionId, startTimeMillis, request);
 
-        OpenStackInstance instance = (OpenStackInstance) agentInstances.find(request.agent().elasticAgentId());
+        OpenStackInstance instance = openStackInstances.find(request.agent().elasticAgentId());
         if (instance == null) {
-            LOG.info(format("[{0}] [should-assign-work] Work can NOT be assigned to missing Agent {1}", transactionId, request.agent().elasticAgentId()));
+            LOG.info("[{}] [should-assign-work] Work can NOT be assigned to missing Agent {}", transactionId, request.agent().elasticAgentId());
             return DefaultGoPluginApiResponse.success("false");
         }
 
-        OpenstackClientWrapper clientWrapper = new OpenstackClientWrapper(clusterProfileProperties);
-        LOG.debug(format("[{0}] [should-assign-work] {1} {2}", transactionId, request.elasticAgentProfileProperties(), clusterProfileProperties));
+        LOG.debug("[{}] [should-assign-work] {} {}", transactionId, request.elasticAgentProfileProperties(), clusterProfileProperties);
 
-        if ((agentInstances.matchInstance(request.agent().elasticAgentId(), request.elasticAgentProfileProperties(), request.environment(),
-                clusterProfileProperties, clientWrapper, transactionId, clusterProfileProperties.getUsePreviousOpenstackImage()))) {
-            LOG.info(format("[{0}] [should-assign-work] Work can be assigned to Agent {1}", transactionId, request.agent().elasticAgentId()));
+        if ((openStackInstances.matchInstance(request.agent().elasticAgentId(), request.elasticAgentProfileProperties(), request.environment(),
+                transactionId, clusterProfileProperties.getUsePreviousOpenstackImage()))) {
+            LOG.info("[{}] [should-assign-work] Work can be assigned to Agent {} in {} millis", transactionId, request.agent().elasticAgentId(), (System.currentTimeMillis() - startTimeMillis));
             return DefaultGoPluginApiResponse.success("true");
         } else {
-            LOG.info(format("[{0}] [should-assign-work] Work can NOT be assigned to Agent {1}", transactionId, request.agent().elasticAgentId()));
+            LOG.info("[{}] [should-assign-work] Work can NOT be assigned to Agent {} in {} millis", transactionId, request.agent().elasticAgentId(), (System.currentTimeMillis() - startTimeMillis));
             return DefaultGoPluginApiResponse.success("false");
         }
     }
