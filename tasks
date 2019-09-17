@@ -79,16 +79,16 @@ case "${command}" in
 
     $GHRELEASE_BIN release \
       --user gocd-contrib \
-      --repo elastic-agent-openstack \
+      --repo openstack-elastic-agent \
       --tag $VERSION \
       --name $VERSION \
       --pre-release
 
     cd build/libs/
-    for file in elastic-agent-openstack-*.jar*; do
+    for file in gocd-elastic-agent-openstack-*.jar*; do
       $GHRELEASE_BIN upload \
         --user gocd-contrib \
-        --repo elastic-agent-openstack \
+        --repo openstack-elastic-agent \
         --tag $VERSION \
         --name "$file" \
         --file "$file"
