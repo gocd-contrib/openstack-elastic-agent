@@ -20,3 +20,5 @@ target/
 bin/
 .classpath
 .project
+
+/ops/

@@ -1,3 +1,5 @@
+### 0.14.2 (2019-Sep-17)
+
 ### 0.14.0
 
  * added feature to delete instances in error state

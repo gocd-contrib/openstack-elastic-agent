@@ -20,7 +20,7 @@ apply from: "https://raw.githubusercontent.com/gocd/gocd-plugin-gradle-task-help
 
 gocdPlugin {
     id = 'cd.go.contrib.elastic-agent.openstack'
-    pluginVersion = '0.14.2'
+    pluginVersion = "0.14.2"
     goCdVersion = '19.5.0'
     name = 'OpenStack Elastic Agent Plugin'
     description = 'OpenStack Based Elastic Agent Plugins for GoCD'

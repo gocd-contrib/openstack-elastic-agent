@@ -1,0 +1,70 @@
+format_version: 3
+pipelines:
+  "openstack-elastic-agent":
+    group: gocd
+    label_template: "${git[:8]}"
+    locking: off
+    materials:
+      git:
+        type: configrepo
+        blacklist:
+          - "*.md"
+          - "build.gradle"
+    secure_variables:
+      VAULT_TOKEN: "AES:4GcVqEAxKk/ek2VDLub6sw==:ivT5H45hSJJny0wDygkmRRheDSs7vVcgbRqCD+l5eUU="
+    stages:
+      - build:
+          clean_workspace: true
+          resources:
+            - docker
+          artifacts:
+           - build:
+               source: build/libs/*.jar*
+               destination: build/libs
+          tasks:
+           - exec:
+               command: bash
+               arguments:
+                - -c
+                - ./tasks build_test
+      - release:
+          approval: manual
+          clean_workspace: true
+          jobs:
+            github:
+              resources:
+                - docker
+              tasks:
+                - fetch:
+                    stage: build
+                    job: build
+                    source: build/libs
+                    destination: build
+                - exec:
+                    command: /bin/bash
+                    arguments:
+                      - ./tasks
+                      - github_release
+      - bump:
+          clean_workspace: true
+          jobs:
+            patch:
+              resources:
+                - docker
+              tasks:
+                - exec:
+                    command: /bin/bash
+                    arguments:
+                      - -c
+                      - ./tasks bump
+                - exec:
+                    command: /bin/bash
+                    arguments:
+                      - -c
+                      - ./tasks commit
+                - exec:
+                    command: git
+                    arguments:
+                      - push
+                      - origin
+                      - master
