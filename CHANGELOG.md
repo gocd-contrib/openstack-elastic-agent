@@ -1,5 +1,7 @@
 ### 0.14.2 (2019-Sep-17)
 
+Fix caching when multiple clusters and V5 is used
+
 ### 0.14.0
 
  * added feature to delete instances in error state
