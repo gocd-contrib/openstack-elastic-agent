@@ -1,3 +1,5 @@
+See https://github.com/gocd-contrib/openstack-elastic-agent/releases for releases after 0.14.2
+
 ### 0.14.2 (2019-Sep-17)
 
 Fix caching when multiple clusters and V5 is used
