@@ -25,6 +25,7 @@ import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class ClusterProfilePropertiesTest {
@@ -191,12 +192,7 @@ public class ClusterProfilePropertiesTest {
 
         CreateAgentRequest createAgentRequest = CreateAgentRequest.fromJSON(createAgentRequestJSON);
 
-        try {
-            createAgentRequest.clusterProfileProperties().validate("test");
-            fail("Should not get here");
-        } catch (IllegalArgumentException ex) {
-            System.out.println(ex.getMessage());
-        }
+        assertThrows(IllegalArgumentException.class, () -> createAgentRequest.clusterProfileProperties().validate("test"));
     }
 
     @Test

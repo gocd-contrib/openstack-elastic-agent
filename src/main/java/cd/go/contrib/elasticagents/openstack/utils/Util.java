@@ -68,13 +68,13 @@ public class Util {
      * @param agentMaxTTL positive int
      * @return Random value between agentMinTTL and agentMaxTTL or at least agentMinTTL minutes.
      */
-    public static int calculateTTL(int agentMinTTL, int agentMaxTTL) {
+    public static long calculateTTL(long agentMinTTL, long agentMaxTTL) {
         if (agentMaxTTL < agentMinTTL)
             return agentMinTTL;
         Random rand = new Random();
-        int result;
-        int random = agentMaxTTL - agentMinTTL;
-        result = agentMinTTL + rand.nextInt(random + 1);
+        long result;
+        long random = agentMaxTTL - agentMinTTL;
+        result = agentMinTTL + rand.nextLong(random + 1);
         return result;
     }
 

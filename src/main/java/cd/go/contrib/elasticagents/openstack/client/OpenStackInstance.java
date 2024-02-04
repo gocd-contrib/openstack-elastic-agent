@@ -21,11 +21,11 @@ import cd.go.contrib.elasticagents.openstack.PluginSettings;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 import com.thoughtworks.go.plugin.api.logging.Logger;
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
 import org.openstack4j.api.Builders;
 import org.openstack4j.model.compute.Server;
 import org.openstack4j.model.compute.builder.ServerCreateBuilder;
 
+import java.time.Instant;
 import java.util.*;
 
 import static cd.go.contrib.elasticagents.openstack.Constants.OPENSTACK_USERDATA_ARGS;
@@ -36,7 +36,7 @@ public class OpenStackInstance {
 
     public static final Logger LOG = Logger.getLoggerFor(OpenStackInstance.class);
     private final PluginSettings pluginSettings;
-    private final DateTime createdAt;
+    private final Instant createdAt;
     private final String environment;
     private final String imageId;
     private final String flavorId;
@@ -46,7 +46,7 @@ public class OpenStackInstance {
 
     public OpenStackInstance(String id, Date createdAt, String environment, String imageId, String flavorId, PluginSettings pluginSettings) {
         this.id = id;
-        this.createdAt = new DateTime(createdAt);
+        this.createdAt = Instant.ofEpochMilli(createdAt.getTime());
         this.environment = environment;
         this.imageId = imageId;
         this.flavorId = flavorId;
@@ -151,7 +151,7 @@ public class OpenStackInstance {
         return maxCompletedJobs != 0 && jobsCompleted >= maxCompletedJobs;
     }
 
-    DateTime createAt() {
+    Instant createAt() {
         return createdAt;
     }
 

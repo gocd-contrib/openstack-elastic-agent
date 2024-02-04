@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-apply plugin: 'java'
+plugins {
+    id 'java'
+}
+
 apply from: "https://raw.githubusercontent.com/gocd/gocd-plugin-gradle-task-helpers/master/helper.gradle?_=${(int) (new Date().toInstant().epochSecond / 60)}"
 
 gocdPlugin {
@@ -36,7 +39,6 @@ gocdPlugin {
 
     prerelease = !"No".equalsIgnoreCase(System.getenv('PRERELEASE'))
     assetsToRelease = [project.tasks.jar]
-    licenseReport.excludeGroups = ['net.jcip', 'org.jboss.resteasy']
 }
 
 group = 'cd.go.contrib'
@@ -56,6 +58,7 @@ ext {
     deps = [
         gocdPluginApi: 'cd.go.plugin:go-plugin-api:23.5.0',
         mockito      : 'org.mockito:mockito-core:5.10.0',
+        openstack4j  : 'com.github.openstack4j.core:openstack4j-core:3.11',
         cache2k      : 'org.cache2k:cache2k-api:1.2.3.Final',
     ]
 
@@ -66,9 +69,16 @@ ext {
 dependencies {
     compileOnly project.deps.gocdPluginApi
     implementation group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
-    implementation group: 'org.pacesys', name: 'openstack4j', version: '3.2.0'
-    implementation group: 'com.google.guava', name: 'guava', version: '33.0.0-jre'
+    implementation project.deps.openstack4j
+    implementation group: 'com.github.openstack4j.core.connectors', name: 'openstack4j-httpclient', version: project.versions.openstack4j
 
+    // Control transitives
+    implementation platform('com.fasterxml.jackson:jackson-bom:2.16.1')
+    constraints {
+        implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
+    }
+
+    implementation group: 'com.google.guava', name: 'guava', version: '33.0.0-jre'
     components {
         // workaround for Guava metadata declaring dependencies that are not needed at runtime
         // see https://github.com/google/guava/pull/6606
@@ -83,7 +93,6 @@ dependencies {
         })
     }
 
-    implementation group: 'joda-time', name: 'joda-time', version: '2.12.6'
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
     implementation project.deps.cache2k
     runtimeOnly group: 'org.cache2k', name: 'cache2k-core', version: project.versions.cache2k
@@ -94,7 +103,6 @@ dependencies {
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
     testRuntimeOnly group: 'org.junit.platform', name: 'junit-platform-launcher'
-    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.25.2'
     testImplementation project.deps.mockito
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: project.versions.mockito
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'

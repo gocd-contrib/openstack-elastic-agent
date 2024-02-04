@@ -21,7 +21,7 @@ public class UtilTest {
 
         // Assert
         for (int i = 0; i < 100; i++) {
-            int value = Util.calculateTTL(min, max);
+            long value = Util.calculateTTL(min, max);
             System.out.println(value);
             assertTrue(max >= value, "Should be max " + max);
             assertTrue(min <= value, "Should be min " + min);

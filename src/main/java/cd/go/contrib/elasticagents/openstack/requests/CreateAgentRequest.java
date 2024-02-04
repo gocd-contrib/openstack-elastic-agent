@@ -33,12 +33,19 @@ import java.util.Map;
  * see https://plugin-api.gocd.io/current/elastic-agents/#create-agent
  */
 public class CreateAgentRequest {
-    public static final Gson GSON = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
+    public static final Gson GSON = new GsonBuilder()
+            .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+            .excludeFieldsWithoutExposeAnnotation()
+            .create();
+    @Expose
     private String autoRegisterKey;
+    @Expose
     private Map<String, String> elasticAgentProfileProperties;
     @Expose
     private JobIdentifier jobIdentifier;
+    @Expose
     private String environment;
+    @Expose
     private ClusterProfileProperties clusterProfileProperties;
 
     public CreateAgentRequest() {

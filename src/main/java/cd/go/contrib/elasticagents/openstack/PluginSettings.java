@@ -23,7 +23,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.Period;
+
+import java.time.Duration;
 
 public class PluginSettings {
     public static final Gson GSON = new GsonBuilder()
@@ -116,8 +117,8 @@ public class PluginSettings {
     @SerializedName("delete_error_instances")
     private Boolean deleteErrorInstances;
 
-    private Period agentRegisterPeriod;
-    private Period agentTTLMinPeriod;
+    private Duration agentRegisterPeriod;
+    private Duration agentTTLMinPeriod;
 
     public static PluginSettings fromJSON(String json) {
         return GSON.fromJson(json, PluginSettings.class);
@@ -155,9 +156,9 @@ public class PluginSettings {
         return String.valueOf(hashCode());
     }
 
-    public Period getAgentPendingRegisterPeriod() {
+    public Duration getAgentPendingRegisterPeriod() {
         if (this.agentRegisterPeriod == null) {
-            this.agentRegisterPeriod = new Period().withMinutes(Integer.parseInt(getAgentPendingRegisterTimeout()));
+            this.agentRegisterPeriod = Duration.ofMinutes(Integer.parseInt(getAgentPendingRegisterTimeout()));
         }
         return this.agentRegisterPeriod;
     }
@@ -169,9 +170,9 @@ public class PluginSettings {
         return agentPendingRegisterTimeout;
     }
 
-    public Period getAgentTTLMinPeriod() {
+    public Duration getAgentTTLMinPeriod() {
         if (this.agentTTLMinPeriod == null) {
-            this.agentTTLMinPeriod = new Period().withMinutes(Integer.parseInt(getAgentTTLMin()));
+            this.agentTTLMinPeriod = Duration.ofMinutes(Integer.parseInt(getAgentTTLMin()));
         }
         return this.agentTTLMinPeriod;
     }

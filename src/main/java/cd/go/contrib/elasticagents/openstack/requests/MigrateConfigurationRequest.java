@@ -32,6 +32,7 @@ import java.util.Objects;
 public class MigrateConfigurationRequest {
     public static final Gson GSON = new GsonBuilder()
             .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+            .excludeFieldsWithoutExposeAnnotation()
             .create();
 
     @Expose

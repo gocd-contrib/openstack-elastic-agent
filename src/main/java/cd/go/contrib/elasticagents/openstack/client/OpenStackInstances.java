@@ -24,18 +24,19 @@ import cd.go.contrib.elasticagents.openstack.utils.Util;
 import com.thoughtworks.go.plugin.api.logging.Logger;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
-import org.joda.time.Period;
 import org.openstack4j.model.common.ActionResponse;
 import org.openstack4j.model.compute.Server;
 
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static java.text.MessageFormat.format;
+import static java.time.temporal.ChronoUnit.MINUTES;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.stripToEmpty;
 
@@ -446,12 +447,11 @@ public class OpenStackInstances {
             return false;
         }
 
-        final int timeoutInMinutes = pluginSettings.getAgentPendingRegisterPeriod().getMinutes();
-        final Date createDate = instance.createAt().toDate();
-        Date timeoutDate = DateUtils.addMinutes(createDate, timeoutInMinutes);
+        final long timeoutInMinutes = pluginSettings.getAgentPendingRegisterPeriod().toMinutes();
+        Instant timeoutDate = instance.createAt().plus(pluginSettings.getAgentPendingRegisterPeriod());
         LOG.info("[hasAgentRegisterTimedOut] Agent: [{}] was created {} and will time out {}, with timeoutInMinutes: [{}]",
-                id, createDate, timeoutDate, timeoutInMinutes);
-        if (timeoutDate.before(new Date())) {
+                id, instance.createAt(), timeoutDate, timeoutInMinutes);
+        if (timeoutDate.isBefore(Instant.now())) {
             LOG.info("[hasAgentRegisterTimedOut] Agent: [{}] has timed out, with timeoutInMinutes: [{}]", id, timeoutInMinutes);
             return true;
         }
@@ -464,7 +464,7 @@ public class OpenStackInstances {
      * @param knownAgents the list of all the agents
      */
     private void terminateUnregisteredInstances(Agents knownAgents) {
-        Period period = pluginSettings.getAgentTTLMinPeriod();
+        Duration period = pluginSettings.getAgentTTLMinPeriod();
         List<Server> allInstances = clientWrapper.listServers(pluginSettings.getOpenstackVmPrefix());
         String allInstancesAsString = allInstances.stream()
                 .map(n -> n.getName())
@@ -507,7 +507,7 @@ public class OpenStackInstances {
      */
     private Agents fetchExpiredAgents(Agents agents) {
         LOG.debug("[instancesCreatedAfterTTL] uuid=[{}] agentTTLMin: [{}] agentTTLMax: [{}] agents.agents().size(): [{}]",
-                uuid, pluginSettings.getAgentTTLMinPeriod().getMinutes(), pluginSettings.getAgentTTLMax(), agents.agents().size());
+                uuid, pluginSettings.getAgentTTLMinPeriod().toMinutes(), pluginSettings.getAgentTTLMax(), agents.agents().size());
         List<Agent> oldAgents = new ArrayList<>();
         for (Agent agent : agents.agents()) {
 
@@ -517,11 +517,11 @@ public class OpenStackInstances {
             }
 
             LOG.debug("[instancesCreatedAfterTTL] uuid=[{}] agentTTLMin: [{}] agentTTLMax: [{}]",
-                    uuid, pluginSettings.getAgentTTLMinPeriod().getMinutes(), pluginSettings.getAgentTTLMax());
-            int minutesTTL = Util.calculateTTL(pluginSettings.getAgentTTLMinPeriod().getMinutes(), pluginSettings.getAgentTTLMax());
-            Date expireDate = DateUtils.addMinutes(instance.createAt().toDate(), minutesTTL);
+                    uuid, pluginSettings.getAgentTTLMinPeriod().toMinutes(), pluginSettings.getAgentTTLMax());
+            long minutesTTL = Util.calculateTTL(pluginSettings.getAgentTTLMinPeriod().toMinutes(), pluginSettings.getAgentTTLMax());
+            Instant expireDate = instance.createAt().plus(minutesTTL, MINUTES);
             LOG.debug("[instancesCreatedAfterTTL] uuid=[{}] Agent: [{}] with minutesTTL: [{}]", uuid, agent.elasticAgentId(), minutesTTL);
-            if (expireDate.before(new Date())) {
+            if (expireDate.isBefore(Instant.now())) {
                 LOG.info("[instancesCreatedAfterTTL] uuid=[{}] Agent: [{}] to be terminated with minutesTTL: [{}]", uuid, agent.elasticAgentId(), minutesTTL);
                 oldAgents.add(agent);
             }

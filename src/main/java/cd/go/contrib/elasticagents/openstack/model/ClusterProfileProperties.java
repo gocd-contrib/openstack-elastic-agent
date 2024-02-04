@@ -37,6 +37,7 @@ public class ClusterProfileProperties extends PluginSettings {
     public String toJson() {
         Gson gson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .excludeFieldsWithoutExposeAnnotation()
                 .setPrettyPrinting()
                 .create();
         return gson.toJson(this);
