@@ -1,10 +1,11 @@
 package cd.go.contrib.elasticagents.openstack;
 
 import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
-import org.apache.commons.io.FileUtils;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 public class TestHelper {
 
@@ -16,12 +17,13 @@ public class TestHelper {
     public static final String FLAVOR_ID2 = "a883873b-d568-4c1a-bee5-9806996e3a02";
 
     public static ClusterProfileProperties generateClusterProfileProperties(PROFILE_TYPE type) throws IOException {
-        String resourceName = "plugin-settings_" + type + ".json";
+        return ClusterProfileProperties.fromJSON(resourceAsString("/plugin-settings_" + type + ".json"));
+    }
 
-        ClassLoader classLoader = TestHelper.class.getClassLoader();
-        File file = new File(classLoader.getResource(resourceName).getFile());
-        ClusterProfileProperties clusterProfileProperties = ClusterProfileProperties.fromJSON(FileUtils.readFileToString(file));
-        return clusterProfileProperties;
+    public static String resourceAsString(String resourceName) throws IOException {
+        try (InputStream is = Objects.requireNonNull(TestHelper.class.getResourceAsStream(resourceName))) {
+            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        }
     }
 
     public static PluginSettings generatePluginSettings(PROFILE_TYPE type) throws IOException {

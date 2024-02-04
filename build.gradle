@@ -84,7 +84,6 @@ dependencies {
     }
 
     implementation group: 'joda-time', name: 'joda-time', version: '2.12.6'
-    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.9'
     implementation group: 'commons-codec', name: 'commons-codec', version: '1.13'

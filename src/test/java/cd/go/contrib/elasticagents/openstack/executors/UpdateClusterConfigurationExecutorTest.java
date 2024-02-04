@@ -4,13 +4,8 @@ import cd.go.contrib.elasticagents.openstack.PluginSettings;
 import cd.go.contrib.elasticagents.openstack.TestHelper;
 import cd.go.contrib.elasticagents.openstack.client.OpenStackInstances;
 import cd.go.contrib.elasticagents.openstack.requests.UpdateClusterConfigurationRequest;
-import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.io.File;
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -21,9 +16,7 @@ public class UpdateClusterConfigurationExecutorTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        ClassLoader classLoader = getClass().getClassLoader();
-        File file = new File(Objects.requireNonNull(classLoader.getResource("update_cluster_profile.json5")).getFile());
-        request = UpdateClusterConfigurationRequest.fromJSON(FileUtils.readFileToString(file));
+        request = UpdateClusterConfigurationRequest.fromJSON(TestHelper.resourceAsString("/update_cluster_profile.json5"));
         PluginSettings pluginSettings = TestHelper.generatePluginSettings(TestHelper.PROFILE_TYPE.ID1);
         instances = new OpenStackInstances(pluginSettings);
     }
@@ -36,7 +29,7 @@ public class UpdateClusterConfigurationExecutorTest {
         assertEquals(30, instances.getPluginSettings().getAgentTTLMax());
 
         // Act
-        final GoPluginApiResponse execute = executor.execute();
+        executor.execute();
 
         // Assert
         assertEquals("10", instances.getPluginSettings().getAgentTTLMin());
