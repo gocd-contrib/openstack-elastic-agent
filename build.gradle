@@ -59,7 +59,7 @@ ext {
         gocdPluginApi: 'cd.go.plugin:go-plugin-api:23.5.0',
         mockito      : 'org.mockito:mockito-core:5.10.0',
         openstack4j  : 'com.github.openstack4j.core:openstack4j-core:3.11',
-        cache2k      : 'org.cache2k:cache2k-api:1.2.3.Final',
+        cache2k      : 'org.cache2k:cache2k-api:2.6.1.Final',
     ]
 
     versions = project.ext.deps.collectEntries { lib, libGav -> [lib, libGav.split(':').last()] }
