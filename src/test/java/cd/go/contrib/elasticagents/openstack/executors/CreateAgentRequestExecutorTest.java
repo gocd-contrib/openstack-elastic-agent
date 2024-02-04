@@ -12,8 +12,8 @@ import cd.go.contrib.elasticagents.openstack.model.Agent;
 import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 
 import java.io.IOException;
@@ -36,7 +36,7 @@ public class CreateAgentRequestExecutorTest {
     private JobIdentifier job1;
     private JobIdentifier job2;
 
-    @Before
+    @BeforeEach
     public void SetUp() throws ImageNotFoundException, IOException {
         createAgentRequest = mock(CreateAgentRequest.class);
         agentInstances = mock(OpenStackInstances.class);

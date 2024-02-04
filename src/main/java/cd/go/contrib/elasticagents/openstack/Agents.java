@@ -27,7 +27,7 @@ public class Agents {
     private final Map<String, Agent> agents = new HashMap<>();
 
     // Filter for agents that can be disabled safely
-    private static final Predicate<Agent> AGENT_IDLE_PREDICATE = new Predicate<Agent>() {
+    private static final Predicate<Agent> AGENT_IDLE_PREDICATE = new Predicate<>() {
         @Override
         public boolean apply(Agent metadata) {
             Agent.AgentState agentState = metadata.agentState();
@@ -36,7 +36,7 @@ public class Agents {
     };
 
     // Filter for agents that can be terminated safely
-    private static final Predicate<Agent> AGENT_DISABLED_PREDICATE = new Predicate<Agent>() {
+    private static final Predicate<Agent> AGENT_DISABLED_PREDICATE = new Predicate<>() {
         @Override
         public boolean apply(Agent metadata) {
             Agent.AgentState agentState = metadata.agentState();

@@ -23,17 +23,17 @@ import cd.go.contrib.elasticagents.openstack.model.ClusterProfile;
 import cd.go.contrib.elasticagents.openstack.model.ElasticAgentProfile;
 import cd.go.contrib.elasticagents.openstack.requests.MigrateConfigurationRequest;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
 
 public class MigrateConfigurationRequestExecutorTest {
 
@@ -42,7 +42,7 @@ public class MigrateConfigurationRequestExecutorTest {
     private ElasticAgentProfile elasticAgentProfile;
     private HashMap<String, String> properties;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         pluginSettings = TestHelper.generatePluginSettings(TestHelper.PROFILE_TYPE.ID1);
 

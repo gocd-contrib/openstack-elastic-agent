@@ -1,33 +1,23 @@
 package cd.go.contrib.elasticagents.openstack.client;
 
 import cd.go.contrib.elasticagents.openstack.PluginSettings;
-import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
-import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Date;
-import java.util.HashMap;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class OpenStackInstanceTest {
 
     private String instanceId;
     private OpenStackInstance instance;
-    private CreateAgentRequest request;
     private PluginSettings settings;
-    private HashMap<String, String> elasticAgentProfileProperties;
-    private HashMap<String, String> clusterProfileProperties;
 
-    @Before
-    public void SetUpMocks() {
-        elasticAgentProfileProperties = new HashMap<>();
-        JobIdentifier job1 = mock(JobIdentifier.class);
+    @BeforeEach
+    public void setUp() {
         settings = new PluginSettings();
-        request = new CreateAgentRequest("abc-key", elasticAgentProfileProperties, job1, "testing", clusterProfileProperties);
     }
 
     @Test

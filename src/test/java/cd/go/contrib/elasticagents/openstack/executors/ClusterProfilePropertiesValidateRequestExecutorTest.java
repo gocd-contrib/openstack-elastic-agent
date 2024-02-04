@@ -17,7 +17,7 @@
 package cd.go.contrib.elasticagents.openstack.executors;
 
 import cd.go.contrib.elasticagents.openstack.requests.ClusterProfileValidateRequest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 

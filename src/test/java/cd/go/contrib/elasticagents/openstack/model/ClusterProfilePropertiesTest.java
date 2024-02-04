@@ -18,14 +18,14 @@ package cd.go.contrib.elasticagents.openstack.model;
 
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 import cd.go.contrib.elasticagents.openstack.requests.JobCompletionRequest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ClusterProfilePropertiesTest {
 

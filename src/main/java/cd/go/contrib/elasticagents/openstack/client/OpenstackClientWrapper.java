@@ -64,7 +64,7 @@ class OpenstackClientWrapper {
                 if (imageName != null && imageName.equals(nameOrId)) {
                     if (!previousImageIds.containsKey(imageName)) {
                         LOG.debug(format("[{0}] [getImageId] initiate list of previous image is for name [{1}]", transactionId, imageName));
-                        previousImageIds.put(tmpImage.getName(), new ArrayList<String>());
+                        previousImageIds.put(tmpImage.getName(), new ArrayList<>());
                     }
                     final List<String> usedImageIds = previousImageIds.get(imageName);
                     imageId = tmpImage.getId();

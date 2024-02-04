@@ -3,23 +3,21 @@ package cd.go.contrib.elasticagents.openstack.utils;
 import com.thoughtworks.go.plugin.api.request.DefaultGoApiRequest;
 import org.cache2k.Cache;
 import org.cache2k.Cache2kBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static cd.go.contrib.elasticagents.openstack.Constants.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ServerHealthMessagesTest {
-    //    private PluginRequest pluginRequest;
     private Cache<String, Map<String, String>> cache;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-//        pluginRequest = mock(PluginRequest.class);
         cache = new Cache2kBuilder<String, Map<String, String>>() {
         }
                 .entryCapacity(100)
@@ -38,7 +36,7 @@ public class ServerHealthMessagesTest {
 
         // Assert
         int expected = 3;
-        assertEquals("Should have " + expected, expected, healthMessages.size());
+        assertEquals(expected, healthMessages.size());
     }
 
     @Test
@@ -58,7 +56,7 @@ public class ServerHealthMessagesTest {
 
         // Assert
         int expected = 1;
-        assertEquals("Should have " + expected, expected, healthMessages.size());
+        assertEquals(expected, healthMessages.size());
     }
 
     @Test
@@ -79,10 +77,10 @@ public class ServerHealthMessagesTest {
 
         // Assert
         int expected = 3;
-        assertEquals("Should have " + expected, expected, healthMessages.size());
+        assertEquals(expected, healthMessages.size());
         System.out.println("sleep 1100");
         Thread.sleep(1100);
-        assertEquals("Should have " + 0, 0, healthMessages.size());
+        assertEquals(0, healthMessages.size());
     }
 
     @Test
@@ -100,10 +98,9 @@ public class ServerHealthMessagesTest {
 
         // Assert
         int expected = 3;
-        assertEquals("Should have " + expected, expected, messages.size());
-        messages.stream().forEach(message -> System.out.println(message));
-        messages.stream().forEach(message ->
-                assertTrue(message.get("type").equals("warning") || message.get("type").equals("error"))
+        assertEquals(expected, messages.size());
+        messages.forEach(System.out::println);
+        messages.forEach(message -> assertTrue(message.get("type").equals("warning") || message.get("type").equals("error"))
         );
     }
 
@@ -118,12 +115,6 @@ public class ServerHealthMessagesTest {
         healthMessages.add("errortest2", ServerHealthMessages.Type.ERROR, "error test 2");
         healthMessages.add("warningtest1", ServerHealthMessages.Type.WARNING, "warning test 1");
 
-
-//        System.out.println("[sendServerHealthMessage]: " +  healthMessages.getMessages().stream()
-//                .map(n -> n.toString())
-//                .collect(Collectors.joining(","))
-//        );
-
         // Act
         final String requestBody = healthMessages.getJSON();
         System.out.println("[sendServerHealthMessage] requestBody: " + requestBody);
@@ -131,22 +122,8 @@ public class ServerHealthMessagesTest {
         request.setRequestBody(requestBody);
         System.out.println("[sendServerHealthMessage] request.requestBody(): " + request.requestBody());
 
-//
-//        messageToBeAdded.put("type", "error");
-//        messageToBeAdded.put("message", "error test 1");
-//        final String id1 = "errortest1";
-//        healthMessages.add(id1, messageToBeAdded);
-//        messageToBeAdded.put("type", "error");
-//        messageToBeAdded.put("message", "error test 2");
-//        healthMessages.add("errortest2", messageToBeAdded);
-//
         // Assert
         assertNotNull(requestBody);
         assertTrue(requestBody.length() > 50);
-//        int expected = 2;
-//        assertEquals("Should have " + expected, expected, healthMessages.size());
-//        verify(pluginRequest, never()).sendServerHealthMessage(anyCollection());
-//        healthMessages.send();
-//        verify(pluginRequest, times(1)).sendServerHealthMessage(anyCollection());
     }
 }

@@ -4,8 +4,8 @@ import cd.go.contrib.elasticagents.openstack.PluginSettings;
 import cd.go.contrib.elasticagents.openstack.TestHelper;
 import org.cache2k.Cache;
 import org.cache2k.Cache2kBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.api.compute.ComputeImageService;
 import org.openstack4j.api.compute.ComputeService;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -30,7 +30,7 @@ public class OpenstackClientWrapperTest {
     private OpenStackClientFactory clientFactory;
     private ComputeService compute;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         pluginSettings = TestHelper.generatePluginSettings(TestHelper.PROFILE_TYPE.ID1);
         client = mock(OSClient.class);

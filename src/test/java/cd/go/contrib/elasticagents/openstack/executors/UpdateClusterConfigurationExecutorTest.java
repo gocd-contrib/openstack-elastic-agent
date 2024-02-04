@@ -6,19 +6,20 @@ import cd.go.contrib.elasticagents.openstack.client.OpenStackInstances;
 import cd.go.contrib.elasticagents.openstack.requests.UpdateClusterConfigurationRequest;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.Objects;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 public class UpdateClusterConfigurationExecutorTest {
     private UpdateClusterConfigurationRequest request;
     private OpenStackInstances instances;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         ClassLoader classLoader = getClass().getClassLoader();
         File file = new File(Objects.requireNonNull(classLoader.getResource("update_cluster_profile.json5")).getFile());

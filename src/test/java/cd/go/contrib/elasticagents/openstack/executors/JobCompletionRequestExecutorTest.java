@@ -22,7 +22,7 @@ import cd.go.contrib.elasticagents.openstack.client.OpenStackInstances;
 import cd.go.contrib.elasticagents.openstack.model.ClusterProfileProperties;
 import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
 import cd.go.contrib.elasticagents.openstack.requests.JobCompletionRequest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Date;
 

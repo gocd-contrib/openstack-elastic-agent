@@ -6,8 +6,8 @@ import cd.go.contrib.elasticagents.openstack.model.JobIdentifier;
 import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 import org.cache2k.Cache;
 import org.cache2k.Cache2kBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.api.compute.ComputeImageService;
 import org.openstack4j.api.compute.ComputeService;
@@ -20,8 +20,10 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -37,7 +39,7 @@ public class OpenStackInstancesTest {
     private JobIdentifier job1;
     private PluginRequest pluginRequest;
 
-    @Before
+    @BeforeEach
     public void SetUp() throws ImageNotFoundException, ServerRequestFailedException, IOException {
         client = mock(OpenstackClientWrapper.class);
         instanceId = "b45b5658-b093-4a58-bf22-17d898171c95";
@@ -65,13 +67,13 @@ public class OpenStackInstancesTest {
     @Test
     public void matchInstanceShouldReturnTrueWhenRequestHasNoPropertiesButSettingsMatchAfterResolvingNames() throws Exception {
         pluginSettings = TestHelper.generatePluginSettings(TestHelper.PROFILE_TYPE.NAMES);
-        assertThat(instances.matchInstance(instanceId, new HashMap<String, String>(), null, transactionId, false), is(true));
+        assertThat(instances.matchInstance(instanceId, new HashMap<>(), null, transactionId, false), is(true));
     }
 
     @Test
     public void matchInstanceShouldReturnTrueWhenRequestHasNoPropertiesButSettingsMatchById() throws Exception {
         pluginSettings = TestHelper.generatePluginSettings(TestHelper.PROFILE_TYPE.ID1);
-        assertThat(instances.matchInstance(instanceId, new HashMap<String, String>(), null, transactionId, false), is(true));
+        assertThat(instances.matchInstance(instanceId, new HashMap<>(), null, transactionId, false), is(true));
     }
 
     @Test

@@ -21,15 +21,15 @@ import cd.go.contrib.elasticagents.openstack.TestHelper;
 import cd.go.contrib.elasticagents.openstack.model.ClusterProfile;
 import cd.go.contrib.elasticagents.openstack.model.ElasticAgentProfile;
 import org.json.JSONException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 public class MigrateConfigurationRequestTest {
 
@@ -106,8 +106,6 @@ public class MigrateConfigurationRequestTest {
     @Test
     public void shouldSerializeToJSONFromMigrationConfigRequest() throws JSONException, IOException {
         PluginSettings pluginSettings = TestHelper.generatePluginSettings(TestHelper.PROFILE_TYPE.ID1);
-//        pluginSettings.setGoServerUrl("https://127.0.0.1:8154/go");
-//        pluginSettings.setAgentTTLMin("20");
 
         ClusterProfile clusterProfile = new ClusterProfile();
         clusterProfile.setId("cluster_profile_id");
