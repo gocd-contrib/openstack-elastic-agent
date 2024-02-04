@@ -31,7 +31,7 @@ gocdPlugin {
 
     githubRepo {
         owner = System.getenv('GITHUB_USER') ?: 'bob'
-        repo = 'openstack-elastic-agents'
+        repo = 'openstack-elastic-agent'
         token = System.getenv('GITHUB_TOKEN') ?: 'bad-token'
     }
 
