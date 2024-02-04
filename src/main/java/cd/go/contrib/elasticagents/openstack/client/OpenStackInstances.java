@@ -22,7 +22,6 @@ import cd.go.contrib.elasticagents.openstack.requests.CreateAgentRequest;
 import cd.go.contrib.elasticagents.openstack.utils.ServerHealthMessages;
 import cd.go.contrib.elasticagents.openstack.utils.Util;
 import com.thoughtworks.go.plugin.api.logging.Logger;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -343,7 +342,7 @@ public class OpenStackInstances {
         if (StringUtils.isBlank(userData))
             return null;
         final byte[] userDataBytes = userData.getBytes(StandardCharsets.UTF_8);
-        return Base64.encodeBase64String(userDataBytes);
+        return Base64.getEncoder().encodeToString(userDataBytes);
     }
 
     void register(OpenStackInstance instance) {
