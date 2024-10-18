@@ -57,7 +57,7 @@ java {
 ext {
     deps = [
         gocdPluginApi: 'cd.go.plugin:go-plugin-api:24.3.0',
-        mockito      : 'org.mockito:mockito-core:5.14.1',
+        mockito      : 'org.mockito:mockito-core:5.14.2',
         openstack4j  : 'com.github.openstack4j.core:openstack4j-core:3.12',
         cache2k      : 'org.cache2k:cache2k-api:2.6.1.Final',
     ]
