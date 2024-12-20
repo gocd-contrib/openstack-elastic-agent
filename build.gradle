@@ -78,7 +78,7 @@ dependencies {
         implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
     }
 
-    implementation group: 'com.google.guava', name: 'guava', version: '33.3.1-jre'
+    implementation group: 'com.google.guava', name: 'guava', version: '33.4.0-jre'
     components {
         // workaround for Guava metadata declaring dependencies that are not needed at runtime
         // see https://github.com/google/guava/pull/6606
