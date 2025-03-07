@@ -73,7 +73,7 @@ dependencies {
     implementation group: 'com.github.openstack4j.core.connectors', name: 'openstack4j-httpclient', version: project.versions.openstack4j
 
     // Control transitives
-    implementation platform('com.fasterxml.jackson:jackson-bom:2.18.2')
+    implementation platform('com.fasterxml.jackson:jackson-bom:2.18.3')
     constraints {
         implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
     }
