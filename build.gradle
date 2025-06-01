@@ -57,7 +57,7 @@ java {
 ext {
     deps = [
         gocdPluginApi: 'cd.go.plugin:go-plugin-api:25.2.0',
-        mockito      : 'org.mockito:mockito-core:5.17.0',
+        mockito      : 'org.mockito:mockito-core:5.18.0',
         openstack4j  : 'com.github.openstack4j.core:openstack4j-core:3.12',
         cache2k      : 'org.cache2k:cache2k-api:2.6.1.Final',
     ]
@@ -98,7 +98,7 @@ dependencies {
     runtimeOnly group: 'org.cache2k', name: 'cache2k-core', version: project.versions.cache2k
 
     testImplementation project.deps.gocdPluginApi
-    testImplementation platform('org.junit:junit-bom:5.12.2')
+    testImplementation platform('org.junit:junit-bom:5.13.0')
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
