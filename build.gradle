@@ -57,7 +57,7 @@ java {
 ext {
     deps = [
         gocdPluginApi: 'cd.go.plugin:go-plugin-api:25.3.0',
-        mockito      : 'org.mockito:mockito-core:5.18.0',
+        mockito      : 'org.mockito:mockito-core:5.19.0',
         openstack4j  : 'com.github.openstack4j.core:openstack4j-core:3.12',
         cache2k      : 'org.cache2k:cache2k-api:2.6.1.Final',
     ]
@@ -73,7 +73,7 @@ dependencies {
     implementation group: 'com.github.openstack4j.core.connectors', name: 'openstack4j-httpclient', version: project.versions.openstack4j
 
     // Control transitives
-    implementation platform('com.fasterxml.jackson:jackson-bom:2.19.2')
+    implementation platform('com.fasterxml.jackson:jackson-bom:2.20.0')
     constraints {
         implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
     }
