@@ -422,9 +422,9 @@ public class OpenStackInstances {
     }
 
     private String generateInstanceName() {
-        String instanceName = pluginSettings.getOpenstackVmPrefix() + RandomStringUtils.randomAlphanumeric(12).toLowerCase();
+        String instanceName = pluginSettings.getOpenstackVmPrefix() + RandomStringUtils.insecure().nextAlphanumeric(12).toLowerCase();
         while (clientWrapper.instanceNameExists(instanceName)) {
-            instanceName = pluginSettings.getOpenstackVmPrefix() + RandomStringUtils.randomAlphanumeric(12).toLowerCase();
+            instanceName = pluginSettings.getOpenstackVmPrefix() + RandomStringUtils.insecure().nextAlphanumeric(12).toLowerCase();
         }
         return instanceName;
     }
@@ -467,7 +467,7 @@ public class OpenStackInstances {
         Duration period = pluginSettings.getAgentTTLMinPeriod();
         List<Server> allInstances = clientWrapper.listServers(pluginSettings.getOpenstackVmPrefix());
         String allInstancesAsString = allInstances.stream()
-                .map(n -> n.getName())
+                .map(Server::getName)
                 .collect(Collectors.joining(","));
         final long startTimeMillis = System.currentTimeMillis();
         LOG.debug("[terminateUnregisteredInstances]: [{}] uuid=[{}] clusterURL={}, startTimeMillis=[{}] allInstances.size=[{}] [{}], ",

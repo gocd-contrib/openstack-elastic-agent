@@ -17,7 +17,6 @@
 package cd.go.contrib.elasticagents.openstack.utils;
 
 import cd.go.contrib.elasticagents.openstack.executors.GetClusterProfileViewRequestExecutor;
-import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 import com.google.gson.Gson;
@@ -27,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.Random;
 
@@ -35,7 +35,7 @@ public class Util {
     public static final Gson GSON = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
     public static String readResource(String resourceFile) {
-        try (InputStreamReader reader = new InputStreamReader(GetClusterProfileViewRequestExecutor.class.getResourceAsStream(resourceFile), Charsets.UTF_8)) {
+        try (InputStreamReader reader = new InputStreamReader(GetClusterProfileViewRequestExecutor.class.getResourceAsStream(resourceFile), StandardCharsets.UTF_8)) {
             return CharStreams.toString(reader);
         } catch (IOException e) {
             throw new RuntimeException("Could not find resource " + resourceFile, e);
