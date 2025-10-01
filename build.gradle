@@ -22,8 +22,8 @@ apply from: "https://raw.githubusercontent.com/gocd/gocd-plugin-gradle-task-help
 
 gocdPlugin {
     id = 'cd.go.contrib.elastic-agent.openstack'
-    pluginVersion = "1.0.0"
-    goCdVersion = '20.9.0'
+    pluginVersion = '2.0.0'
+    goCdVersion = '22.1.0'
     name = 'OpenStack Elastic Agent Plugin'
     description = 'OpenStack Based Elastic Agent Plugins for GoCD'
     vendorName = 'GoCD Contributors'
@@ -47,6 +47,11 @@ version = gocdPlugin.fullVersion(project)
 repositories {
     mavenCentral()
     mavenLocal()
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 tasks.withType(JavaCompile).configureEach {
