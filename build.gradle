@@ -72,17 +72,17 @@ ext {
 
 dependencies {
     compileOnly project.deps.gocdPluginApi
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.13.2'
+    implementation 'com.google.code.gson:gson:2.13.2'
     implementation project.deps.openstack4j
-    implementation group: 'com.github.openstack4j.core.connectors', name: 'openstack4j-httpclient', version: project.versions.openstack4j
+    implementation "com.github.openstack4j.core.connectors:openstack4j-httpclient:${project.versions.openstack4j}"
 
     // Control transitives
     implementation platform('com.fasterxml.jackson:jackson-bom:2.20.0')
     constraints {
-        implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
+        implementation 'org.apache.httpcomponents:httpclient:4.5.14'
     }
 
-    implementation group: 'com.google.guava', name: 'guava', version: '33.5.0-jre'
+    implementation 'com.google.guava:guava:33.5.0-jre'
     components {
         // workaround for Guava metadata declaring dependencies that are not needed at runtime
         // see https://github.com/google/guava/pull/6606
@@ -97,20 +97,20 @@ dependencies {
         })
     }
 
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.19.0'
+    implementation 'org.apache.commons:commons-lang3:3.19.0'
     implementation project.deps.cache2k
-    runtimeOnly group: 'org.cache2k', name: 'cache2k-core', version: project.versions.cache2k
+    runtimeOnly "org.cache2k:cache2k-core:${project.versions.cache2k}"
 
     testImplementation project.deps.gocdPluginApi
     testImplementation platform('org.junit:junit-bom:6.0.0')
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params'
-    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
-    testRuntimeOnly group: 'org.junit.platform', name: 'junit-platform-launcher'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation project.deps.mockito
-    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: project.versions.mockito
-    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '3.0'
-    testImplementation group: 'org.skyscreamer', name: 'jsonassert', version: '1.5.3'
+    testImplementation "org.mockito:mockito-junit-jupiter:${project.versions.mockito}"
+    testImplementation 'org.hamcrest:hamcrest:3.0'
+    testImplementation 'org.skyscreamer:jsonassert:1.5.3'
 }
 
 test {
