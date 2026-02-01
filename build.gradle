@@ -78,7 +78,7 @@ dependencies {
     implementation "com.github.openstack4j.core.connectors:openstack4j-httpclient:${project.versions.openstack4j}"
 
     // Control transitives
-    implementation platform('com.fasterxml.jackson:jackson-bom:2.20.1')
+    implementation platform('com.fasterxml.jackson:jackson-bom:2.21.0')
     constraints {
         implementation 'org.apache.httpcomponents:httpclient:4.5.14'
     }
@@ -103,7 +103,7 @@ dependencies {
     runtimeOnly "org.cache2k:cache2k-core:${project.versions.cache2k}"
 
     testImplementation project.deps.gocdPluginApi
-    testImplementation platform('org.junit:junit-bom:6.0.1')
+    testImplementation platform('org.junit:junit-bom:6.0.2')
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
     testImplementation 'org.junit.jupiter:junit-jupiter-params'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
