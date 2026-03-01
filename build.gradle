@@ -62,7 +62,7 @@ tasks.withType(JavaCompile).configureEach {
 ext {
     deps = [
         gocdPluginApi: 'cd.go.plugin:go-plugin-api:25.4.0',
-        mockito      : 'org.mockito:mockito-core:5.21.0',
+        mockito      : 'org.mockito:mockito-core:5.22.0',
         openstack4j  : 'com.github.openstack4j.core:openstack4j-core:3.12',
         cache2k      : 'org.cache2k:cache2k-api:2.6.1.Final',
     ]
@@ -80,7 +80,7 @@ dependencies {
     implementation "com.github.openstack4j.core.connectors:openstack4j-httpclient:${project.versions.openstack4j}"
 
     // Control transitives
-    implementation platform('com.fasterxml.jackson:jackson-bom:2.21.0')
+    implementation platform('com.fasterxml.jackson:jackson-bom:2.21.1')
     constraints {
         implementation 'org.apache.httpcomponents:httpclient:4.5.14'
     }
@@ -105,7 +105,7 @@ dependencies {
     runtimeOnly "org.cache2k:cache2k-core:${project.versions.cache2k}"
 
     testImplementation project.deps.gocdPluginApi
-    testImplementation platform('org.junit:junit-bom:6.0.2')
+    testImplementation platform('org.junit:junit-bom:6.0.3')
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
     testImplementation 'org.junit.jupiter:junit-jupiter-params'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
