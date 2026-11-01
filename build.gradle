@@ -73,19 +73,19 @@ ext {
 
 dependencies {
     compileOnly project.deps.gocdPluginApi
-    implementation('com.google.code.gson:gson:2.14.0') {
+    implementation('com.google.code.gson:gson:2.15.0') {
         exclude(module: 'error_prone_annotations') // Not needed at runtime
     }
     implementation project.deps.openstack4j
     implementation "com.github.openstack4j.core.connectors:openstack4j-httpclient:${project.versions.openstack4j}"
 
     // Control transitives
-    implementation platform('com.fasterxml.jackson:jackson-bom:2.22.3')
+    implementation platform('com.fasterxml.jackson:jackson-bom:2.22.4')
     constraints {
         implementation 'org.apache.httpcomponents:httpclient:4.5.14'
     }
 
-    implementation 'com.google.guava:guava:33.7.1-jre'
+    implementation 'com.google.guava:guava:33.7.2-jre'
     components {
         // workaround for Guava metadata declaring dependencies that are not needed at runtime
         // see https://github.com/google/guava/pull/6606
@@ -100,7 +100,7 @@ dependencies {
         })
     }
 
-    implementation 'org.apache.commons:commons-lang3:3.20.0'
+    implementation 'org.apache.commons:commons-lang3:3.21.0'
     implementation project.deps.cache2k
     runtimeOnly "org.cache2k:cache2k-core:${project.versions.cache2k}"
 
